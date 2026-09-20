@@ -1,0 +1,118 @@
+import { useState } from 'react';
+import { MapPin, Flag, ExternalLink, AlertTriangle, Loader2 } from 'lucide-react';
+import { reportJob } from '../lib/api';
+import type { Job } from '../lib/api';
+import { Card } from './ui/card';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { CompanyLogo } from './CompanyLogo';
+
+export function JobCard({ job }: { job: Job }) {
+  const [reported, setReported] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
+
+  const handleReport = async () => {
+    if (reported || isReporting) return;
+    setIsReporting(true);
+    try {
+      await reportJob(job.id);
+      setReported(true);
+      setReportSuccess(true);
+    } catch (e) {
+      alert('Failed to report job. Please try again.');
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
+  const getDaysAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const diff = new Date().getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 3600 * 24));
+    return days === 0 ? 'Today' : `${days} d ago`;
+  };
+
+  return (
+    <>
+      <Card className="group relative shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 min-w-0">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-lg leading-tight mb-2 text-foreground truncate">
+            {job.title}
+          </h3>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground min-w-0">
+            <Badge variant="secondary" className="font-semibold flex items-center gap-1.5 overflow-hidden shrink-0 px-2">
+              <CompanyLogo name={job.company} className="w-4 h-4 min-w-[16px] rounded-sm shrink-0" />
+              <span className="truncate max-w-[120px] sm:max-w-none">{job.company}</span>
+            </Badge>
+            {job.location && (
+              <span className="flex items-center gap-1 shrink text-ellipsis overflow-hidden whitespace-nowrap max-w-[180px] sm:max-w-[300px] lg:max-w-[400px]">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{job.location}</span>
+              </span>
+            )}
+            <span className="shrink-0">{getDaysAgo(job.created_at)}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowConfirm(true)}
+            disabled={reported}
+            title={reported ? "Reported" : "Report Spam/Dead Link"}
+            className={`transition-colors ${reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'}`}
+          >
+            <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
+          </Button>
+          <Button asChild className="gap-1.5">
+            <a href={job.url} target="_blank" rel="noreferrer">
+              Apply
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
+      </Card>
+
+      {/* Report Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="fixed inset-0" onClick={() => { if (!isReporting) setShowConfirm(false); }} />
+          <div className="relative bg-card border border-border shadow-lg rounded-xl max-w-sm w-full p-6">
+            {!reportSuccess ? (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">Report Job</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Are you sure you want to flag <span className="font-semibold text-foreground">{job.title}</span>? This will alert our moderators to check for spam or dead links.
+                </p>
+                <div className="flex items-center justify-end gap-3">
+                  <Button variant="ghost" onClick={() => setShowConfirm(false)} disabled={isReporting}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={handleReport} disabled={isReporting} className="min-w-[100px]">
+                    {isReporting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Report'}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                  <Flag className="h-6 w-6 text-green-500 fill-current" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Job Reported</h3>
+                <p className="text-sm text-muted-foreground mb-6">Thank you for keeping the community safe!</p>
+                <Button className="w-full" onClick={() => setShowConfirm(false)}>Close</Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

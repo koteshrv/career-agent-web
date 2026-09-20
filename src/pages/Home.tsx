@@ -110,55 +110,9 @@ export function Home() {
             </Button>
           </form>
 
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-            <button
-              type="button"
-              onClick={() => {
-                setSort('recent');
-                applyFilters(undefined, 'recent', undefined);
-              }}
-              className={`h-7 rounded-full px-3 text-xs font-medium transition-colors ${
-                sort === 'recent'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary'
-              }`}
-            >
-              Most Recent
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSort('random');
-                applyFilters(undefined, 'random', undefined);
-              }}
-              className={`h-7 rounded-full px-3 text-xs font-medium transition-colors ${
-                sort === 'random'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary'
-              }`}
-            >
-              Discover Random
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                const nextStale = !includeStale;
-                setIncludeStale(nextStale);
-                applyFilters(undefined, undefined, nextStale);
-              }}
-              className={`h-7 rounded-full px-3 text-xs font-medium transition-colors border ${
-                includeStale
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary'
-              }`}
-            >
-              Include Stale
-            </button>
-
-            {searchParams.get('company') && (
+          {/* Active Company Filter Tag (if filtered by company) */}
+          {searchParams.get('company') && (
+            <div className="flex items-center justify-center mt-4">
               <span className="inline-flex items-center gap-1.5 h-7 rounded-full px-3 text-xs font-medium bg-secondary text-foreground border border-border">
                 Company: <span className="font-semibold">{searchParams.get('company')}</span>
                 <button
@@ -169,8 +123,8 @@ export function Home() {
                   ×
                 </button>
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 

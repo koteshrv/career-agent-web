@@ -9,7 +9,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto max-w-6xl flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto max-w-6xl flex h-16 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity">
             <Zap className="h-6 w-6 fill-current" />

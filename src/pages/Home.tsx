@@ -66,74 +66,70 @@ export function Home() {
     const finalSort = newSort !== undefined ? newSort : sort;
     const finalStale = newIncludeStale !== undefined ? newIncludeStale : includeStale;
 
-    if (finalQuery) params.q = finalQuery;
+    if (finalQuery.trim()) params.q = finalQuery.trim();
     if (finalSort !== 'recent') params.sort = finalSort;
     if (finalStale) params.include_stale = 'true';
     setSearchParams(params);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      applyFilters();
-    }
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    applyFilters();
   };
 
   return (
     <main className="w-full">
-      {/* Sleek Header Section */}
-      <div className="bg-background border-b border-border pt-8 pb-6 px-4 md:px-8 mb-8">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="flex-1">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2">
-              Find your next career move
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Discover crowdsourced jobs fetched directly from company ATS platforms.
-            </p>
-          </div>
+      {/* Search Hero Section */}
+      <section className="pt-10 pb-8 px-4 border-b border-border bg-background">
+        <div className="container mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
+            Find your next career move
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
+            Discover crowdsourced jobs fetched directly from company ATS platforms.
+          </p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-            <div className="relative w-full sm:w-64 md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input 
-                className="w-full h-10 pl-9 pr-4 rounded-md bg-card border border-border shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-foreground placeholder:text-muted-foreground"
-                placeholder="Job title, keywords, or company..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-            </div>
-
-            <select
-              className="h-10 px-3 rounded-md bg-card border border-border shadow-sm text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer transition-colors"
-              value={sort}
-              onChange={(e) => {
-                setSort(e.target.value);
-                applyFilters(undefined, e.target.value, undefined);
-              }}
+          {/* Search Bar */}
+          <form 
+            onSubmit={handleFormSubmit}
+            className="max-w-xl mx-auto relative flex items-center bg-card border border-border rounded-full p-1.5 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all"
+          >
+            <Search className="h-4 w-4 text-muted-foreground ml-3.5 mr-2 shrink-0" />
+            <input
+              type="search"
+              placeholder="Job title, keywords, or company..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none pr-2"
+            />
+            <Button
+              type="submit"
+              className="h-8 rounded-full px-4 text-xs font-medium shrink-0"
             >
-              <option value="recent">Most Recent</option>
-              <option value="random">Discover Random</option>
-            </select>
+              Search
+            </Button>
+          </form>
 
-            <label className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors shrink-0 bg-card border border-border h-10 px-3 rounded-md shadow-sm">
-              <input
-                type="checkbox"
-                checked={includeStale}
-                onChange={(e) => {
-                  setIncludeStale(e.target.checked);
-                  applyFilters(undefined, undefined, e.target.checked);
-                }}
-                className="accent-primary w-4 h-4 rounded border-input cursor-pointer"
-              />
-              Include Stale
-            </label>
-          </div>
+          {/* Active Company Filter Tag (if filtered by company) */}
+          {searchParams.get('company') && (
+            <div className="flex items-center justify-center mt-4">
+              <span className="inline-flex items-center gap-1.5 h-7 rounded-full px-3 text-xs font-medium bg-secondary text-foreground border border-border">
+                Company: <span className="font-semibold">{searchParams.get('company')}</span>
+                <button
+                  type="button"
+                  onClick={() => applyFilters('', undefined, undefined)}
+                  className="hover:opacity-70 ml-0.5 text-muted-foreground"
+                >
+                  ×
+                </button>
+              </span>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-4xl mx-auto px-4 pb-20">
+      {/* Listings Container */}
+      <div className="container mx-auto max-w-4xl px-4 py-8">
         <div className="space-y-4">
           {isLoadingInitialData && (
             <div className="flex justify-center py-20">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Loader2, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Search, Loader2, Filter } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { fetcher } from '../lib/api';
 import type { JobsResponse } from '../lib/api';
@@ -79,51 +79,46 @@ export function Home() {
 
   return (
     <main className="w-full">
-      {/* Tsenta-style Hero Section */}
-      <section className="pt-12 sm:pt-16 pb-8 px-4 border-b border-border/80 bg-background/50">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-xs text-muted-foreground mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span>Direct company career pages</span>
-          </div>
-
-          <h1 className="ts-display text-4xl sm:text-5xl md:text-6xl text-foreground font-normal tracking-tight mb-3">
-            Jobs
+      {/* Search Hero Section */}
+      <section className="pt-10 pb-8 px-4 border-b border-border bg-background">
+        <div className="container mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
+            Find your next career move
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-8 font-normal leading-relaxed">
-            Fresh roles synced directly from 50,000+ top engineering & product career pages.
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
+            Discover crowdsourced jobs fetched directly from company ATS platforms.
           </p>
 
-          {/* Sleek Pill Search Bar */}
+          {/* Search Bar */}
           <form 
             onSubmit={handleFormSubmit}
-            className="max-w-xl mx-auto relative flex items-center bg-card border border-border/90 rounded-full p-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-within:border-foreground/30 focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all"
+            className="max-w-xl mx-auto relative flex items-center bg-card border border-border rounded-full p-1.5 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all"
           >
             <Search className="h-4 w-4 text-muted-foreground ml-3.5 mr-2 shrink-0" />
             <input
               type="search"
-              placeholder="Search by role, company, or tech stack..."
+              placeholder="Job title, keywords, or company..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 outline-none pr-2 font-normal"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none pr-2"
             />
-            <button
+            <Button
               type="submit"
-              className="ts-pill shrink-0"
+              className="h-8 rounded-full px-4 text-xs font-medium shrink-0"
             >
               Search
-            </button>
+            </Button>
           </form>
 
-          {/* Filter Pills / Chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
             <button
               type="button"
               onClick={() => {
                 setSort('recent');
                 applyFilters(undefined, 'recent', undefined);
               }}
-              className={`h-7 rounded-full px-3 text-xs font-medium transition-all ${
+              className={`h-7 rounded-full px-3 text-xs font-medium transition-colors ${
                 sort === 'recent'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -138,7 +133,7 @@ export function Home() {
                 setSort('random');
                 applyFilters(undefined, 'random', undefined);
               }}
-              className={`h-7 rounded-full px-3 text-xs font-medium transition-all ${
+              className={`h-7 rounded-full px-3 text-xs font-medium transition-colors ${
                 sort === 'random'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -154,7 +149,7 @@ export function Home() {
                 setIncludeStale(nextStale);
                 applyFilters(undefined, undefined, nextStale);
               }}
-              className={`h-7 rounded-full px-3 text-xs font-medium transition-all border ${
+              className={`h-7 rounded-full px-3 text-xs font-medium transition-colors border ${
                 includeStale
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                   : 'border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -180,43 +175,28 @@ export function Home() {
       </section>
 
       {/* Listings Container */}
-      <div className="container mx-auto max-w-4xl px-4 py-8 sm:py-10">
-        <div className="space-y-3.5">
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="space-y-4">
           {isLoadingInitialData && (
-            <div className="flex flex-col items-center justify-center py-24 gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              <p className="text-xs text-muted-foreground font-medium">Fetching fresh listings...</p>
+            <div className="flex justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           )}
 
           {error && (
-            <div className="text-center py-16 px-4 border border-destructive/20 bg-destructive/5 rounded-2xl">
-              <h3 className="text-sm font-semibold text-destructive mb-1">Failed to load jobs</h3>
-              <p className="text-xs text-destructive/80">The backend service may be undergoing maintenance.</p>
+            <div className="text-center py-20 border border-destructive/20 bg-destructive/5 rounded-2xl">
+              <h3 className="text-lg font-medium text-destructive mb-1">Failed to load jobs</h3>
+              <p className="text-destructive/80">The backend API might be down or the endpoint does not exist.</p>
             </div>
           )}
 
           {isEmpty && !isLoadingInitialData && !error && (
-            <div className="text-center py-20 px-4 border border-dashed border-border rounded-2xl bg-card">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-secondary mb-3">
-                <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
+            <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl bg-card">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                <Filter className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-base font-semibold text-foreground mb-1">No jobs match your search</h3>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-4">
-                Try searching for broader keywords, or clear your filters to explore all active positions.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('');
-                  setSort('recent');
-                  setIncludeStale(false);
-                  setSearchParams({});
-                }}
-                className="ts-pill"
-              >
-                Clear all filters
-              </button>
+              <h3 className="text-lg font-medium text-foreground mb-1">No jobs found</h3>
+              <p className="text-muted-foreground">We couldn't find any jobs matching your criteria.</p>
             </div>
           )}
 
@@ -225,17 +205,17 @@ export function Home() {
           ))}
         </div>
 
-        {/* Load More Button */}
         {!isEmpty && !isReachingEnd && !isLoadingInitialData && !error && (
           <div className="mt-10 text-center">
             <Button
               variant="outline"
+              size="lg"
               onClick={() => setSize(size + 1)}
               disabled={isLoadingMore}
-              className="h-10 rounded-full px-8 text-xs font-medium border-border bg-card hover:bg-secondary hover:text-foreground shadow-sm transition-all"
+              className="gap-2 rounded-xl px-10 h-12 font-medium"
             >
-              {isLoadingMore && <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />}
-              {isLoadingMore ? 'Loading more jobs...' : 'Load more jobs'}
+              {isLoadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isLoadingMore ? 'Loading...' : 'Load More Jobs'}
             </Button>
           </div>
         )}

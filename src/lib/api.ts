@@ -1,6 +1,3 @@
-export const API_BASE_URL = import.meta.env.DEV 
-  ? '' 
-  : (import.meta.env.VITE_API_BASE_URL || 'https://api.careeragent.fyi');
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export interface Job {
@@ -50,4 +47,3 @@ export async function reportJob(jobId: string, reason: string = 'Spam/Dead Link'
   }
   return res.json();
 }
-

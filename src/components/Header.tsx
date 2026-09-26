@@ -30,7 +30,7 @@ export function Header() {
 
   const [queryInput, setQueryInput] = useState(queryParam);
   const [logoConcept, setLogoConcept] = useState<LogoConcept>(() => {
-    return (localStorage.getItem('careeragent_logo_concept') as LogoConcept) || 'career-climber';
+    return (localStorage.getItem('careeragent_logo_concept') as LogoConcept) || 'sparkles';
   });
   const [palette, setPalette] = useState<ColorPalette>(() => {
     return (localStorage.getItem('careeragent_palette') as ColorPalette) || 'indigo';

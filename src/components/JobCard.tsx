@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { CompanyLogo } from './CompanyLogo';
 import { ReportModal } from './ReportModal';
+import { formatRelativeTime, formatFullDate } from '../lib/utils';
 
 export function JobCard({ 
   job, 
@@ -22,13 +23,6 @@ export function JobCard({
 }) {
   const [reported, setReported] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  const getDaysAgo = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const diff = new Date().getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 3600 * 24));
-    return days <= 0 ? 'Today' : `${days} d ago`;
-  };
 
   const meta = job.structured_metadata;
 
@@ -129,8 +123,11 @@ export function JobCard({
                 </span>
               )}
 
-              <span className="text-xs text-muted-foreground shrink-0 ml-auto sm:ml-0">
-                {getDaysAgo(job.posted_at || job.created_at)}
+              <span 
+                className="text-xs text-muted-foreground shrink-0 ml-auto sm:ml-0"
+                title={formatFullDate(job.posted_at || job.created_at)}
+              >
+                {formatRelativeTime(job.posted_at || job.created_at)}
               </span>
             </div>
 

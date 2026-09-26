@@ -21,25 +21,13 @@ import { CompanyLogo } from './CompanyLogo';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ReportModal } from './ReportModal';
+import { formatRelativeTime, formatFullDate } from '../lib/utils';
 
 interface JobDetailPaneProps {
   job: Job | null;
   onClose: () => void;
   onSelectCompany?: (company: string) => void;
   onSelectLocation?: (location: string) => void;
-}
-
-function getDaysAgo(dateString?: string | null): string {
-  if (!dateString) return 'Recently';
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 30) return `${diffDays}d ago`;
-  const diffMonths = Math.floor(diffDays / 30);
-  return `${diffMonths}mo ago`;
 }
 
 export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation }: JobDetailPaneProps) {
@@ -86,7 +74,9 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
               {currentJob.company}
             </span>
             <span>•</span>
-            <span>Posted {getDaysAgo(currentJob.posted_at || currentJob.created_at)}</span>
+            <span title={formatFullDate(currentJob.posted_at || currentJob.created_at)}>
+              Posted {formatRelativeTime(currentJob.posted_at || currentJob.created_at)}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             {/* Copy Clean Job Link */}

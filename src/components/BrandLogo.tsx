@@ -1,4 +1,5 @@
 export type LogoConcept = 
+  | 'summit-flag'
   | 'ascent' 
   | 'nexus' 
   | 'command-c' 
@@ -7,6 +8,11 @@ export type LogoConcept =
   | 'wordmark';
 
 export const LOGO_OPTIONS: { id: LogoConcept; name: string; description: string }[] = [
+  {
+    id: 'summit-flag',
+    name: '★ Career Goal (Steps + Victory Flag)',
+    description: 'Ascending career ladder steps with the goal flag planted at the summit',
+  },
   {
     id: 'ascent',
     name: 'A. Career Ascent (Level Up)',
@@ -39,18 +45,69 @@ export const LOGO_OPTIONS: { id: LogoConcept; name: string; description: string 
   },
 ];
 
-export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { concept?: LogoConcept; className?: string }) {
+export function BrandLogo({ concept = 'summit-flag', className = 'h-6 w-6' }: { concept?: LogoConcept; className?: string }) {
   switch (concept) {
+    case 'summit-flag':
+      // Flaticon Goal translation: Ascending Steps + Summit Victory Flag
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
+          {/* Ground baseline */}
+          <line x1="3.5" y1="19.5" x2="20.5" y2="19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="stroke-muted-foreground/40" />
+          
+          {/* Ascending Career Steps */}
+          <path
+            d="M4.5 19.5V16H8V12.5H12V8.5H15.5V19.5"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="stroke-primary/70"
+          />
+          {/* Stepped block fills */}
+          <path
+            d="M4.5 16H8V19.5H4.5V16Z"
+            className="fill-muted/80"
+          />
+          <path
+            d="M8 12.5H12V19.5H8V12.5Z"
+            className="fill-primary/20"
+          />
+          <path
+            d="M12 8.5H15.5V19.5H12V8.5Z"
+            className="fill-primary/35"
+          />
+
+          {/* Summit Flagpole */}
+          <line
+            x1="15.5"
+            y1="3.5"
+            x2="15.5"
+            y2="19.5"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            className="stroke-foreground"
+          />
+
+          {/* Victory Goal Flag at Peak */}
+          <path
+            d="M15.5 3.5H21L19.2 6.5L21 9.5H15.5V3.5Z"
+            className="fill-primary stroke-primary"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
+          />
+          <circle cx="15.5" cy="3.5" r="1.2" className="fill-primary" />
+        </svg>
+      );
+
     case 'ascent':
       // 3 Stepping Vertical Bars (Junior -> Senior -> Staff)
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
-          {/* Bar 1 (Short) */}
           <rect x="5.5" y="13.5" width="3.2" height="6" rx="1.6" className="fill-muted-foreground/60" />
-          {/* Bar 2 (Medium) */}
           <rect x="10.4" y="9" width="3.2" height="10.5" rx="1.6" className="fill-primary/70" />
-          {/* Bar 3 (Tall + Highlighted with upward arrow peak) */}
           <rect x="15.3" y="4.5" width="3.2" height="15" rx="1.6" className="fill-primary" />
           <circle cx="16.9" cy="4.5" r="1.5" className="fill-primary animate-ping opacity-60" />
         </svg>
@@ -61,11 +118,8 @@ export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { conce
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
-          {/* Loop Left */}
           <circle cx="9" cy="12" r="4.5" stroke="currentColor" strokeWidth="2.2" className="stroke-muted-foreground" />
-          {/* Loop Right (Primary) */}
           <circle cx="15" cy="12" r="4.5" stroke="currentColor" strokeWidth="2.2" className="stroke-primary" />
-          {/* Center Connection Core */}
           <circle cx="12" cy="12" r="2.2" className="fill-primary" />
         </svg>
       );
@@ -75,7 +129,6 @@ export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { conce
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-foreground text-background" />
-          {/* Bold geometric C */}
           <path
             d="M10.5 7.5H8C6.6 7.5 5.5 8.6 5.5 10V14C5.5 15.4 6.6 16.5 8 16.5H10.5"
             stroke="currentColor"
@@ -83,7 +136,6 @@ export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { conce
             strokeLinecap="round"
             className="stroke-background"
           />
-          {/* Terminal Prompt > in center */}
           <path
             d="M13 9.5L16.5 12L13 14.5"
             stroke="currentColor"
@@ -100,7 +152,6 @@ export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { conce
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
-          {/* Handle */}
           <path
             d="M9 7V5.5C9 4.7 9.7 4 10.5 4H13.5C14.3 4 15 4.7 15 5.5V7"
             stroke="currentColor"
@@ -108,9 +159,7 @@ export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { conce
             strokeLinecap="round"
             className="stroke-muted-foreground"
           />
-          {/* Bag Body */}
           <rect x="4.5" y="7" width="15" height="12.5" rx="3" stroke="currentColor" strokeWidth="2" className="stroke-primary" />
-          {/* Inner Lock / Divider */}
           <path d="M4.5 11.5H19.5" stroke="currentColor" strokeWidth="1.5" className="stroke-border" />
           <circle cx="12" cy="11.5" r="1.8" className="fill-primary" />
         </svg>

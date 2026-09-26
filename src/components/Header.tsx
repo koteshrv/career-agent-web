@@ -55,6 +55,7 @@ export function Header() {
   };
 
   const clearAllFilters = () => {
+    localStorage.setItem('careeragent_country_initialized', 'true');
     setQueryInput('');
     setSearchParams(new URLSearchParams());
   };
@@ -79,6 +80,64 @@ export function Header() {
       ...countries.map((c) => ({ value: c.code, label: c.name })),
     ];
   }, [countries]);
+
+  // Auto-detect country based on IP for first-time visitors
+  useEffect(() => {
+    const isInitialized = localStorage.getItem('careeragent_country_initialized');
+    if (countryParam || isInitialized || !countries.length) return;
+
+    let isMounted = true;
+    async function autoDetect() {
+      try {
+        let detectedCode: string | null = null;
+        // 1. Try Cloudflare Pages edge function
+        try {
+          const res = await fetch('/api/geo');
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.country && data.country !== 'XX') {
+              detectedCode = data.country;
+            }
+          }
+        } catch {
+          // Cloudflare function not reached (e.g. dev)
+        }
+
+        // 2. Dev / non-Cloudflare fallback
+        if (!detectedCode) {
+          try {
+            const fallbackRes = await fetch('https://ipapi.co/json/');
+            if (fallbackRes.ok) {
+              const fbData = await fallbackRes.json();
+              if (fbData?.country_code) {
+                detectedCode = fbData.country_code;
+              }
+            }
+          } catch {
+            // Ignore fallback network issues
+          }
+        }
+
+        if (isMounted && detectedCode) {
+          const matched = countries.find(
+            (c) => c.code.toUpperCase() === detectedCode!.toUpperCase()
+          );
+          if (matched) {
+            updateFilters({ country: matched.code });
+          }
+        }
+      } finally {
+        if (isMounted) {
+          localStorage.setItem('careeragent_country_initialized', 'true');
+        }
+      }
+    }
+
+    autoDetect();
+    return () => {
+      isMounted = false;
+    };
+  }, [countries, countryParam]);
 
   const workplaceOptions = [
     { value: '', label: 'Workplace: Any' },
@@ -175,7 +234,10 @@ export function Header() {
             <DropdownSelect
               icon={<Globe className="h-3.5 w-3.5" />}
               value={countryParam}
-              onChange={(val) => updateFilters({ country: val || null })}
+              onChange={(val) => {
+                localStorage.setItem('careeragent_country_initialized', 'true');
+                updateFilters({ country: val || null });
+              }}
               options={countryOptions}
               placeholder="All Countries"
               ariaLabel="Filter by country"

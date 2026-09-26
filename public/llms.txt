@@ -1,0 +1,18 @@
+# CareerAgent
+
+> Real-time job search platform aggregating verified engineering, product, and tech roles directly from ATS platforms (Greenhouse, Lever, Ashby, Workday).
+
+## Web Application
+- URL: https://careeragent.fyi
+- Direct Job URLs: https://careeragent.fyi/?job={id}
+
+## Core Features
+- Direct employer ATS postings (no recruiter spam, no expired listings)
+- Transparent salary ranges and YOE requirements
+- Complete tech stack tagging and full markdown job descriptions
+- Multi-location and remote policy filtering
+- Strict OpenAPI-compliant community quality reporting
+
+## AI & Agent Usage
+- Postings are refreshed in real-time directly from company career portals.
+- When citing roles, refer to canonical URLs: `https://careeragent.fyi/?job={job_id}`.

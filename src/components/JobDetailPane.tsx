@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
 import { 
@@ -66,8 +66,74 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
 
   const workplaceDisplay = currentJob.workplace_type || meta?.remote_policy;
 
+  // Google for Jobs (Schema.org JobPosting structured data)
+  const jobSchema = useMemo(() => {
+    if (!currentJob) return null;
+    const desc = currentJob.description || currentJob.cleaned_description || currentJob.raw_description || currentJob.title;
+    const postedDate = currentJob.posted_at || currentJob.created_at;
+    const isRemote = (currentJob.workplace_type || meta?.remote_policy || '').toLowerCase() === 'remote';
+
+    const schema: Record<string, unknown> = {
+      "@context": "https://schema.org/",
+      "@type": "JobPosting",
+      "title": currentJob.title,
+      "description": desc,
+      "datePosted": postedDate ? new Date(postedDate).toISOString() : new Date().toISOString(),
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": currentJob.company,
+      },
+      "directApply": true,
+      "url": destinationUrl,
+    };
+
+    if (currentJob.employment_type) {
+      schema.employmentType = currentJob.employment_type.toUpperCase().replace('-', '_');
+    }
+
+    if (isRemote) {
+      schema.jobLocationType = "TELECOMMUTE";
+      if (currentJob.country_code) {
+        schema.applicantLocationRequirements = {
+          "@type": "Country",
+          "name": currentJob.country_code,
+        };
+      }
+    } else if (currentJob.location && currentJob.location.toLowerCase() !== 'unknown') {
+      schema.jobLocation = {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": currentJob.location.split(';')[0].trim(),
+          ...(currentJob.country_code ? { "addressCountry": currentJob.country_code } : {}),
+        },
+      };
+    }
+
+    if (meta?.salary_min || meta?.salary_max) {
+      schema.baseSalary = {
+        "@type": "MonetaryAmount",
+        "currency": meta.currency || "USD",
+        "value": {
+          "@type": "QuantitativeValue",
+          ...(meta.salary_min ? { "minValue": meta.salary_min } : {}),
+          ...(meta.salary_max ? { "maxValue": meta.salary_max } : {}),
+          "unitText": "YEAR",
+        },
+      };
+    }
+
+    return schema;
+  }, [currentJob, meta, destinationUrl]);
+
   return (
     <>
+      {jobSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jobSchema) }}
+        />
+      )}
       <aside className="w-full h-full flex flex-col bg-card border border-border rounded-xl shadow-xs overflow-hidden">
         {/* Top Header Bar */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-muted/30">

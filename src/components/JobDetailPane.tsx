@@ -9,18 +9,18 @@ import {
   DollarSign, 
   CheckCircle2, 
   ShieldCheck, 
-  Globe, 
-  Share2, 
+  Building2, 
+  Copy, 
+  Check, 
   Flag, 
-  Loader2, 
-  Building2,
-  AlertTriangle
+  Loader2 
 } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
-import { fetcher, reportJob } from '../lib/api';
+import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { ReportModal } from './ReportModal';
 
 interface JobDetailPaneProps {
   job: Job | null;
@@ -43,8 +43,7 @@ function getDaysAgo(dateString?: string | null): string {
 }
 
 export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation }: JobDetailPaneProps) {
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [isReporting, setIsReporting] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [reported, setReported] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -61,25 +60,12 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
   const meta = currentJob.structured_metadata;
   const destinationUrl = currentJob.apply_url || currentJob.url;
 
-  const handleShare = () => {
+  // Clean canonical job URL without personal search queries
+  const handleCopyLink = () => {
     const cleanUrl = `${window.location.origin}/?job=${encodeURIComponent(currentJob.id)}`;
     navigator.clipboard.writeText(cleanUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleReport = async () => {
-    if (reported || isReporting) return;
-    setIsReporting(true);
-    try {
-      await reportJob(currentJob.id);
-      setReported(true);
-      setShowConfirm(false);
-    } catch {
-      alert('Failed to report job. Please try again.');
-    } finally {
-      setIsReporting(false);
-    }
   };
 
   const formattedSalary = meta?.salary_min || meta?.salary_max
@@ -87,6 +73,8 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
         meta.salary_min && meta.salary_max ? ' - ' : ''
       }${meta.salary_max ? (meta.salary_min ? '' : (meta.currency || '$')) + meta.salary_max.toLocaleString() : ''}`
     : null;
+
+  const workplaceDisplay = currentJob.workplace_type || meta?.remote_policy;
 
   return (
     <>
@@ -101,19 +89,22 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
             <span>Posted {getDaysAgo(currentJob.posted_at || currentJob.created_at)}</span>
           </div>
           <div className="flex items-center gap-1">
+            {/* Copy Clean Job Link */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleShare}
+              onClick={handleCopyLink}
               className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
-              title="Copy link to job"
+              title={copied ? "Copied!" : "Copy job link"}
             >
-              <Share2 className="h-4 w-4" />
+              {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
             </Button>
+
+            {/* Strict Quality Report Button */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setShowConfirm(true)}
+              onClick={() => setShowReportModal(true)}
               disabled={reported}
               className={`h-8 w-8 cursor-pointer ${
                 reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive'
@@ -122,6 +113,8 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
             >
               <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
             </Button>
+
+            {/* Close Pane */}
             <Button
               variant="ghost"
               size="icon"
@@ -176,10 +169,15 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
 
             {/* Quick Badges Row */}
             <div className="flex flex-wrap items-center gap-2">
-              {currentJob.workplace_type && (
+              {workplaceDisplay && (
                 <Badge variant="secondary" className="capitalize text-xs font-medium">
                   <Building2 className="h-3 w-3 mr-1" />
-                  {currentJob.workplace_type}
+                  {workplaceDisplay}
+                </Badge>
+              )}
+              {currentJob.employment_type && (
+                <Badge variant="secondary" className="capitalize text-xs font-medium">
+                  {currentJob.employment_type.replace('_', '-')}
                 </Badge>
               )}
               {meta?.seniority && (
@@ -207,7 +205,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
               </Button>
               {copied && (
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                  Link copied to clipboard!
+                  Canonical link copied!
                 </span>
               )}
             </div>
@@ -246,15 +244,15 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                 </div>
               )}
 
-              {/* Remote Policy */}
-              {meta.remote_policy && (
+              {/* Workplace Policy (Clean label instead of "Remote Policy: Onsite") */}
+              {workplaceDisplay && (
                 <div>
                   <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-semibold mb-0.5">
-                    Remote Policy
+                    Workplace
                   </span>
                   <span className="font-medium text-foreground capitalize flex items-center gap-1">
-                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                    {meta.remote_policy}
+                    <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    {workplaceDisplay}
                   </span>
                 </div>
               )}
@@ -367,41 +365,14 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
         </div>
       </aside>
 
-      {/* Report Confirmation Modal */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="fixed inset-0" onClick={() => { if (!isReporting) setShowConfirm(false); }} />
-          <div className="relative bg-card border border-border shadow-lg rounded-xl max-w-sm w-full p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">Report Job</h3>
-            </div>
-            <p className="text-sm text-muted-foreground mb-6">
-              Are you sure you want to flag <span className="font-semibold text-foreground">{currentJob.title}</span>? This will alert moderators to review this posting.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowConfirm(false)}
-                disabled={isReporting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleReport}
-                disabled={isReporting}
-              >
-                {isReporting ? 'Reporting...' : 'Confirm Report'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Strict OpenAPI Reporting Modal */}
+      <ReportModal
+        jobId={currentJob.id}
+        jobTitle={currentJob.title}
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onReportSuccess={() => setReported(true)}
+      />
     </>
   );
 }

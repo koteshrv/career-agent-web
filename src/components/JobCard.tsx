@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { MapPin, Flag, ExternalLink, AlertTriangle, Loader2, Briefcase, GraduationCap } from 'lucide-react';
-import { reportJob } from '../lib/api';
+import { MapPin, Flag, ExternalLink, Briefcase, GraduationCap } from 'lucide-react';
 import type { Job } from '../lib/api';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { CompanyLogo } from './CompanyLogo';
+import { ReportModal } from './ReportModal';
 
 export function JobCard({ 
   job, 
@@ -22,23 +22,6 @@ export function JobCard({
 }) {
   const [reported, setReported] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [isReporting, setIsReporting] = useState(false);
-  const [reportSuccess, setReportSuccess] = useState(false);
-
-  const handleReport = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (reported || isReporting) return;
-    setIsReporting(true);
-    try {
-      await reportJob(job.id);
-      setReported(true);
-      setReportSuccess(true);
-    } catch {
-      alert('Failed to report job. Please try again.');
-    } finally {
-      setIsReporting(false);
-    }
-  };
 
   const getDaysAgo = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -193,47 +176,13 @@ export function JobCard({
         </div>
       </Card>
 
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="fixed inset-0" onClick={() => { if (!isReporting) setShowConfirm(false); }} />
-          <div className="relative bg-card border border-border shadow-lg rounded-xl max-w-sm w-full p-6">
-            {!reportSuccess ? (
-              <>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground">Report Job</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">
-                  Are you sure you want to flag <span className="font-semibold text-foreground">{job.title}</span>? This will alert our moderators to check for spam or dead links.
-                </p>
-                <div className="flex items-center justify-end gap-3">
-                  <Button variant="ghost" onClick={() => setShowConfirm(false)} disabled={isReporting}>
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={handleReport} disabled={isReporting} className="min-w-[100px]">
-                    {isReporting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Report'}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-3">
-                  <Flag className="h-6 w-6 fill-current" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">Thank you!</h3>
-                <p className="text-sm text-muted-foreground mb-6">
-                  Your report has been submitted for community verification.
-                </p>
-                <Button onClick={() => setShowConfirm(false)} className="w-full">
-                  Close
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ReportModal
+        jobId={job.id}
+        jobTitle={job.title}
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onReportSuccess={() => setReported(true)}
+      />
     </>
   );
 }

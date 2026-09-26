@@ -68,16 +68,23 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export async function reportJob(jobId: string, reason: string = 'dead_link') {
+export type ReportReason = 'dead_link' | 'already_closed' | 'fake_posting' | 'misclassified' | 'spam';
+
+export async function reportJob(jobId: string, reason: ReportReason = 'dead_link', details?: string) {
   const res = await fetch(`${API_BASE_URL}/v1/jobs/report`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ job_id: jobId, reason }),
+    body: JSON.stringify({ 
+      job_id: jobId, 
+      reason,
+      details: details?.trim() || undefined 
+    }),
   });
   if (!res.ok) {
-    throw new Error('Failed to report job');
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to report job');
   }
   return res.json();
 }

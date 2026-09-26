@@ -2,7 +2,7 @@ import { BrandLogo, LOGO_OPTIONS, type LogoConcept } from './BrandLogo';
 import { X, Check, Palette, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 
-export type ColorPalette = 'indigo' | 'emerald' | 'monochrome' | 'cyber' | 'classic-orange';
+export type ColorPalette = 'indigo' | 'emerald' | 'cyan' | 'violet' | 'monochrome' | 'cyber' | 'classic-orange';
 
 export const PALETTE_OPTIONS: {
   id: ColorPalette;
@@ -17,6 +17,20 @@ export const PALETTE_OPTIONS: {
     badge: 'Linear / Stripe',
     description: 'Crisp obsidian dark mode with glowing electric indigo accents',
     dotColor: '#6366f1',
+  },
+  {
+    id: 'cyan',
+    name: 'Electric Cyan',
+    badge: 'Cursor / Copilot',
+    description: 'High-tech luminous cyan on deep obsidian zinc',
+    dotColor: '#06b6d4',
+  },
+  {
+    id: 'violet',
+    name: 'Nordic Violet',
+    badge: 'Raycast / AI',
+    description: 'Deep futuristic violet on obsidian graphite',
+    dotColor: '#8b5cf6',
   },
   {
     id: 'emerald',
@@ -35,7 +49,7 @@ export const PALETTE_OPTIONS: {
   {
     id: 'cyber',
     name: 'Cyber Tangerine',
-    badge: 'Raycast / Coral',
+    badge: 'Coral / Modern Warm',
     description: 'Vibrant modern neon coral-orange on clean zinc (NOT muddy brown)',
     dotColor: '#ff6433',
   },

@@ -129,6 +129,36 @@
     --ring: 16 95% 58%;
   }
 
+  /* Palette: Electric Cyan (Cursor & Copilot style) */
+  [data-palette="cyan"] {
+    --primary: 189 94% 43%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 189 94% 43%;
+  }
+  .dark[data-palette="cyan"] {
+    --background: 240 10% 4%;
+    --card: 240 10% 6.5%;
+    --border: 240 6% 16%;
+    --primary: 189 95% 50%;
+    --primary-foreground: 240 10% 4%;
+    --ring: 189 95% 50%;
+  }
+
+  /* Palette: Nordic Violet (Raycast AI / Superhuman style) */
+  [data-palette="violet"] {
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 262 83% 58%;
+  }
+  .dark[data-palette="violet"] {
+    --background: 240 10% 4%;
+    --card: 240 10% 6.5%;
+    --border: 240 6% 16%;
+    --primary: 263 90% 66%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 263 90% 66%;
+  }
+
   /* Palette: Classic Orange (Original baseline) */
   [data-palette="classic-orange"] {
     --primary: 26 73% 51%;

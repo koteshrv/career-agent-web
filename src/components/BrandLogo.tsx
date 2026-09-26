@@ -1,4 +1,4 @@
-export type LogoConcept = 'wordmark' | 'prompt-arrow' | 'hexagon' | 'monogram';
+export type LogoConcept = 'wordmark' | 'prompt-arrow' | 'launch-vector' | 'target-crosshair' | 'hexagon' | 'monogram';
 
 export const LOGO_OPTIONS: { id: LogoConcept; name: string; description: string }[] = [
   {
@@ -7,18 +7,28 @@ export const LOGO_OPTIONS: { id: LogoConcept; name: string; description: string 
     description: 'Clean typographic brand mark with an active live AI pulse dot',
   },
   {
+    id: 'launch-vector',
+    name: '2. Stealth Launch Vector (↗)',
+    description: 'Minimalist supersonic dart / paper plane launching your career forward',
+  },
+  {
     id: 'prompt-arrow',
-    name: '2. Terminal Prompt & Vector (> ↗)',
+    name: '3. Terminal Prompt & Vector (> ↗)',
     description: 'Developer command prompt evolving into an upward career vector',
   },
   {
+    id: 'target-crosshair',
+    name: '4. Precision Job Crosshair',
+    description: 'Laser radar scanning & locking onto verified ATS job postings',
+  },
+  {
     id: 'hexagon',
-    name: '3. Interlocking Aperture / Hexagon',
+    name: '5. Interlocking Aperture / Hexagon',
     description: 'Precision autonomous radar lens (Linear & Ashby style)',
   },
   {
     id: 'monogram',
-    name: '4. Obsidian CA Badge',
+    name: '6. Obsidian CA Badge',
     description: 'Razor-sharp geometric monogram for favicon and app icons',
   },
 ];
@@ -26,12 +36,10 @@ export const LOGO_OPTIONS: { id: LogoConcept; name: string; description: string 
 export function BrandLogo({ concept = 'wordmark', className = 'h-6 w-6' }: { concept?: LogoConcept; className?: string }) {
   switch (concept) {
     case 'wordmark':
-      // Sleek Minimalist Badge with an embedded glowing pulse dot
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-foreground/90 dark:fill-card" />
           <rect width="24" height="24" rx="6.5" stroke="currentColor" strokeWidth="1.2" className="stroke-border/80" />
-          {/* Minimalist letter C and glowing agent core */}
           <path
             d="M14 8C13.2 7.3 12.2 7 11 7C8.2 7 6.5 9.2 6.5 12C6.5 14.8 8.2 17 11 17C12.2 17 13.2 16.7 14 16"
             stroke="currentColor"
@@ -43,8 +51,30 @@ export function BrandLogo({ concept = 'wordmark', className = 'h-6 w-6' }: { con
         </svg>
       );
 
+    case 'launch-vector':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-primary/10 border border-primary/20" />
+          {/* Origami Stealth Jet */}
+          <path
+            d="M5 19L19 5M19 5H10M19 5V14"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="stroke-primary"
+          />
+          <path
+            d="M5 19L11.5 12.5"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            className="stroke-muted-foreground"
+          />
+        </svg>
+      );
+
     case 'prompt-arrow':
-      // Developer Terminal Prompt > angling upward into an arrow
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-primary/10 border border-primary/20" />
@@ -67,8 +97,16 @@ export function BrandLogo({ concept = 'wordmark', className = 'h-6 w-6' }: { con
         </svg>
       );
 
+    case 'target-crosshair':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" className="stroke-primary/40" />
+          <path d="M12 2V6M12 18V22M2 12H6M18 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="stroke-primary" />
+          <circle cx="12" cy="12" r="3" className="fill-primary" />
+        </svg>
+      );
+
     case 'hexagon':
-      // Geometric Interlocking Aperture / Hexagon (Linear & Ashby style)
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <polygon
@@ -88,7 +126,6 @@ export function BrandLogo({ concept = 'wordmark', className = 'h-6 w-6' }: { con
       );
 
     case 'monogram':
-      // Crisp Obsidian CA Monogram
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
           <rect width="24" height="24" rx="6.5" className="fill-foreground text-background" />

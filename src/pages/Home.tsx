@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
 import { 
@@ -19,6 +19,7 @@ const MAX_SEARCH_DEPTH = 100; // API ceiling: offset + limit <= 100
 
 export function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -65,15 +66,24 @@ export function Home() {
     return `/v1/jobs?${params.toString()}`;
   };
 
-  const { data, size, setSize, error, mutate, isValidating } = useSWRInfinite<JobsResponse>(
+  const { data, size, setSize, error, mutate } = useSWRInfinite<JobsResponse>(
     getKey,
     fetcher,
-    { revalidateFirstPage: true }
+    {
+      revalidateFirstPage: true,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
   );
 
   const handleRetry = async () => {
-    setSize(1);
-    await mutate(undefined, { revalidate: true });
+    setIsRetrying(true);
+    try {
+      setSize(1);
+      await mutate(undefined, { revalidate: true });
+    } finally {
+      setIsRetrying(false);
+    }
   };
 
   const rawJobs = useMemo(() => {
@@ -189,11 +199,11 @@ export function Home() {
                 <div className="flex items-center justify-center gap-2.5">
                   <Button
                     onClick={handleRetry}
-                    disabled={isValidating}
+                    disabled={isRetrying}
                     className="h-9 px-4 text-xs font-semibold cursor-pointer gap-2"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isValidating ? 'animate-spin' : ''}`} />
-                    {isValidating ? 'Connecting...' : 'Try Again'}
+                    <RefreshCw className={`h-3.5 w-3.5 ${isRetrying ? 'animate-spin' : ''}`} />
+                    {isRetrying ? 'Connecting...' : 'Try Again'}
                   </Button>
                   {hasActiveFilters && (
                     <Button

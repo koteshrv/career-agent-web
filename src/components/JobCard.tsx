@@ -9,10 +9,14 @@ import { CompanyLogo } from './CompanyLogo';
 
 export function JobCard({ 
   job, 
+  isSelected,
+  onSelectJob,
   onSelectCompany,
   onSelectLocation,
 }: { 
   job: Job; 
+  isSelected?: boolean;
+  onSelectJob?: (job: Job) => void;
   onSelectCompany?: (company: string) => void;
   onSelectLocation?: (location: string) => void;
 }) {
@@ -21,7 +25,8 @@ export function JobCard({
   const [isReporting, setIsReporting] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
 
-  const handleReport = async () => {
+  const handleReport = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (reported || isReporting) return;
     setIsReporting(true);
     try {
@@ -66,17 +71,27 @@ export function JobCard({
 
   return (
     <>
-      <Card className="group relative shadow-xs hover:shadow-md transition-all p-5 min-w-0 bg-card border-border">
+      <Card 
+        onClick={() => onSelectJob?.(job)}
+        className={`group relative shadow-xs hover:shadow-md transition-all p-4 sm:p-5 min-w-0 bg-card border-border cursor-pointer ${
+          isSelected 
+            ? 'border-primary ring-2 ring-primary/30 bg-muted/20 shadow-sm' 
+            : 'hover:border-border/80'
+        }`}
+      >
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-lg leading-tight mb-2 text-foreground truncate">
+            <h3 className={`font-bold text-lg leading-tight mb-2 truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
               {job.title}
             </h3>
 
             <div className="flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground min-w-0 mb-3">
               <button
                 type="button"
-                onClick={() => onSelectCompany?.(job.company)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectCompany?.(job.company);
+                }}
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary hover:bg-secondary/80 text-foreground text-xs font-semibold transition-colors cursor-pointer shrink-0"
                 title={`Filter by ${job.company}`}
               >
@@ -87,13 +102,22 @@ export function JobCard({
               {job.location && (
                 <button
                   type="button"
-                  onClick={() => onSelectLocation?.(job.location!)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectLocation?.(job.location!);
+                  }}
                   className="flex items-center gap-1 text-xs hover:text-foreground transition-colors cursor-pointer shrink-0"
                   title="Filter by location"
                 >
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="truncate max-w-[160px] sm:max-w-[240px]">{job.location}</span>
                 </button>
+              )}
+
+              {job.country_code && (
+                <span className="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-semibold uppercase bg-muted text-muted-foreground border border-border/60 shrink-0">
+                  {job.country_code}
+                </span>
               )}
 
               {workplaceLabel && (
@@ -139,14 +163,21 @@ export function JobCard({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setShowConfirm(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowConfirm(true);
+              }}
               disabled={reported}
               title={reported ? "Reported" : "Report Spam/Dead Link"}
               className={`transition-colors h-9 w-9 ${reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'}`}
             >
               <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
             </Button>
-            <Button asChild className="gap-1.5 h-9 rounded-lg font-medium px-4 bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button 
+              asChild 
+              onClick={(e) => e.stopPropagation()}
+              className="gap-1.5 h-9 rounded-lg font-medium px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               <a href={job.apply_url || job.url} target="_blank" rel="noreferrer">
                 Apply
                 <ExternalLink className="h-3.5 w-3.5" />

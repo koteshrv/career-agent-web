@@ -151,7 +151,8 @@ paths:
           name: q
           schema:
             type: string
-          description: Search keywords matching job title or company name.
+            example: "java, python"
+          description: Search keywords matching job title, company, description, or AI skills/tech stack. Supports comma-separated terms (e.g. `java, python`) for multi-skill OR matching (up to 5 terms).
         - in: query
           name: company
           schema:
@@ -164,11 +165,12 @@ paths:
             enum: [remote, hybrid, onsite]
           description: Filter by workplace environment.
         - in: query
-          name: country_code
+          name: country
           schema:
             type: string
             maxLength: 2
-          description: ISO 3166-1 alpha-2 country code (e.g. US, IN, GB).
+            example: "IN"
+          description: Two-letter ISO 3166-1 alpha-2 country code (e.g. IN, US, GB, DE).
         - in: query
           name: ats_provider
           schema:
@@ -195,10 +197,10 @@ paths:
             type: integer
             minimum: 0
             default: 0
-          description: Pagination offset. Values >= 100 return empty results to prevent whole-database scraping.
+          description: Pagination offset. Hard search depth cap of 100 results total (offset + limit <= 100). Exceeding 100 returns HTTP 400.
       responses:
         '200':
-          description: Paginated job postings matching search criteria.
+          description: Paginated job postings matching search criteria. Returns lightweight job cards without heavy description payloads.
           content:
             application/json:
               schema:
@@ -220,6 +222,68 @@ paths:
                   has_more:
                     type: boolean
                     example: true
+        '400':
+          description: Search depth limit exceeded (maximum 100 results).
+
+  /v1/jobs/{id}:
+    get:
+      summary: Retrieve Single Job Detail
+      description: >
+        Fetches full details for a specific active job posting by UUID or 64-character SHA-256 fingerprint.
+        Includes the complete AI-cleaned Markdown job description, raw description, and structured skills/salary metadata.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Job UUID or 64-character SHA-256 fingerprint.
+          example: "3b22179f-d6e0-4a7f-be02-a7f220b5638a"
+      responses:
+        '200':
+          description: Complete job details returned successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  job:
+                    $ref: '#/components/schemas/JobDetail'
+        '400':
+          description: Invalid job ID format (expected UUID or 64-character fingerprint).
+        '404':
+          description: Job not found or no longer active.
+
+  /v1/countries:
+    get:
+      summary: Active Countries Facet
+      description: >
+        Returns distinct countries with their active, unflagged job counts.
+        Intended for frontends to populate dynamic country dropdowns and filter bars.
+        Cached at CDN edge for 30 minutes.
+      responses:
+        '200':
+          description: List of active countries ordered by job count descending.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: "public, max-age=1800"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  countries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CountryFacet'
 
   /v1/jobs/check:
     post:
@@ -274,7 +338,7 @@ paths:
       summary: Community Quality Report
       description: >
         Report an invalid posting (e.g. dead link, position filled, deceptive).
-        When 3 distinct client IP hashes report the same job, it is automatically quarantined.
+        When 2 distinct client IP hashes report the same job, it is automatically marked expired.
       requestBody:
         required: true
         content:
@@ -363,6 +427,93 @@ paths:
                     example: ok
         '400':
           description: Invalid node_id UUID.
+
+  /v1/telemetry/funnel:
+    post:
+      summary: Anonymous Applicant Funnel Telemetry
+      description: Ingests anonymous candidate pipeline stage transitions (Applied -> Interview, Rejected, Ghosted).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_fingerprint
+                - company_slug
+                - outcome
+                - applied_at
+              properties:
+                job_fingerprint:
+                  type: string
+                  pattern: '^[0-9a-f]{64}$'
+                  example: "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
+                company_slug:
+                  type: string
+                  example: "datadog"
+                outcome:
+                  type: string
+                  enum: [INTERVIEW, REJECTED, OFFER, GHOSTED]
+                  example: "INTERVIEW"
+                applied_at:
+                  type: string
+                  format: date-time
+                response_at:
+                  type: string
+                  format: date-time
+                days_to_response:
+                  type: number
+                  example: 4.5
+      responses:
+        '201':
+          description: Funnel telemetry recorded.
+        '400':
+          description: Missing required fields or invalid outcome.
+
+  /v1/intelligence/company/{slug}:
+    get:
+      summary: Get Company Intelligence
+      description: Returns aggregated hiring velocity, ghost scores, and ATS application friction tags.
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+          example: "datadog"
+      responses:
+        '200':
+          description: Company intelligence returned.
+        '404':
+          description: Company intelligence not found.
+
+  /v1/boards/discover:
+    post:
+      summary: Discovered ATS Career Board Ingestion
+      description: Ingests newly spotted ATS career board endpoints from browser extensions and scouts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ats_url
+                - provider
+              properties:
+                ats_url:
+                  type: string
+                  format: uri
+                  example: "https://jobs.ashbyhq.com/stealth-startup"
+                provider:
+                  type: string
+                  example: "ashby"
+      responses:
+        '202':
+          description: Discovered board queued for verification.
+        '400':
+          description: Invalid URL or provider.
+
 
 components:
   schemas:
@@ -507,6 +658,50 @@ components:
 
     JobSearchResult:
       type: object
+      description: Lightweight job card returned in search feeds and lists.
+      properties:
+        id:
+          type: string
+          format: uuid
+        company:
+          type: string
+        title:
+          type: string
+        location:
+          type: string
+          nullable: true
+        url:
+          type: string
+        apply_url:
+          type: string
+          nullable: true
+        ats_provider:
+          type: string
+        workplace_type:
+          type: string
+        country_code:
+          type: string
+          nullable: true
+        employment_type:
+          type: string
+        job_fingerprint:
+          type: string
+        verification_count:
+          type: integer
+        posted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        last_verified_at:
+          type: string
+          format: date-time
+
+    JobDetail:
+      type: object
+      description: Complete job posting record including full description and structured AI metadata.
       properties:
         id:
           type: string
@@ -538,6 +733,10 @@ components:
           type: string
           nullable: true
           description: AI-processed clean Markdown summary of the job description.
+        raw_description:
+          type: string
+          nullable: true
+          description: Raw upstream job description.
         structured_metadata:
           $ref: '#/components/schemas/StructuredMetadata'
         verification_count:
@@ -552,3 +751,20 @@ components:
         last_verified_at:
           type: string
           format: date-time
+
+    CountryFacet:
+      type: object
+      description: Aggregated country facet item with active job count.
+      properties:
+        code:
+          type: string
+          example: "IN"
+          description: Two-letter ISO 3166-1 alpha-2 country code.
+        name:
+          type: string
+          example: "India"
+          description: Standard English country name.
+        count:
+          type: integer
+          example: 20232
+          description: Total number of active, unflagged jobs in this country.

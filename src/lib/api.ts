@@ -11,6 +11,8 @@ export interface StructuredMetadata {
   salary_max?: number | null;
   currency?: string | null;
   location_restrictions?: string[];
+  clearance_required?: boolean | null;
+  visa_sponsorship?: boolean | null;
 }
 
 export interface Job {
@@ -24,10 +26,30 @@ export interface Job {
   workplace_type?: string;
   country_code?: string | null;
   employment_type?: string;
+  job_fingerprint?: string;
   cleaned_description?: string | null;
+  raw_description?: string | null;
   structured_metadata?: StructuredMetadata;
+  verification_count?: number;
   created_at: string;
   posted_at?: string | null;
+  last_verified_at?: string | null;
+}
+
+export interface CountryFacet {
+  code: string;
+  name: string;
+  count: number;
+}
+
+export interface CountriesResponse {
+  success: boolean;
+  countries: CountryFacet[];
+}
+
+export interface JobDetailResponse {
+  success: boolean;
+  job: Job;
 }
 
 export interface JobsResponse {

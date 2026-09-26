@@ -126,6 +126,18 @@ export function Home() {
     (size > 0 && data && typeof data[size - 1] === 'undefined');
   const isEmpty = !isLoadingInitialData && !error && jobs.length === 0;
 
+  // Suggest comma-separated query if space-separated search yielded 0 results
+  const commaSuggestedQuery = useMemo(() => {
+    if (!queryParam || queryParam.includes(',') || queryParam.includes(' AND ') || queryParam.includes(' OR ')) {
+      return null;
+    }
+    const terms = queryParam.trim().split(/\s+/).filter(Boolean);
+    if (terms.length > 1) {
+      return terms.join(', ');
+    }
+    return null;
+  }, [queryParam]);
+
   // Max depth stop condition: offset >= 80 or has_more === false
   const currentOffset = (size - 1) * PAGE_SIZE;
   const isSearchDepthLimit = currentOffset + PAGE_SIZE >= MAX_SEARCH_DEPTH;
@@ -219,7 +231,7 @@ export function Home() {
             )}
 
             {isEmpty && (
-              <div className="text-center py-20 px-4 border-2 border-dashed border-border rounded-2xl bg-card">
+              <div className="text-center py-16 px-4 border-2 border-dashed border-border rounded-2xl bg-card">
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-muted mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
@@ -227,10 +239,27 @@ export function Home() {
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-4">
                   Try adjusting or clearing your search filters to discover more opportunities.
                 </p>
+
+                {commaSuggestedQuery && (
+                  <div className="mb-5 p-3.5 bg-muted/60 border border-border/80 rounded-xl inline-flex flex-col items-center gap-2 max-w-md mx-auto">
+                    <span className="text-xs text-muted-foreground">Searching for jobs with any of these skills?</span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => updateFilters({ q: commaSuggestedQuery, job: null })}
+                      className="text-xs font-semibold cursor-pointer border border-border hover:bg-muted"
+                    >
+                      Try searching: <span className="font-bold text-primary ml-1">{commaSuggestedQuery}</span>
+                    </Button>
+                  </div>
+                )}
+
                 {hasActiveFilters && (
-                  <Button variant="outline" size="sm" onClick={clearAllFilters} className="text-xs cursor-pointer">
-                    Clear all filters
-                  </Button>
+                  <div className="flex justify-center">
+                    <Button variant="outline" size="sm" onClick={clearAllFilters} className="text-xs cursor-pointer">
+                      Clear all filters
+                    </Button>
+                  </div>
                 )}
               </div>
             )}

@@ -108,7 +108,7 @@ export function Header() {
 
   const countryOptions = useMemo(() => {
     return [
-      { value: '', label: 'All Countries' },
+      { value: '', label: 'All' },
       ...countries.map((c) => ({ value: c.code, label: c.name })),
     ];
   }, [countries]);
@@ -172,14 +172,14 @@ export function Header() {
   }, [countries, countryParam]);
 
   const workplaceOptions = [
-    { value: '', label: 'Workplace: Any' },
+    { value: '', label: 'Any' },
     { value: 'remote', label: 'Remote' },
     { value: 'hybrid', label: 'Hybrid' },
     { value: 'onsite', label: 'Onsite' },
   ];
 
   const dateOptions = [
-    { value: '', label: 'Date: Any time' },
+    { value: '', label: 'Any time' },
     { value: '24h', label: 'Past 24 hours' },
     { value: 'week', label: 'Past week' },
     { value: 'month', label: 'Past month' },
@@ -288,7 +288,7 @@ export function Header() {
                         updateFilters({ country: val || null });
                       }}
                       options={countryOptions}
-                      placeholder="All Countries"
+                      placeholder="All"
                       ariaLabel="Filter by country"
                       searchable
                       fullWidth
@@ -303,7 +303,7 @@ export function Header() {
                       value={workplaceParam}
                       onChange={(val) => updateFilters({ workplace_type: val || null })}
                       options={workplaceOptions}
-                      placeholder="Workplace: Any"
+                      placeholder="Any"
                       ariaLabel="Filter by workplace type"
                       fullWidth
                     />
@@ -317,7 +317,7 @@ export function Header() {
                       value={dateParam}
                       onChange={(val) => updateFilters({ date: val || null })}
                       options={dateOptions}
-                      placeholder="Date: Any time"
+                      placeholder="Any time"
                       ariaLabel="Filter by date posted"
                       fullWidth
                     />

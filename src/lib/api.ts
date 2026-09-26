@@ -1,4 +1,17 @@
-export const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL || '');
+export const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL || 'https://api.careeragent.fyi');
+
+export interface StructuredMetadata {
+  yoe_min?: number | null;
+  yoe_max?: number | null;
+  seniority?: string | null;
+  tech_stack?: string[];
+  required_skills?: string[];
+  remote_policy?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  currency?: string | null;
+  location_restrictions?: string[];
+}
 
 export interface Job {
   id: string;
@@ -6,24 +19,34 @@ export interface Job {
   title: string;
   location: string | null;
   url: string;
+  apply_url?: string | null;
+  ats_provider?: string;
+  workplace_type?: string;
+  country_code?: string | null;
+  employment_type?: string;
+  cleaned_description?: string | null;
+  structured_metadata?: StructuredMetadata;
   created_at: string;
+  posted_at?: string | null;
 }
 
 export interface JobsResponse {
   success: boolean;
   jobs: Job[];
+  limit: number;
+  offset: number;
   has_more: boolean;
 }
 
-export interface Company {
-  name: string;
-  company: string;
-  job_count: number;
-}
+export type CompanyItem = string | { company: string; job_count?: number; name?: string };
 
 export interface CompaniesResponse {
   success: boolean;
-  companies: Company[];
+  companies: CompanyItem[];
+  count?: number;
+  limit?: number;
+  offset?: number;
+  has_more?: boolean;
 }
 
 export const fetcher = async (url: string) => {
@@ -34,7 +57,7 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export async function reportJob(jobId: string, reason: string = 'Spam/Dead Link') {
+export async function reportJob(jobId: string, reason: string = 'dead_link') {
   const res = await fetch(`${API_BASE_URL}/v1/jobs/report`, {
     method: 'POST',
     headers: {

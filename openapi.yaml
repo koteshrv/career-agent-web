@@ -1,48 +1,534 @@
 openapi: 3.0.3
 info:
   title: Career Agent API
-  description: 'A public, crowdsourced job database powered by direct ATS API scraping.
-    No authentication required. Push scraped jobs from supported ATS providers and
-    pull jobs freely. URLs are validated against a strict whitelist of known ATS domains
-    to prevent spam.
+  description: >
+    The high-throughput, crowdsourced job intelligence backend for the CareerAgent ecosystem.
+    100% free and open public good. Powers the CareerAgent desktop app, Chrome Extension,
+    and distributed background seeder network.
 
-    '
-  version: 2.0.0
+    Features canonical SHA-256 fingerprinting, a separate community staging queue, strict anti-scraping
+    search depth ceilings, and taxonomy-based spam protection.
+  version: 2.1.0
 servers:
-- url: https://api.careeragent.fyi
-  description: Live community instance
-- url: http://localhost:3000
-  description: Local development server
+  - url: https://api.careeragent.fyi
+    description: Live production instance
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: API Root Information
+      description: Returns service metadata, documentation links, and operational status.
+      responses:
+        '200':
+          description: Service information returned successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Career Agent API
+                  version:
+                    type: string
+                    example: 2.1.0
+                  docs:
+                    type: string
+                    example: https://github.com/koteshrv/career-agent-api#readme
+                  repo:
+                    type: string
+                    example: https://github.com/koteshrv/career-agent-api
+                  health:
+                    type: string
+                    example: /health
+
+  /health:
+    get:
+      summary: Health & Connectivity Check
+      description: Verifies database connectivity and service availability.
+      responses:
+        '200':
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  db:
+                    type: string
+                    example: connected
+                  version:
+                    type: string
+                    example: 2.1.0
+                  timestamp:
+                    type: string
+                    format: date-time
+        '503':
+          description: Service unhealthy or database unreachable.
+
+  /v1/jobs:
+    post:
+      summary: Ingest Job Submissions (Staging Queue)
+      description: >
+        Community and scout ingestion endpoint for newly discovered job postings.
+        Accepts either a single job submission object or a batch `{ jobs: [...] }`.
+        Validates posting URLs against the approved ATS whitelist, computes canonical SHA-256 fingerprints,
+        and enqueues records into the separate `job_submissions` staging table (`status: pending`) for verification.
+      parameters:
+        - in: header
+          name: x-node-id
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Optional UUID identifying the submitting client or scout node.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/JobInput'
+                - $ref: '#/components/schemas/JobBatchInput'
+            example:
+              jobs:
+                - company: "Stripe"
+                  title: "Staff Software Engineer, Payments Infrastructure"
+                  url: "https://boards.greenhouse.io/stripe/jobs/5999123"
+                  location: "Remote, US"
+                  workplace_type: "remote"
+                  ats_provider: "greenhouse"
+                  raw_description: "Join Stripe Payments infrastructure team building high-availability systems..."
+                  cleaned_description: "# Staff Software Engineer, Payments\n\n## About the Role\nLead reliability and architecture across global payments systems..."
+                  structured_metadata:
+                    yoe_min: 7
+                    seniority: "Staff"
+                    tech_stack: ["Go", "Ruby", "TypeScript", "PostgreSQL"]
+                    remote_policy: "remote"
+                    salary_min: 195000
+                    salary_max: 260000
+                    currency: "USD"
+      responses:
+        '202':
+          description: Jobs accepted and enqueued into staging queue for verification.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Received and queued 1 job(s) in staging for verification.
+                  jobs_queued:
+                    type: integer
+                    example: 1
+                  invalid_skipped:
+                    type: integer
+                    example: 0
+                  job_fingerprint:
+                    type: string
+                    example: a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e
+        '400':
+          description: Missing required fields, invalid URL protocol, or unsupported domain.
+        '413':
+          description: Batch exceeds 5,000 jobs.
+
+    get:
+      summary: Search & Filter Active Jobs
+      description: >
+        Search and facet active jobs. Enforces an anti-cloning ceiling of depth 100 (`offset + limit <= 100`)
+        to prevent scrapers from dumping the crowdsourced database. Clamped to a maximum of 20 results per page.
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search keywords matching job title or company name.
+        - in: query
+          name: company
+          schema:
+            type: string
+          description: Exact or partial company name match.
+        - in: query
+          name: workplace_type
+          schema:
+            type: string
+            enum: [remote, hybrid, onsite]
+          description: Filter by workplace environment.
+        - in: query
+          name: country_code
+          schema:
+            type: string
+            maxLength: 2
+          description: ISO 3166-1 alpha-2 country code (e.g. US, IN, GB).
+        - in: query
+          name: ats_provider
+          schema:
+            type: string
+          description: Filter by ATS provider (e.g. greenhouse, lever, workday).
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [recent, random]
+            default: recent
+          description: Sort ordering.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 20
+          description: Results per page (hard maximum of 20).
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Pagination offset. Values >= 100 return empty results to prevent whole-database scraping.
+      responses:
+        '200':
+          description: Paginated job postings matching search criteria.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JobSearchResult'
+                  limit:
+                    type: integer
+                    example: 20
+                  offset:
+                    type: integer
+                    example: 0
+                  has_more:
+                    type: boolean
+                    example: true
+
+  /v1/jobs/check:
+    post:
+      summary: Bulk Job Fingerprint Lookup
+      description: >
+        Fast bulk lookup to verify existing jobs before performing expensive LLM extraction or web scraping.
+        Takes up to 1,000 SHA-256 fingerprints and partitions them into `indexed` postings and `missing_fingerprints`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fingerprints
+              properties:
+                fingerprints:
+                  type: array
+                  items:
+                    type: string
+                    pattern: '^[0-9a-f]{64}$'
+                  maxItems: 1000
+                  example:
+                    - "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
+                    - "0000000000000000000000000000000000000000000000000000000000000000"
+      responses:
+        '200':
+          description: Fingerprint status partitioned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  indexed:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/components/schemas/IndexedJob'
+                  missing_fingerprints:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Missing or empty fingerprints array.
+        '413':
+          description: Payload exceeds 1,000 fingerprints.
+
+  /v1/jobs/report:
+    post:
+      summary: Community Quality Report
+      description: >
+        Report an invalid posting (e.g. dead link, position filled, deceptive).
+        When 3 distinct client IP hashes report the same job, it is automatically quarantined.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+                - reason
+              properties:
+                job_id:
+                  type: string
+                  format: uuid
+                  example: "33333333-3333-4333-8333-333333333333"
+                reason:
+                  type: string
+                  enum: [dead_link, already_closed, fake_posting, misclassified, spam]
+                  example: "dead_link"
+                details:
+                  type: string
+                  maxLength: 512
+                  example: "Direct ATS page returns 404 position closed."
+      responses:
+        '200':
+          description: Report recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  job_flagged:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Report recorded successfully.
+        '400':
+          description: Missing or invalid job_id or unsupported reason.
+        '404':
+          description: Job ID not found.
+
+  /v1/telemetry/heartbeat:
+    post:
+      summary: Background Worker Telemetry Heartbeat
+      description: Node liveness and scrape telemetry beacon for background seeder containers.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - node_id
+              properties:
+                node_id:
+                  type: string
+                  format: uuid
+                app_type:
+                  type: string
+                  enum: [docker, cli, extension]
+                  example: docker
+                app_version:
+                  type: string
+                  example: "1.4.2"
+                os:
+                  type: string
+                  example: linux
+                arch:
+                  type: string
+                  example: aarch64
+                scrape_stats:
+                  type: object
+      responses:
+        '200':
+          description: Heartbeat recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '400':
+          description: Invalid node_id UUID.
+
+  /v1/companies:
+    get:
+      summary: List Tracked Companies
+      description: Returns list of distinct employers currently present in the active jobs pool.
+      responses:
+        '200':
+          description: Companies list returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  count:
+                    type: integer
+                    example: 127
+                  companies:
+                    type: array
+                    items:
+                      type: string
+
 components:
   schemas:
+    StructuredMetadata:
+      type: object
+      description: Factual pre-processed AI metadata extracted from job postings (max 16 KB).
+      properties:
+        yoe_min:
+          type: integer
+          minimum: 0
+          example: 3
+        yoe_max:
+          type: integer
+          minimum: 0
+          example: 6
+        seniority:
+          type: string
+          example: "Senior"
+        tech_stack:
+          type: array
+          items:
+            type: string
+          example: ["TypeScript", "Node.js", "PostgreSQL", "Docker"]
+        required_skills:
+          type: array
+          items:
+            type: string
+          example: ["Distributed Systems", "REST APIs", "CI/CD"]
+        remote_policy:
+          type: string
+          enum: [remote, hybrid, onsite]
+          example: "remote"
+        location_restrictions:
+          type: array
+          items:
+            type: string
+          example: ["US Only"]
+        clearance_required:
+          type: boolean
+          example: false
+        visa_sponsorship:
+          type: boolean
+          example: true
+        salary_min:
+          type: number
+          example: 150000
+        salary_max:
+          type: number
+          example: 190000
+        currency:
+          type: string
+          example: "USD"
+
     JobInput:
       type: object
       required:
-      - company
-      - title
-      - url
-      description: "A single job to push. `location` is optional. Entries with missing\
-        \ required fields, an invalid URL, or a URL not matching the supported ATS\
-        \ domain whitelist are silently skipped — the batch is never rejected\
-        \ unless every entry is invalid.\n"
+        - company
+        - title
+        - url
       properties:
         company:
           type: string
           maxLength: 512
-          example: Acme Corp
+          example: "Stripe"
         title:
           type: string
           maxLength: 512
-          example: Software Engineer
-        location:
-          type: string
-          maxLength: 512
-          example: Remote
+          example: "Staff Software Engineer"
         url:
           type: string
           maxLength: 2048
-          example: https://acmecorp.greenhouse.io/jobs/12345
-    JobOutput:
+          example: "https://boards.greenhouse.io/stripe/jobs/5999123"
+        location:
+          type: string
+          maxLength: 512
+          nullable: true
+          example: "Remote, US"
+        workplace_type:
+          type: string
+          enum: [remote, hybrid, onsite]
+          default: onsite
+          example: "remote"
+        ats_provider:
+          type: string
+          maxLength: 32
+          example: "greenhouse"
+        raw_description:
+          type: string
+          description: Full plaintext or markdown description (max 64 KB).
+        cleaned_description:
+          type: string
+          description: AI-processed clean Markdown summary of the job description (max 64 KB).
+        structured_metadata:
+          $ref: '#/components/schemas/StructuredMetadata'
+
+    JobBatchInput:
+      type: object
+      required:
+        - jobs
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobInput'
+          maxItems: 5000
+
+    IndexedJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        company:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+        apply_url:
+          type: string
+          nullable: true
+        job_fingerprint:
+          type: string
+        ats_provider:
+          type: string
+        workplace_type:
+          type: string
+        country_code:
+          type: string
+          nullable: true
+        employment_type:
+          type: string
+        structured_metadata:
+          $ref: '#/components/schemas/StructuredMetadata'
+        posted_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_verified_at:
+          type: string
+          format: date-time
+
+    JobSearchResult:
       type: object
       properties:
         id:
@@ -57,317 +543,35 @@ components:
           nullable: true
         url:
           type: string
+        apply_url:
+          type: string
+          nullable: true
+        ats_provider:
+          type: string
+        workplace_type:
+          type: string
+        country_code:
+          type: string
+          nullable: true
+        employment_type:
+          type: string
+        job_fingerprint:
+          type: string
+        cleaned_description:
+          type: string
+          nullable: true
+          description: AI-processed clean Markdown summary of the job description.
+        structured_metadata:
+          $ref: '#/components/schemas/StructuredMetadata'
+        verification_count:
+          type: integer
+        posted_at:
+          type: string
+          format: date-time
+          nullable: true
         created_at:
           type: string
           format: date-time
-paths:
-  /:
-    get:
-      summary: API Info
-      description: Basic API metadata and links. Not part of the versioned API surface.
-      responses:
-        '200':
-          description: API metadata
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    example: CareerAgent API
-                  version:
-                    type: string
-                    description: Deployed git commit hash or "unknown".
-                  docs:
-                    type: string
-                    example: https://github.com/koteshrv/career-agent-api/blob/main/API_REFERENCE.md
-                  repo:
-                    type: string
-                    example: https://github.com/koteshrv/career-agent-api
-                  health:
-                    type: string
-                    example: /health
-  /v1/jobs/report:
-    post:
-      summary: Report a Job
-      description: 'Community quality control. Flag a job as fake, dead, or spam.
-
-
-        Once **3 distinct IPs** report the same job it is automatically flagged and
-        withdrawn from the active pool.
-
-
-        Each IP may only report a given job once.
-
-        '
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - job_id
-              properties:
-                job_id:
-                  type: string
-                  format: uuid
-                  description: UUID of the job being reported.
-                reason:
-                  type: string
-                  maxLength: 512
-                  example: dead_link
-                  description: Optional freeform reason (e.g. dead_link, fake, spam).
-            example:
-              job_id: 550e8400-e29b-41d4-a716-446655440000
-              reason: dead_link
-      responses:
-        '200':
-          description: Report recorded
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  report_count:
-                    type: integer
-                    description: Number of distinct IPs that have reported this job
-                      so far.
-                    example: 1
-                  reports_needed_to_flag:
-                    type: integer
-                    description: How many more reports are needed before the job is
-                      flagged.
-                    example: 2
-                  job_flagged:
-                    type: boolean
-                    description: True if this report crossed the threshold and withdrew
-                      the job.
-                    example: false
-                  message:
-                    type: string
-                    description: Present when this IP has already reported the job.
-        '400':
-          description: Missing or invalid `job_id`, or malformed JSON body.
-        '404':
-          description: Job not found.
-        '409':
-          description: This IP has already reported this job.
-        '429':
-          description: "Too many requests — rate limited."
-  /health:
-    get:
-      summary: Health Check
-      description: Unauthenticated liveness probe. Also verifies the database connection.
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  database:
-                    type: string
-                    example: ok
-                  version:
-                    type: string
-                    description: Deployed git commit hash or "unknown".
-        '503':
-          description: Database is unreachable.
-  /v1/jobs:
-    post:
-      summary: Create Jobs
-      description: "Upload a batch of jobs scraped from ATS providers. No authentication\
-        \ required.\n\n**URL Validation:** Each job's `url` must match one of the\
-        \ supported ATS domains (e.g. `greenhouse.io`, `lever.co`, `myworkdayjobs.com`,\
-        \ `ashbyhq.com`). Entries failing this check are skipped and counted in `invalid_skipped`.\
-        \ If every entry in the batch is invalid, the request returns `400`.\n\n**Deduplication:**\
-        \ Duplicate URLs (already in the database) are silently ignored — they\
-        \ do not count as accepted or failed.\n\n**Batch size:** Maximum 5000 jobs\
-        \ per request.\n"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - jobs
-              properties:
-                jobs:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/JobInput'
-                  maxItems: 5000
-            example:
-              jobs:
-              - company: Acme Corp
-                title: Software Engineer
-                location: Remote
-                url: https://acmecorp.greenhouse.io/jobs/12345
-              - company: Globex
-                title: Backend Developer
-                location: New York, NY
-                url: https://jobs.lever.co/globex/abc123
-      responses:
-        '200':
-          description: Batch processed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Pushed 2 jobs.
-                  jobs_accepted:
-                    type: integer
-                    description: Unique new jobs actually stored from this batch.
-                    example: 2
-                  invalid_skipped:
-                    type: integer
-                    description: 'Entries skipped due to missing fields, invalid URL
-                      format, or a URL not matching the ATS whitelist.
-
-                      '
-                    example: 0
-                  failed:
-                    type: integer
-                    description: Entries that could not be inserted due to an unexpected
-                      database error.
-                    example: 0
-        '400':
-          description: All submitted jobs were invalid, or the request body is malformed.
-        '413':
-          description: "Payload too large — exceeds 5000 jobs per request."
-        '429':
-          description: "Too many requests — rate limited."
-    get:
-      summary: Search & Pull Jobs
-      description: Search for jobs, or pull random jobs by setting ?sort=random.
-      parameters:
-      - in: query
-        name: limit
-        schema:
-          type: integer
-          default: 50
-          minimum: 1
-          maximum: 5000
-        description: Number of jobs to return. Defaults to 50, maximum 5000.
-      - in: query
-        name: include_stale
-        schema:
+        last_verified_at:
           type: string
-          enum:
-          - 'true'
-        description: Pass `true` to include jobs older than 60 days.
-      - in: query
-        name: q
-        schema:
-          type: string
-        description: Keyword search across title and company.
-      - in: query
-        name: company
-        schema:
-          type: string
-        description: Filter by exact company name.
-      - in: query
-        name: sort
-        schema:
-          type: string
-          enum:
-          - recent
-          - random
-          default: recent
-        description: Sort order. Use "random" to get random jobs (the old pull behavior).
-      - in: query
-        name: offset
-        schema:
-          type: integer
-          default: 0
-          minimum: 0
-        description: Pagination offset.
-      responses:
-        '200':
-          description: Jobs retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  jobs:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/JobOutput'
-                  has_more:
-                    type: boolean
-                    description: 'True if at least one more unflagged job existed
-                      in the pool beyond this batch at query time.
-
-                      '
-                    example: true
-                  limit:
-                    type: integer
-                  offset:
-                    type: integer
-        '429':
-          description: "Too many requests — rate limited."
-  /v1/companies:
-    get:
-      summary: List Companies
-      description: List all companies with active jobs, sorted by job count.
-      parameters:
-      - in: query
-        name: q
-        schema:
-          type: string
-        description: Fuzzy search by company name.
-      - in: query
-        name: limit
-        schema:
-          type: integer
-          default: 100
-          minimum: 1
-          maximum: 500
-      - in: query
-        name: offset
-        schema:
-          type: integer
-          default: 0
-          minimum: 0
-      responses:
-        '200':
-          description: Companies retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  companies:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        company:
-                          type: string
-                        job_count:
-                          type: integer
-                  limit:
-                    type: integer
-                  offset:
-                    type: integer
-                  has_more:
-                    type: boolean
+          format: date-time

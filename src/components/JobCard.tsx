@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Flag, ExternalLink, AlertTriangle, Loader2 } from 'lucide-react';
+import { MapPin, Flag, ExternalLink, AlertTriangle, Loader2, Briefcase, GraduationCap } from 'lucide-react';
 import { reportJob } from '../lib/api';
 import type { Job } from '../lib/api';
 import { Card } from './ui/card';
@@ -7,7 +7,15 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { CompanyLogo } from './CompanyLogo';
 
-export function JobCard({ job }: { job: Job }) {
+export function JobCard({ 
+  job, 
+  onSelectCompany,
+  onSelectLocation,
+}: { 
+  job: Job; 
+  onSelectCompany?: (company: string) => void;
+  onSelectLocation?: (location: string) => void;
+}) {
   const [reported, setReported] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
@@ -20,7 +28,7 @@ export function JobCard({ job }: { job: Job }) {
       await reportJob(job.id);
       setReported(true);
       setReportSuccess(true);
-    } catch (e) {
+    } catch {
       alert('Failed to report job. Please try again.');
     } finally {
       setIsReporting(false);
@@ -31,53 +39,125 @@ export function JobCard({ job }: { job: Job }) {
     const date = new Date(dateStr);
     const diff = new Date().getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 3600 * 24));
-    return days === 0 ? 'Today' : `${days} d ago`;
+    return days <= 0 ? 'Today' : `${days} d ago`;
   };
+
+  const meta = job.structured_metadata;
+
+  let yoeText: string | null = null;
+  if (meta?.yoe_min !== undefined && meta?.yoe_min !== null) {
+    if (meta?.yoe_max !== undefined && meta?.yoe_max !== null && meta.yoe_max > meta.yoe_min) {
+      yoeText = `${meta.yoe_min}–${meta.yoe_max} yrs`;
+    } else {
+      yoeText = `${meta.yoe_min}+ yrs`;
+    }
+  }
+
+  const seniority = meta?.seniority 
+    ? meta.seniority.charAt(0).toUpperCase() + meta.seniority.slice(1).toLowerCase() 
+    : null;
+
+  const workplace = job.workplace_type || meta?.remote_policy;
+  const workplaceLabel = workplace
+    ? workplace.charAt(0).toUpperCase() + workplace.slice(1).toLowerCase()
+    : null;
+
+  const topTech = meta?.tech_stack?.slice(0, 3) || [];
 
   return (
     <>
-      <Card className="group relative shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 min-w-0">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-lg leading-tight mb-2 text-foreground truncate">
-            {job.title}
-          </h3>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground min-w-0">
-            <Badge variant="secondary" className="font-semibold flex items-center gap-1.5 overflow-hidden shrink-0 px-2">
-              <CompanyLogo name={job.company} className="w-4 h-4 min-w-[16px] rounded-sm shrink-0" />
-              <span className="truncate max-w-[120px] sm:max-w-none">{job.company}</span>
-            </Badge>
-            {job.location && (
-              <span className="flex items-center gap-1 shrink text-ellipsis overflow-hidden whitespace-nowrap max-w-[180px] sm:max-w-[300px] lg:max-w-[400px]">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{job.location}</span>
+      <Card className="group relative shadow-xs hover:shadow-md transition-all p-5 min-w-0 bg-card border-border">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-lg leading-tight mb-2 text-foreground truncate">
+              {job.title}
+            </h3>
+
+            <div className="flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground min-w-0 mb-3">
+              <button
+                type="button"
+                onClick={() => onSelectCompany?.(job.company)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary hover:bg-secondary/80 text-foreground text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                title={`Filter by ${job.company}`}
+              >
+                <CompanyLogo name={job.company} className="w-4 h-4 min-w-[16px] rounded-xs shrink-0" />
+                <span className="truncate max-w-[140px] sm:max-w-none">{job.company}</span>
+              </button>
+
+              {job.location && (
+                <button
+                  type="button"
+                  onClick={() => onSelectLocation?.(job.location!)}
+                  className="flex items-center gap-1 text-xs hover:text-foreground transition-colors cursor-pointer shrink-0"
+                  title="Filter by location"
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate max-w-[160px] sm:max-w-[240px]">{job.location}</span>
+                </button>
+              )}
+
+              {workplaceLabel && (
+                <Badge variant="outline" className="text-xs font-medium border-border/80 shrink-0">
+                  {workplaceLabel}
+                </Badge>
+              )}
+
+              {yoeText && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground shrink-0 bg-muted/60 px-2 py-0.5 rounded-md">
+                  <Briefcase className="h-3 w-3 shrink-0" />
+                  <span>{yoeText}</span>
+                </span>
+              )}
+
+              {seniority && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground shrink-0 bg-muted/60 px-2 py-0.5 rounded-md">
+                  <GraduationCap className="h-3 w-3 shrink-0" />
+                  <span>{seniority}</span>
+                </span>
+              )}
+
+              <span className="text-xs text-muted-foreground shrink-0 ml-auto sm:ml-0">
+                {getDaysAgo(job.posted_at || job.created_at)}
               </span>
+            </div>
+
+            {topTech.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                {topTech.map((tech) => (
+                  <span
+                    key={tech}
+                    className="inline-flex items-center px-2 py-0.5 rounded-xs text-[11px] font-mono font-medium bg-muted/50 text-muted-foreground border border-border/40"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
             )}
-            <span className="shrink-0">{getDaysAgo(job.created_at)}</span>
           </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowConfirm(true)}
-            disabled={reported}
-            title={reported ? "Reported" : "Report Spam/Dead Link"}
-            className={`transition-colors ${reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'}`}
-          >
-            <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
-          </Button>
-          <Button asChild className="gap-1.5">
-            <a href={job.url} target="_blank" rel="noreferrer">
-              Apply
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </Button>
+
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowConfirm(true)}
+              disabled={reported}
+              title={reported ? "Reported" : "Report Spam/Dead Link"}
+              className={`transition-colors h-9 w-9 ${reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'}`}
+            >
+              <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
+            </Button>
+            <Button asChild className="gap-1.5 h-9 rounded-lg font-medium px-4 bg-primary text-primary-foreground hover:bg-primary/90">
+              <a href={job.apply_url || job.url} target="_blank" rel="noreferrer">
+                Apply
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          </div>
         </div>
       </Card>
 
-      {/* Report Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
           <div className="fixed inset-0" onClick={() => { if (!isReporting) setShowConfirm(false); }} />
           <div className="relative bg-card border border-border shadow-lg rounded-xl max-w-sm w-full p-6">
             {!reportSuccess ? (
@@ -102,12 +182,16 @@ export function JobCard({ job }: { job: Job }) {
               </>
             ) : (
               <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Flag className="h-6 w-6 text-green-500 fill-current" />
+                <div className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-3">
+                  <Flag className="h-6 w-6 fill-current" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Job Reported</h3>
-                <p className="text-sm text-muted-foreground mb-6">Thank you for keeping the community safe!</p>
-                <Button className="w-full" onClick={() => setShowConfirm(false)}>Close</Button>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Thank you!</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Your report has been submitted for community verification.
+                </p>
+                <Button onClick={() => setShowConfirm(false)} className="w-full">
+                  Close
+                </Button>
               </div>
             )}
           </div>

@@ -364,29 +364,6 @@ paths:
         '400':
           description: Invalid node_id UUID.
 
-  /v1/companies:
-    get:
-      summary: List Tracked Companies
-      description: Returns list of distinct employers currently present in the active jobs pool.
-      responses:
-        '200':
-          description: Companies list returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  count:
-                    type: integer
-                    example: 127
-                  companies:
-                    type: array
-                    items:
-                      type: string
-
 components:
   schemas:
     StructuredMetadata:

@@ -24,13 +24,6 @@ export function Header() {
             >
               <Link to="/">Search Jobs</Link>
             </Button>
-            <Button
-              variant={location.pathname === '/companies' ? 'secondary' : 'ghost'}
-              asChild
-              className="text-sm font-medium"
-            >
-              <Link to="/companies">Companies</Link>
-            </Button>
           </nav>
         </div>
 

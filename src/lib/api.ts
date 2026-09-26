@@ -38,17 +38,6 @@ export interface JobsResponse {
   has_more: boolean;
 }
 
-export type CompanyItem = string | { company: string; job_count?: number; name?: string };
-
-export interface CompaniesResponse {
-  success: boolean;
-  companies: CompanyItem[];
-  count?: number;
-  limit?: number;
-  offset?: number;
-  has_more?: boolean;
-}
-
 export const fetcher = async (url: string) => {
   const res = await fetch(API_BASE_URL + url);
   if (!res.ok) {

@@ -139,7 +139,7 @@ export function Home() {
                 ? 'Past week'
                 : dateParam === 'month'
                 ? 'Past month'
-                : 'All recent postings'}
+                : 'Most recent'}
             </span>
           </div>
         </div>

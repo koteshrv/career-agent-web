@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
+import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
 
 export function Header() {
@@ -71,6 +72,27 @@ export function Header() {
   const countries = useMemo(() => {
     return countriesData?.countries || [];
   }, [countriesData]);
+
+  const countryOptions = useMemo(() => {
+    return [
+      { value: '', label: 'All Countries' },
+      ...countries.map((c) => ({ value: c.code, label: c.name })),
+    ];
+  }, [countries]);
+
+  const workplaceOptions = [
+    { value: '', label: 'Workplace: Any' },
+    { value: 'remote', label: 'Remote' },
+    { value: 'hybrid', label: 'Hybrid' },
+    { value: 'onsite', label: 'Onsite' },
+  ];
+
+  const dateOptions = [
+    { value: '', label: 'Date: Any time' },
+    { value: '24h', label: 'Past 24 hours' },
+    { value: 'week', label: 'Past week' },
+    { value: 'month', label: 'Past month' },
+  ];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background shadow-xs">
@@ -148,56 +170,37 @@ export function Header() {
 
         {/* Filter Strip directly under search */}
         <div className="flex flex-wrap items-center justify-between gap-2 py-2 border-t border-border/40 text-xs text-muted-foreground">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             {/* Country Select */}
-            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2.5 py-1 shadow-2xs hover:border-border transition-colors">
-              <Globe className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
-              <select
-                value={countryParam}
-                onChange={(e) => updateFilters({ country: e.target.value || null })}
-                aria-label="Filter by country"
-                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer dark:bg-card [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
-              >
-                <option value="">All Countries</option>
-                {countries.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <DropdownSelect
+              icon={<Globe className="h-3.5 w-3.5" />}
+              value={countryParam}
+              onChange={(val) => updateFilters({ country: val || null })}
+              options={countryOptions}
+              placeholder="All Countries"
+              ariaLabel="Filter by country"
+              searchable
+            />
 
             {/* Workplace Select */}
-            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2.5 py-1 shadow-2xs hover:border-border transition-colors">
-              <Briefcase className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
-              <select
-                value={workplaceParam}
-                onChange={(e) => updateFilters({ workplace_type: e.target.value || null })}
-                aria-label="Filter by workplace type"
-                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer dark:bg-card [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
-              >
-                <option value="">Workplace: Any</option>
-                <option value="remote">Remote</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="onsite">Onsite</option>
-              </select>
-            </div>
+            <DropdownSelect
+              icon={<Briefcase className="h-3.5 w-3.5" />}
+              value={workplaceParam}
+              onChange={(val) => updateFilters({ workplace_type: val || null })}
+              options={workplaceOptions}
+              placeholder="Workplace: Any"
+              ariaLabel="Filter by workplace type"
+            />
 
             {/* Date Posted Select (LinkedIn style) */}
-            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2.5 py-1 shadow-2xs hover:border-border transition-colors">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
-              <select
-                value={dateParam}
-                onChange={(e) => updateFilters({ date: e.target.value || null })}
-                aria-label="Filter by date posted"
-                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer dark:bg-card [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
-              >
-                <option value="">Date: Any time</option>
-                <option value="24h">Past 24 hours</option>
-                <option value="week">Past week</option>
-                <option value="month">Past month</option>
-              </select>
-            </div>
+            <DropdownSelect
+              icon={<Calendar className="h-3.5 w-3.5" />}
+              value={dateParam}
+              onChange={(val) => updateFilters({ date: val || null })}
+              options={dateOptions}
+              placeholder="Date: Any time"
+              ariaLabel="Filter by date posted"
+            />
           </div>
 
           {/* Reset Filters */}

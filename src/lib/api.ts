@@ -61,41 +61,12 @@ export interface JobsResponse {
   has_more: boolean;
 }
 
-export class ApiError extends Error {
-  status?: number;
-  statusText?: string;
-
-  constructor(message: string, status?: number, statusText?: string) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.statusText = statusText;
-  }
-}
-
 export const fetcher = async (url: string) => {
-  try {
-    const res = await fetch(API_BASE_URL + url);
-    if (!res.ok) {
-      let message = `Server responded with ${res.status} (${res.statusText || 'Error'})`;
-      try {
-        const errorData = await res.json();
-        if (errorData?.error || errorData?.message) {
-          message = errorData.error || errorData.message;
-        }
-      } catch {
-        // Response was not JSON
-      }
-      throw new ApiError(message, res.status, res.statusText);
-    }
-    return res.json();
-  } catch (err: unknown) {
-    if (err instanceof ApiError) throw err;
-    const msg = err instanceof Error ? err.message : 'Unable to reach the CareerAgent server';
-    throw new ApiError(
-      msg === 'Failed to fetch' ? 'Unable to connect to the jobs server. Please check your network or try again shortly.' : msg
-    );
+  const res = await fetch(API_BASE_URL + url);
+  if (!res.ok) {
+    throw new Error('An error occurred while fetching the data.');
   }
+  return res.json();
 };
 
 export type ReportReason = 'dead_link' | 'already_closed' | 'spam_or_scam' | 'incorrect_metadata';

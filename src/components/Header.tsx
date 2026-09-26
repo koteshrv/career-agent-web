@@ -27,9 +27,19 @@ export function Header() {
   const workplaceParam = searchParams.get('workplace_type') || '';
   const dateParam = searchParams.get('date') || '';
 
-  const [queryInput, setQueryInput] = useState(queryParam);
+  // Parse discrete keyword chips from comma-separated query parameter
+  const keywords = useMemo(() => {
+    if (!queryParam.trim()) return [];
+    return queryParam
+      .split(',')
+      .map((k) => k.trim())
+      .filter(Boolean);
+  }, [queryParam]);
+
+  const [queryInput, setQueryInput] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Close filter popover on click outside
   useEffect(() => {
@@ -64,10 +74,6 @@ export function Header() {
     setTheme(isDark ? 'light' : 'dark');
   };
 
-  useEffect(() => {
-    setQueryInput(queryParam);
-  }, [queryParam]);
-
   const updateFilters = (updates: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, val]) => {
@@ -80,14 +86,90 @@ export function Header() {
     setSearchParams(next);
   };
 
+  const applyKeywords = (nextKeywords: string[], remainingInput = '') => {
+    const combined = [...nextKeywords];
+    if (remainingInput.trim() && !combined.includes(remainingInput.trim())) {
+      combined.push(remainingInput.trim());
+    }
+    const qValue = combined.join(', ');
+    updateFilters({ q: qValue || null });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val.includes(',')) {
+      // Split on comma: commit preceding terms as individual keyword chips
+      const parts = val.split(',');
+      const newTerms = parts
+        .slice(0, -1)
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0 && !keywords.includes(t));
+      const remainder = parts[parts.length - 1];
+
+      const nextKeywords = [...keywords, ...newTerms];
+      applyKeywords(nextKeywords);
+      setQueryInput(remainder);
+    } else {
+      setQueryInput(val);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const trimmed = queryInput.trim();
+      if (trimmed) {
+        if (!keywords.includes(trimmed)) {
+          const next = [...keywords, trimmed];
+          applyKeywords(next);
+        }
+        setQueryInput('');
+      } else if (keywords.length > 0) {
+        applyKeywords(keywords);
+      }
+    } else if (e.key === 'Backspace' && !queryInput && keywords.length > 0) {
+      // Remove last keyword chip on backspace with empty text
+      const next = keywords.slice(0, -1);
+      applyKeywords(next);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData('text');
+    if (pasted && pasted.includes(',')) {
+      e.preventDefault();
+      const tokens = pasted
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0 && !keywords.includes(t));
+      const next = [...keywords, ...tokens];
+      applyKeywords(next);
+      setQueryInput('');
+    }
+  };
+
+  const removeKeyword = (indexToRemove: number) => {
+    const next = keywords.filter((_, idx) => idx !== indexToRemove);
+    applyKeywords(next);
+    inputRef.current?.focus();
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateFilters({ q: queryInput.trim() || null });
+    const trimmed = queryInput.trim();
+    if (trimmed && !keywords.includes(trimmed)) {
+      const next = [...keywords, trimmed];
+      applyKeywords(next);
+      setQueryInput('');
+    } else {
+      applyKeywords(keywords);
+    }
   };
 
   const clearQuery = () => {
     setQueryInput('');
     updateFilters({ q: null });
+    inputRef.current?.focus();
   };
 
   const clearAllFilters = () => {
@@ -196,25 +278,60 @@ export function Header() {
             <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
           </Link>
 
-          {/* Integrated Search Input */}
+          {/* Integrated Search Input with Tokenized Keyword Chips */}
           <form 
             onSubmit={handleSearchSubmit} 
-            className="flex-1 max-w-xl flex items-center bg-card border border-border rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary"
+            onClick={() => inputRef.current?.focus()}
+            className="flex-1 max-w-xl flex items-center bg-card border border-border rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary min-w-0 cursor-text"
           >
-            <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search title, company, or skills (e.g. Python, React)..."
-              value={queryInput}
-              onChange={(e) => setQueryInput(e.target.value)}
-              className="flex-1 bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-hidden py-0.5"
-            />
-            {queryInput && (
+            <Search className="h-4 w-4 text-muted-foreground mr-1.5 shrink-0" />
+
+            <div className="flex-1 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 py-0.5">
+              {keywords.map((kw, idx) => (
+                <span
+                  key={`${kw}-${idx}`}
+                  className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-md text-xs font-medium bg-secondary text-foreground border border-border shrink-0 select-none shadow-2xs animate-in fade-in zoom-in-95"
+                >
+                  <span className="truncate max-w-[140px] sm:max-w-[180px]">{kw}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeKeyword(idx);
+                    }}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded p-0.5 cursor-pointer"
+                    title={`Remove ${kw}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder={
+                  keywords.length === 0
+                    ? "Search title, company, or skills (e.g. Python, React)..."
+                    : "Add keyword..."
+                }
+                value={queryInput}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                className="min-w-[90px] flex-1 bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-hidden py-0.5"
+              />
+            </div>
+
+            {(keywords.length > 0 || queryInput) && (
               <button
                 type="button"
-                onClick={clearQuery}
-                className="text-muted-foreground hover:text-foreground p-0.5 mr-1 cursor-pointer"
-                title="Clear search"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearQuery();
+                }}
+                className="text-muted-foreground hover:text-foreground p-0.5 mr-1 cursor-pointer shrink-0"
+                title="Clear all keywords"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

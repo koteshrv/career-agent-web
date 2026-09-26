@@ -4,7 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   Search, 
   Loader2, 
-  Clock 
+  Clock,
+  AlertCircle,
+  RefreshCw,
+  WifiOff
 } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { JobDetailPane } from '../components/JobDetailPane';
@@ -63,7 +66,7 @@ export function Home() {
     return `/v1/jobs?${params.toString()}`;
   };
 
-  const { data, size, setSize, error } = useSWRInfinite<JobsResponse>(
+  const { data, size, setSize, error, mutate, isValidating } = useSWRInfinite<JobsResponse>(
     getKey,
     fetcher,
     { revalidateFirstPage: false }
@@ -107,7 +110,7 @@ export function Home() {
   const isLoadingMore =
     isLoadingInitialData ||
     (size > 0 && data && typeof data[size - 1] === 'undefined');
-  const isEmpty = !isLoadingInitialData && jobs.length === 0;
+  const isEmpty = !isLoadingInitialData && !error && jobs.length === 0;
 
   // Max depth stop condition: offset >= 80 or has_more === false
   const currentOffset = (size - 1) * PAGE_SIZE;
@@ -126,6 +129,11 @@ export function Home() {
           <div className="font-medium text-foreground">
             {isLoadingInitialData ? (
               'Searching active positions...'
+            ) : error ? (
+              <span className="text-destructive font-medium flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                Connection unavailable
+              </span>
             ) : (
               <>
                 Showing <span className="font-semibold text-foreground">{jobs.length}</span> {jobs.length === 1 ? 'position' : 'positions'}
@@ -159,11 +167,40 @@ export function Home() {
             )}
 
             {error && (
-              <div className="text-center py-16 px-4 border border-destructive/20 bg-destructive/5 rounded-2xl">
-                <h3 className="text-base font-semibold text-destructive mb-1">Failed to load jobs</h3>
-                <p className="text-xs text-destructive/80">
-                  The service might be temporarily unavailable. Please try again.
+              <div className="text-center py-12 sm:py-16 px-6 border border-destructive/25 bg-destructive/5 rounded-2xl">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10 text-destructive mb-3">
+                  <WifiOff className="h-6 w-6" />
+                </div>
+                <h3 className="text-base font-bold text-foreground mb-1.5">
+                  Unable to load positions
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto mb-3.5 leading-relaxed">
+                  We could not reach the CareerAgent job feed. The service might be temporarily unavailable or restarting.
                 </p>
+                {error.message && (
+                  <div className="mb-4 inline-block text-[11px] font-mono text-destructive bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-lg max-w-md truncate">
+                    {error.message}
+                  </div>
+                )}
+                <div className="flex items-center justify-center gap-2.5">
+                  <Button
+                    onClick={() => mutate()}
+                    disabled={isValidating}
+                    className="h-9 px-4 text-xs font-semibold cursor-pointer gap-2"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isValidating ? 'animate-spin' : ''}`} />
+                    {isValidating ? 'Connecting...' : 'Try Again'}
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="outline"
+                      onClick={clearAllFilters}
+                      className="h-9 px-4 text-xs cursor-pointer"
+                    >
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 

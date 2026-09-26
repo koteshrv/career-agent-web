@@ -32,6 +32,16 @@ export function formatRelativeTime(dateString?: string | null): string {
   return `${diffYears}y ago`;
 }
 
+export function formatShortDate(dateString?: string | null): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export function formatExactDate(dateString?: string | null): string {
   if (!dateString) return 'Recently';
   const date = new Date(dateString);

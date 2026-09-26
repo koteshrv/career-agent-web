@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { CompanyLogo } from './CompanyLogo';
 import { ReportModal } from './ReportModal';
+import { formatShortDate, formatFullDate } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
 
 export function JobCard({ 
@@ -123,6 +124,13 @@ export function JobCard({
                   <span>{seniority}</span>
                 </span>
               )}
+
+              <span 
+                className="text-xs text-muted-foreground shrink-0 ml-auto sm:ml-0 font-medium"
+                title={formatFullDate(job.posted_at || job.created_at)}
+              >
+                {formatShortDate(job.posted_at || job.created_at)}
+              </span>
             </div>
 
             {topTech.length > 0 && (

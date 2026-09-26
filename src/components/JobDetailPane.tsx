@@ -62,9 +62,8 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
   const destinationUrl = currentJob.apply_url || currentJob.url;
 
   const handleShare = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('job', currentJob.id);
-    navigator.clipboard.writeText(url.toString());
+    const cleanUrl = `${window.location.origin}/?job=${encodeURIComponent(currentJob.id)}`;
+    navigator.clipboard.writeText(cleanUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

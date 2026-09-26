@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
@@ -6,13 +6,11 @@ import {
   Search, 
   Loader2, 
   X, 
-  MapPin, 
-  Briefcase, 
-  Clock, 
-  RotateCcw, 
-  Sparkles, 
   Globe, 
-  Calendar
+  Briefcase, 
+  ArrowUpDown, 
+  RotateCcw, 
+  Sparkles 
 } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { JobDetailPane } from '../components/JobDetailPane';
@@ -21,57 +19,22 @@ import type { JobsResponse, CountriesResponse } from '../lib/api';
 import { Button } from '../components/ui/button';
 
 const PAGE_SIZE = 20;
-const MAX_SEARCH_DEPTH = 100;
-const MAX_QUERY_TERMS = 5;
-
-const WORKPLACE_OPTIONS = [
-  { label: 'All', value: '' },
-  { label: 'Remote', value: 'remote' },
-  { label: 'Hybrid', value: 'hybrid' },
-  { label: 'Onsite', value: 'onsite' },
-];
-
-const YOE_OPTIONS = [
-  { label: 'Any Exp', value: '' },
-  { label: '0–2 yrs', value: '0-2' },
-  { label: '3–5 yrs', value: '3-5' },
-  { label: '5+ yrs', value: '5+' },
-];
-
-const DATE_OPTIONS = [
-  { label: 'Any time', value: '' },
-  { label: 'Past 24h', value: '24h' },
-  { label: 'Past week', value: 'week' },
-  { label: 'Past month', value: 'month' },
-];
+const MAX_SEARCH_DEPTH = 100; // API ceiling: offset + limit <= 100
 
 export function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const queryParam = searchParams.get('q') || '';
-  const companyParam = searchParams.get('company') || '';
   const countryParam = searchParams.get('country') || '';
-  const locationParam = searchParams.get('location') || '';
   const workplaceParam = searchParams.get('workplace_type') || '';
-  const yoeParam = searchParams.get('yoe') || '';
-  const dateParam = searchParams.get('date') || '';
+  const sortParam = searchParams.get('sort') || '';
   const selectedJobId = searchParams.get('job') || '';
 
-  // Parse comma-separated multi-query terms
-  const currentQueryTerms = useMemo(() => {
-    return queryParam
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
-  }, [queryParam]);
-
-  const [queryTerms, setQueryTerms] = useState<string[]>(currentQueryTerms);
-  const [currentInput, setCurrentInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [queryInput, setQueryInput] = useState(queryParam);
 
   useEffect(() => {
-    setQueryTerms(currentQueryTerms);
-  }, [currentQueryTerms]);
+    setQueryInput(queryParam);
+  }, [queryParam]);
 
   const updateFilters = (updates: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams);
@@ -85,73 +48,41 @@ export function Home() {
     setSearchParams(next);
   };
 
-  const handleAddTerm = (term: string) => {
-    const cleaned = term.trim();
-    if (!cleaned) return;
-
-    // Handle comma-separated input in one go
-    const parts = cleaned
-      .split(',')
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-
-    const merged = Array.from(new Set([...queryTerms, ...parts])).slice(0, MAX_QUERY_TERMS);
-    setQueryTerms(merged);
-    setCurrentInput('');
-    updateFilters({ q: merged.join(', ') || null });
-  };
-
-  const handleRemoveTerm = (indexToRemove: number) => {
-    const updated = queryTerms.filter((_, idx) => idx !== indexToRemove);
-    setQueryTerms(updated);
-    updateFilters({ q: updated.join(', ') || null });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      handleAddTerm(currentInput);
-    } else if (e.key === 'Backspace' && !currentInput && queryTerms.length > 0) {
-      handleRemoveTerm(queryTerms.length - 1);
-    }
-  };
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentInput.trim()) {
-      handleAddTerm(currentInput);
-    } else {
-      updateFilters({ q: queryTerms.join(', ') || null });
-    }
+    updateFilters({ q: queryInput.trim() || null });
   };
 
   const clearQuery = () => {
-    setQueryTerms([]);
-    setCurrentInput('');
+    setQueryInput('');
     updateFilters({ q: null });
   };
 
   const clearAllFilters = () => {
-    setQueryTerms([]);
-    setCurrentInput('');
+    setQueryInput('');
     setSearchParams(new URLSearchParams());
   };
 
   const hasActiveFilters = Boolean(
-    queryParam || companyParam || countryParam || locationParam || workplaceParam || yoeParam || dateParam
+    queryParam || countryParam || workplaceParam || sortParam
   );
 
-  // Dynamic Country Facets from GET /v1/countries
+  // Fetch dynamic countries list from GET /v1/countries
   const { data: countriesData } = useSWR<CountriesResponse>('/v1/countries', fetcher, {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
 
+  const countries = useMemo(() => {
+    return countriesData?.countries || [];
+  }, [countriesData]);
+
+  // SWR Infinite key generator respecting limit=20 and depth limit of 100
   const getKey = (pageIndex: number, previousPageData: JobsResponse | null) => {
     if (previousPageData && !previousPageData.has_more) return null;
 
     const offset = pageIndex * PAGE_SIZE;
-    if (offset >= MAX_SEARCH_DEPTH) return null;
+    if (offset + PAGE_SIZE > MAX_SEARCH_DEPTH) return null;
 
     const params = new URLSearchParams({
       limit: PAGE_SIZE.toString(),
@@ -159,10 +90,9 @@ export function Home() {
     });
 
     if (queryParam) params.set('q', queryParam);
-    if (companyParam) params.set('company', companyParam);
     if (countryParam) params.set('country', countryParam);
-    if (locationParam) params.set('location', locationParam);
     if (workplaceParam) params.set('workplace_type', workplaceParam);
+    if (sortParam) params.set('sort', sortParam);
 
     return `/v1/jobs?${params.toString()}`;
   };
@@ -173,351 +103,179 @@ export function Home() {
     { revalidateFirstPage: false }
   );
 
-  const rawJobs = useMemo(() => {
+  const jobs = useMemo(() => {
     return data ? data.flatMap((page) => (page && Array.isArray(page.jobs) ? page.jobs : [])) : [];
   }, [data]);
 
-  // Available countries: from API endpoint or fallback to distinct country codes in rawJobs
-  const availableCountries = useMemo(() => {
-    if (countriesData?.countries && countriesData.countries.length > 0) {
-      return countriesData.countries;
-    }
-    const counts: Record<string, number> = {};
-    rawJobs.forEach((job) => {
-      if (job.country_code) {
-        const code = job.country_code.toUpperCase();
-        counts[code] = (counts[code] || 0) + 1;
-      }
-    });
-    return Object.entries(counts)
-      .map(([code, count]) => ({ code, name: code, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [countriesData, rawJobs]);
-
-  // Client-side refinements: YOE and Date Posted
-  const jobs = useMemo(() => {
-    return rawJobs.filter((job) => {
-      if (yoeParam) {
-        const yoeMin = job.structured_metadata?.yoe_min ?? 0;
-        if (yoeParam === '0-2' && yoeMin > 2) return false;
-        if (yoeParam === '3-5' && (yoeMin < 3 || yoeMin > 5)) return false;
-        if (yoeParam === '5+' && yoeMin < 5) return false;
-      }
-
-      if (dateParam) {
-        const dateStr = job.posted_at || job.created_at;
-        if (dateStr) {
-          const postTime = new Date(dateStr).getTime();
-          const now = Date.now();
-          const diffHours = (now - postTime) / (1000 * 60 * 60);
-          if (dateParam === '24h' && diffHours > 24) return false;
-          if (dateParam === 'week' && diffHours > 24 * 7) return false;
-          if (dateParam === 'month' && diffHours > 24 * 30) return false;
-        }
-      }
-
-      return true;
-    });
-  }, [rawJobs, yoeParam, dateParam]);
-
   const selectedJob = useMemo(() => {
     if (!selectedJobId) return null;
-    return jobs.find((j) => j.id === selectedJobId) || rawJobs.find((j) => j.id === selectedJobId) || null;
-  }, [jobs, rawJobs, selectedJobId]);
+    return jobs.find((j) => j.id === selectedJobId) || null;
+  }, [jobs, selectedJobId]);
 
   const isLoadingInitialData = !data && !error;
   const isLoadingMore =
     isLoadingInitialData ||
     (size > 0 && data && typeof data[size - 1] === 'undefined');
   const isEmpty = !isLoadingInitialData && jobs.length === 0;
+
+  // Max depth stop condition: offset >= 80 or has_more === false
+  const currentOffset = (size - 1) * PAGE_SIZE;
+  const isSearchDepthLimit = currentOffset + PAGE_SIZE >= MAX_SEARCH_DEPTH;
   const isReachingEnd =
     isEmpty ||
     (data && data[data.length - 1]?.has_more === false) ||
-    rawJobs.length >= MAX_SEARCH_DEPTH;
+    isSearchDepthLimit;
 
   return (
     <main className="w-full">
-      {/* Search Hero Section */}
-      <section className="pt-10 sm:pt-14 pb-8 px-4 sm:px-6 border-b border-border bg-background">
+      {/* Compact Search Header Section */}
+      <section className="pt-8 sm:pt-10 pb-6 px-4 sm:px-6 border-b border-border bg-background">
         <div className="container mx-auto max-w-5xl">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2.5">
+          <div className="text-center max-w-2xl mx-auto mb-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground mb-1.5">
               Find your next career move
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Discover crowdsourced jobs fetched directly from company ATS platforms.
             </p>
           </div>
 
-          {/* Unified Search & Multi-Query Command Card */}
-          <div className="max-w-3xl mx-auto bg-card border border-border rounded-xl shadow-xs overflow-hidden">
-            {/* Multi-Query Search Input Bar */}
-            <form 
-              onSubmit={handleSearchSubmit}
-              onClick={() => inputRef.current?.focus()}
-              className="flex flex-wrap items-center px-3.5 py-2 gap-1.5 min-h-[48px] cursor-text"
-            >
-              <Search className="h-4 w-4 text-muted-foreground shrink-0 ml-0.5 mr-1" />
-
-              {/* Active Search Term Chips */}
-              {queryTerms.map((term, index) => (
-                <span
-                  key={`${term}-${index}`}
-                  className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0"
-                >
-                  <span>{term}</span>
+          {/* Simple, Compact Search Bar (LinkedIn / Indeed / Naukri style) */}
+          <div className="max-w-4xl mx-auto bg-card border border-border rounded-xl p-2 sm:p-2.5 shadow-sm">
+            <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {/* Universal Keyword Input (single or comma-separated) */}
+              <div className="flex-1 flex items-center bg-background border border-border/80 rounded-lg px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary">
+                <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search title, company, or skills (e.g. Python, React)..."
+                  value={queryInput}
+                  onChange={(e) => setQueryInput(e.target.value)}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-hidden py-0.5"
+                />
+                {queryInput && (
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveTerm(index);
-                    }}
-                    className="hover:opacity-75 cursor-pointer text-primary"
-                    title={`Remove "${term}"`}
+                    onClick={clearQuery}
+                    className="text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer mr-1"
+                    title="Clear search"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
-                </span>
-              ))}
+                )}
+              </div>
 
-              {/* Inline Input Field */}
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder={
-                  queryTerms.length === 0
-                    ? "Job title, keywords, or company (press Enter or comma for multiple)..."
-                    : queryTerms.length < MAX_QUERY_TERMS
-                    ? "Add another keyword..."
-                    : "Max keywords reached"
-                }
-                value={currentInput}
-                disabled={queryTerms.length >= MAX_QUERY_TERMS}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1 min-w-[140px] bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 outline-hidden py-1 px-1"
-              />
-
-              {(queryTerms.length > 0 || currentInput) && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearQuery();
-                  }}
-                  className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer shrink-0"
-                  title="Clear all keywords"
+              {/* Country Select Dropdown */}
+              <div className="sm:w-44 shrink-0 flex items-center bg-background border border-border/80 rounded-lg px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-primary/40">
+                <Globe className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
+                <select
+                  value={countryParam}
+                  onChange={(e) => updateFilters({ country: e.target.value || null })}
+                  className="w-full bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer truncate"
                 >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+                  <option value="">All Countries</option>
+                  {countries.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              {/* Workplace Select Dropdown */}
+              <div className="sm:w-36 shrink-0 flex items-center bg-background border border-border/80 rounded-lg px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-primary/40">
+                <Briefcase className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
+                <select
+                  value={workplaceParam}
+                  onChange={(e) => updateFilters({ workplace_type: e.target.value || null })}
+                  className="w-full bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer"
+                >
+                  <option value="">Workplace: Any</option>
+                  <option value="remote">Remote</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="onsite">Onsite</option>
+                </select>
+              </div>
+
+              {/* Search Submit Button */}
               <Button
                 type="submit"
-                size="sm"
-                className="h-8 px-4 text-xs font-semibold shrink-0 cursor-pointer"
+                className="h-9 px-5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer shrink-0"
               >
                 Search
               </Button>
             </form>
 
-            {/* Filter Toolbar Strip */}
-            <div className="bg-muted/40 border-t border-border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                {/* Workplace Filter */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 shrink-0">
-                    <Briefcase className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Workplace</span>
-                  </span>
-                  <div className="inline-flex items-center rounded-lg border border-border/70 bg-background/60 p-0.5 shadow-2xs">
-                    {WORKPLACE_OPTIONS.map(({ label, value }) => {
-                      const isActive = (workplaceParam || '') === value;
-                      return (
-                        <button
-                          key={value || 'all-workplace'}
-                          type="button"
-                          onClick={() => updateFilters({ workplace_type: value || null })}
-                          className={`px-2 py-0.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-card text-foreground font-semibold shadow-xs border border-border/80'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Country Filter Dropdown (Dynamic from GET /v1/countries) */}
-                {availableCountries.length > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 shrink-0">
-                      <Globe className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Country</span>
-                    </span>
-                    <select
-                      value={countryParam}
-                      onChange={(e) => updateFilters({ country: e.target.value || null })}
-                      className="h-7 px-2 text-xs font-medium bg-background/80 border border-border/70 rounded-lg text-foreground outline-hidden cursor-pointer shadow-2xs"
-                    >
-                      <option value="">All Countries</option>
-                      {availableCountries.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.name} {c.count ? `(${c.count.toLocaleString()})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* Date Posted Filter (LinkedIn Style) */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 shrink-0">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Date</span>
-                  </span>
-                  <div className="inline-flex items-center rounded-lg border border-border/70 bg-background/60 p-0.5 shadow-2xs">
-                    {DATE_OPTIONS.map(({ label, value }) => {
-                      const isActive = (dateParam || '') === value;
-                      return (
-                        <button
-                          key={value || 'all-date'}
-                          type="button"
-                          onClick={() => updateFilters({ date: value || null })}
-                          className={`px-2 py-0.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-card text-foreground font-semibold shadow-xs border border-border/80'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Experience / YOE Filter */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 shrink-0">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Exp</span>
-                  </span>
-                  <div className="inline-flex items-center rounded-lg border border-border/70 bg-background/60 p-0.5 shadow-2xs">
-                    {YOE_OPTIONS.map(({ label, value }) => {
-                      const isActive = (yoeParam || '') === value;
-                      return (
-                        <button
-                          key={value || 'all-yoe'}
-                          type="button"
-                          onClick={() => updateFilters({ yoe: value || null })}
-                          className={`px-2 py-0.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-card text-foreground font-semibold shadow-xs border border-border/80'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+            {/* Compact Sub-Toolbar: Sort Ordering & Reset Filters */}
+            <div className="flex items-center justify-between px-1 pt-2 mt-2 border-t border-border/40 text-xs text-muted-foreground">
+              {/* Sort Toggle */}
+              <div className="flex items-center gap-1.5">
+                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                <span className="text-[11px] uppercase tracking-wider font-semibold mr-1">Sort:</span>
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ sort: null })}
+                  className={`px-2 py-0.5 rounded font-medium cursor-pointer transition-colors ${
+                    sortParam !== 'random'
+                      ? 'bg-secondary text-foreground font-semibold shadow-2xs'
+                      : 'hover:text-foreground'
+                  }`}
+                >
+                  Recent
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ sort: 'random' })}
+                  className={`px-2 py-0.5 rounded font-medium cursor-pointer transition-colors ${
+                    sortParam === 'random'
+                      ? 'bg-secondary text-foreground font-semibold shadow-2xs'
+                      : 'hover:text-foreground'
+                  }`}
+                >
+                  Shuffle
+                </button>
               </div>
 
-              {/* Reset All Filters Button */}
+              {/* Reset Filters */}
               {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted/80 transition-colors cursor-pointer shrink-0"
+                  className="flex items-center gap-1 hover:text-foreground font-medium cursor-pointer transition-colors"
                 >
                   <RotateCcw className="h-3 w-3" />
-                  <span>Clear all</span>
+                  <span>Reset filters</span>
                 </button>
               )}
             </div>
-
-            {/* Active Secondary Filters (Company / Location) */}
-            {(companyParam || locationParam || countryParam) && (
-              <div className="bg-muted/20 border-t border-border/60 px-3.5 py-2 flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-muted-foreground text-[11px] uppercase tracking-wider font-semibold mr-1">
-                  Active:
-                </span>
-                {companyParam && (
-                  <span className="inline-flex items-center gap-1.5 h-6 rounded-md px-2.5 text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-2xs">
-                    Company: <strong className="font-semibold">{companyParam}</strong>
-                    <button
-                      type="button"
-                      onClick={() => updateFilters({ company: null })}
-                      className="hover:opacity-75 text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Remove company filter"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                )}
-                {locationParam && (
-                  <span className="inline-flex items-center gap-1.5 h-6 rounded-md px-2.5 text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-2xs">
-                    <MapPin className="h-3 w-3 text-muted-foreground" />
-                    Location: <strong className="font-semibold">{locationParam}</strong>
-                    <button
-                      type="button"
-                      onClick={() => updateFilters({ location: null })}
-                      className="hover:opacity-75 text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Remove location filter"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                )}
-                {countryParam && (
-                  <span className="inline-flex items-center gap-1.5 h-6 rounded-md px-2.5 text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-2xs">
-                    <Globe className="h-3 w-3 text-muted-foreground" />
-                    Country: <strong className="font-semibold">{countryParam}</strong>
-                    <button
-                      type="button"
-                      onClick={() => updateFilters({ country: null })}
-                      className="hover:opacity-75 text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Remove country filter"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </section>
 
-      {/* Job Listings & LinkedIn-Style Split View Container */}
+      {/* Main Results Container (Expands to max-w-7xl when split-view is active) */}
       <div className={`container mx-auto transition-all duration-300 ${selectedJob ? 'max-w-7xl' : 'max-w-5xl'} px-4 sm:px-6 py-6`}>
         {/* Results Header Bar */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-border/60 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-border/60 text-xs text-muted-foreground">
           <div className="font-medium text-foreground">
             {isLoadingInitialData ? (
-              'Loading active positions...'
+              'Searching active positions...'
             ) : (
               <>
-                Showing <span className="font-semibold text-foreground">{jobs.length}</span> {jobs.length === 1 ? 'role' : 'roles'}
-                {hasActiveFilters && <span className="text-muted-foreground ml-1.5 font-normal">(filtered)</span>}
+                Showing <span className="font-semibold text-foreground">{jobs.length}</span> {jobs.length === 1 ? 'position' : 'positions'}
+                {hasActiveFilters && <span className="text-muted-foreground ml-1 font-normal">(filtered)</span>}
               </>
             )}
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span>Sorted by published date</span>
+            <span>{sortParam === 'random' ? 'Discovery shuffle' : 'Sorted by newest'}</span>
           </div>
         </div>
 
         {/* Master-Detail Split Pane Layout */}
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Left Column: Job Cards List */}
-          <div className={`${selectedJob ? 'w-full lg:w-5/12 xl:w-5/12' : 'w-full'} space-y-3.5 transition-all`}>
+          <div className={`${selectedJob ? 'w-full lg:w-5/12 xl:w-5/12' : 'w-full'} space-y-3 transition-all`}>
             {isLoadingInitialData && (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -557,14 +315,14 @@ export function Home() {
                 job={job}
                 isSelected={selectedJob?.id === job.id}
                 onSelectJob={(clickedJob) => updateFilters({ job: clickedJob.id })}
-                onSelectCompany={(company: string) => updateFilters({ company, job: null })}
-                onSelectLocation={(location: string) => updateFilters({ location, job: null })}
+                onSelectCompany={(company: string) => updateFilters({ q: company, job: null })}
+                onSelectLocation={(location: string) => updateFilters({ q: location, job: null })}
               />
             ))}
 
-            {/* Load More Button */}
+            {/* Pagination / Load More */}
             {!isLoadingInitialData && !isReachingEnd && (
-              <div className="pt-6 pb-12 flex justify-center">
+              <div className="pt-5 pb-10 flex justify-center">
                 <Button
                   onClick={() => setSize(size + 1)}
                   disabled={isLoadingMore}
@@ -583,10 +341,16 @@ export function Home() {
               </div>
             )}
 
-            {isReachingEnd && !isEmpty && !isLoadingInitialData && (
-              <p className="text-center text-xs text-muted-foreground py-8">
-                You've reached the end of active listings matching this query.
-              </p>
+            {/* Depth ceiling limit prompt */}
+            {isSearchDepthLimit && !isEmpty && !isLoadingInitialData && (
+              <div className="text-center py-6 px-4 bg-muted/40 border border-border rounded-xl">
+                <p className="text-xs text-foreground font-medium mb-1">
+                  Search depth limit reached (100 results).
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Please refine your keyword or country search terms to see additional postings.
+                </p>
+              </div>
             )}
           </div>
 
@@ -596,14 +360,14 @@ export function Home() {
               <JobDetailPane
                 job={selectedJob}
                 onClose={() => updateFilters({ job: null })}
-                onSelectCompany={(company) => updateFilters({ company, job: null })}
-                onSelectLocation={(location) => updateFilters({ location, job: null })}
+                onSelectCompany={(company) => updateFilters({ q: company, job: null })}
+                onSelectLocation={(location) => updateFilters({ q: location, job: null })}
               />
             </div>
           )}
         </div>
 
-        {/* Mobile / Tablet Drawer (Screen < 1024px) */}
+        {/* Mobile / Tablet Sheet Drawer (Screen < 1024px) */}
         {selectedJob && (
           <div className="fixed inset-0 z-50 lg:hidden bg-background/80 backdrop-blur-xs flex flex-col justify-end">
             <div className="fixed inset-0" onClick={() => updateFilters({ job: null })} />
@@ -611,8 +375,8 @@ export function Home() {
               <JobDetailPane
                 job={selectedJob}
                 onClose={() => updateFilters({ job: null })}
-                onSelectCompany={(company) => updateFilters({ company, job: null })}
-                onSelectLocation={(location) => updateFilters({ location, job: null })}
+                onSelectCompany={(company) => updateFilters({ q: company, job: null })}
+                onSelectLocation={(location) => updateFilters({ q: location, job: null })}
               />
             </div>
           </div>

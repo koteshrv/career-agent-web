@@ -126,6 +126,12 @@ export function JobCard({
                 </Badge>
               )}
 
+              {job.employment_type && (
+                <Badge variant="secondary" className="text-xs font-medium capitalize shrink-0">
+                  {job.employment_type.replace('_', '-')}
+                </Badge>
+              )}
+
               {yoeText && (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground shrink-0 bg-muted/60 px-2 py-0.5 rounded-md">
                   <Briefcase className="h-3 w-3 shrink-0" />

@@ -114,16 +114,18 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
               <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
             </Button>
 
-            {/* Close Pane */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
-              title="Close details"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Close Pane (Mobile Sheet Drawer only) */}
+            {onClose && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer lg:hidden"
+                title="Close details"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 

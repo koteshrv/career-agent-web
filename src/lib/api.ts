@@ -68,7 +68,7 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export type ReportReason = 'dead_link' | 'already_closed' | 'fake_posting' | 'misclassified' | 'spam';
+export type ReportReason = 'dead_link' | 'already_closed' | 'spam_or_scam' | 'incorrect_metadata';
 
 export async function reportJob(jobId: string, reason: ReportReason = 'dead_link', details?: string) {
   const res = await fetch(`${API_BASE_URL}/v1/jobs/report`, {

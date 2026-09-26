@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
 import { 
@@ -17,7 +17,6 @@ const MAX_SEARCH_DEPTH = 100; // API ceiling: offset + limit <= 100
 
 export function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isSideviewDismissed, setIsSideviewDismissed] = useState(false);
 
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -100,10 +99,9 @@ export function Home() {
     if (selectedJobId) {
       return jobs.find((j) => j.id === selectedJobId) || null;
     }
-    if (isSideviewDismissed) return null;
-    // Default to first job on load (LinkedIn style)
+    // Permanent constant sideview (LinkedIn style)
     return jobs.length > 0 ? jobs[0] : null;
-  }, [jobs, selectedJobId, isSideviewDismissed]);
+  }, [jobs, selectedJobId]);
 
   const isLoadingInitialData = !data && !error;
   const isLoadingMore =
@@ -191,10 +189,7 @@ export function Home() {
                 key={job.id}
                 job={job}
                 isSelected={selectedJob?.id === job.id}
-                onSelectJob={(clickedJob) => {
-                  setIsSideviewDismissed(false);
-                  updateFilters({ job: clickedJob.id });
-                }}
+                onSelectJob={(clickedJob) => updateFilters({ job: clickedJob.id })}
                 onSelectCompany={(company: string) => updateFilters({ q: company, job: null })}
                 onSelectLocation={(location: string) => updateFilters({ q: location, job: null })}
               />
@@ -234,15 +229,12 @@ export function Home() {
             )}
           </div>
 
-          {/* Right Column (Desktop): Independently Scrollable Job Detail Pane */}
+          {/* Right Column (Desktop): Constant Split View Job Detail Pane */}
           {selectedJob && (
             <div className="hidden lg:block lg:w-7/12 xl:w-7/12 h-full overflow-hidden">
               <JobDetailPane
                 job={selectedJob}
-                onClose={() => {
-                  setIsSideviewDismissed(true);
-                  updateFilters({ job: null });
-                }}
+                onClose={() => updateFilters({ job: null })}
                 onSelectCompany={(company) => updateFilters({ q: company, job: null })}
                 onSelectLocation={(location) => updateFilters({ q: location, job: null })}
               />
@@ -257,10 +249,7 @@ export function Home() {
             <div className="relative w-full h-[92vh] bg-card border-t border-border rounded-t-2xl shadow-2xl overflow-hidden flex flex-col">
               <JobDetailPane
                 job={selectedJob}
-                onClose={() => {
-                  setIsSideviewDismissed(true);
-                  updateFilters({ job: null });
-                }}
+                onClose={() => updateFilters({ job: null })}
                 onSelectCompany={(company) => updateFilters({ q: company, job: null })}
                 onSelectLocation={(location) => updateFilters({ q: location, job: null })}
               />

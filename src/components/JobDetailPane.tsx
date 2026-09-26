@@ -21,7 +21,7 @@ import { CompanyLogo } from './CompanyLogo';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ReportModal } from './ReportModal';
-import { formatRelativeTime, formatFullDate } from '../lib/utils';
+import { formatExactDate, formatRelativeTime, formatFullDate } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
 
 interface JobDetailPaneProps {
@@ -77,7 +77,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
             </span>
             <span>•</span>
             <span title={formatFullDate(currentJob.posted_at || currentJob.created_at)}>
-              Posted {formatRelativeTime(currentJob.posted_at || currentJob.created_at)}
+              Posted {formatExactDate(currentJob.posted_at || currentJob.created_at)} ({formatRelativeTime(currentJob.posted_at || currentJob.created_at)})
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -125,39 +125,54 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-6 space-y-6">
           {/* Job Identity Section */}
           <div className="space-y-4">
-            <div className="flex items-start gap-3.5">
-              <CompanyLogo name={currentJob.company} className="w-12 h-12 rounded-lg shrink-0 border border-border" />
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
-                  {currentJob.title}
-                </h2>
-                <div className="flex flex-wrap items-center gap-2 mt-1.5 text-sm">
-                  <button
-                    type="button"
-                    onClick={() => onSelectCompany?.(currentJob.company)}
-                    className="font-medium text-foreground hover:underline cursor-pointer"
-                  >
-                    {currentJob.company}
-                  </button>
-                  {currentJob.location && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <button
-                        type="button"
-                        onClick={() => onSelectLocation?.(currentJob.location!)}
-                        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 cursor-pointer"
-                      >
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span>{currentJob.location}</span>
-                      </button>
-                    </>
-                  )}
-                  {currentJob.country_code && (
-                    <Badge variant="outline" className="text-[11px] font-semibold uppercase px-1.5 py-0 border-border/70">
-                      {currentJob.country_code}
-                    </Badge>
-                  )}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                <CompanyLogo name={currentJob.company} className="w-12 h-12 rounded-lg shrink-0 border border-border" />
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
+                    {currentJob.title}
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5 text-sm">
+                    <button
+                      type="button"
+                      onClick={() => onSelectCompany?.(currentJob.company)}
+                      className="font-medium text-foreground hover:underline cursor-pointer"
+                    >
+                      {currentJob.company}
+                    </button>
+                    {currentJob.location && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <button
+                          type="button"
+                          onClick={() => onSelectLocation?.(currentJob.location!)}
+                          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span>{currentJob.location}</span>
+                        </button>
+                      </>
+                    )}
+                    {currentJob.country_code && (
+                      <Badge variant="outline" className="text-[11px] font-semibold uppercase px-1.5 py-0 border-border/70">
+                        {currentJob.country_code}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              {/* Call to Action Button on the Right */}
+              <div className="shrink-0 flex items-center gap-2">
+                <Button
+                  asChild
+                  className="h-10 px-5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer whitespace-nowrap"
+                >
+                  <a href={destinationUrl} target="_blank" rel="noopener noreferrer">
+                    Apply Directly
+                    <ExternalLink className="h-4 w-4 ml-1.5" />
+                  </a>
+                </Button>
               </div>
             </div>
 
@@ -183,24 +198,6 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                 <Badge variant="outline" className="text-xs text-muted-foreground font-normal border-border/60 capitalize">
                   via {currentJob.ats_provider}
                 </Badge>
-              )}
-            </div>
-
-            {/* Call to Action Button */}
-            <div className="pt-1 flex items-center gap-3">
-              <Button
-                asChild
-                className="h-10 px-6 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
-              >
-                <a href={destinationUrl} target="_blank" rel="noopener noreferrer">
-                  Apply Directly
-                  <ExternalLink className="h-4 w-4 ml-2" />
-                </a>
-              </Button>
-              {copied && (
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                  Canonical link copied!
-                </span>
               )}
             </div>
           </div>

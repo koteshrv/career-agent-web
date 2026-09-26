@@ -6,7 +6,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { CompanyLogo } from './CompanyLogo';
 import { ReportModal } from './ReportModal';
-import { formatRelativeTime, formatFullDate } from '../lib/utils';
+import { formatExactDate, formatFullDate } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
 
 export function JobCard({ 
@@ -126,10 +126,10 @@ export function JobCard({
               )}
 
               <span 
-                className="text-xs text-muted-foreground shrink-0 ml-auto sm:ml-0"
+                className="text-xs text-muted-foreground shrink-0 ml-auto sm:ml-0 font-medium"
                 title={formatFullDate(job.posted_at || job.created_at)}
               >
-                {formatRelativeTime(job.posted_at || job.created_at)}
+                {formatExactDate(job.posted_at || job.created_at)}
               </span>
             </div>
 

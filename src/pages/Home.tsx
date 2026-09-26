@@ -6,8 +6,7 @@ import {
   Loader2, 
   Clock,
   AlertCircle,
-  RefreshCw,
-  WifiOff
+  RefreshCw
 } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { JobDetailPane } from '../components/JobDetailPane';
@@ -69,8 +68,13 @@ export function Home() {
   const { data, size, setSize, error, mutate, isValidating } = useSWRInfinite<JobsResponse>(
     getKey,
     fetcher,
-    { revalidateFirstPage: false }
+    { revalidateFirstPage: true }
   );
+
+  const handleRetry = async () => {
+    setSize(1);
+    await mutate(undefined, { revalidate: true });
+  };
 
   const rawJobs = useMemo(() => {
     return data ? data.flatMap((page) => (page && Array.isArray(page.jobs) ? page.jobs : [])) : [];
@@ -167,9 +171,9 @@ export function Home() {
             )}
 
             {error && (
-              <div className="text-center py-12 sm:py-16 px-6 border border-destructive/25 bg-destructive/5 rounded-2xl">
+              <div className="text-center py-12 sm:py-16 px-6 border border-border bg-card rounded-2xl shadow-2xs">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10 text-destructive mb-3">
-                  <WifiOff className="h-6 w-6" />
+                  <AlertCircle className="h-6 w-6" />
                 </div>
                 <h3 className="text-base font-bold text-foreground mb-1.5">
                   Unable to load positions
@@ -178,13 +182,13 @@ export function Home() {
                   We could not reach the CareerAgent job feed. The service might be temporarily unavailable or restarting.
                 </p>
                 {error.message && (
-                  <div className="mb-4 inline-block text-[11px] font-mono text-destructive bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-lg max-w-md truncate">
+                  <div className="mb-4 inline-block text-xs text-muted-foreground bg-muted/60 border border-border px-3 py-1.5 rounded-lg max-w-md truncate">
                     {error.message}
                   </div>
                 )}
                 <div className="flex items-center justify-center gap-2.5">
                   <Button
-                    onClick={() => mutate()}
+                    onClick={handleRetry}
                     disabled={isValidating}
                     className="h-9 px-4 text-xs font-semibold cursor-pointer gap-2"
                   >
@@ -233,7 +237,7 @@ export function Home() {
             ))}
 
             {/* Pagination / Load More */}
-            {!isLoadingInitialData && !isReachingEnd && (
+            {!isLoadingInitialData && !error && !isReachingEnd && jobs.length > 0 && (
               <div className="pt-4 pb-8 flex justify-center">
                 <Button
                   onClick={() => setSize(size + 1)}

@@ -36,32 +36,106 @@
 }
 
 @layer base {
-  :root {
+  /* Default: Electric Indigo (Linear / Stripe style) */
+  :root, [data-palette="indigo"] {
     color-scheme: light;
-    --background: 240 5% 96%;
-    --foreground: 30 20% 12%;
-    --card: 40 20% 100%;
-    --card-foreground: 30 20% 12%;
-    --popover: 40 20% 100%;
-    --popover-foreground: 30 20% 12%;
-    --primary: 26 73% 51%;
-    --primary-foreground: 40 20% 98%;
+    --background: 240 5% 97%;
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 92%;
-    --secondary-foreground: 30 20% 18%;
-    --muted: 40 10% 92%;
-    --muted-foreground: 30 10% 45%;
-    --accent: 40 10% 89%;
-    --accent-foreground: 30 20% 18%;
-    --destructive: 6 70% 45%;
-    --destructive-foreground: 40 20% 98%;
-    --border: 40 10% 93%;
-    --input: 40 10% 93%;
-    --ring: 26 73% 51%;
+    --secondary-foreground: 240 10% 15%;
+    --muted: 240 5% 92%;
+    --muted-foreground: 240 5% 45%;
+    --accent: 240 5% 90%;
+    --accent-foreground: 240 10% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 243 75% 59%;
     --radius: 0.5rem;
   }
 
-  .dark {
+  .dark, .dark[data-palette="indigo"] {
     color-scheme: dark;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6.5%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6.5%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 238 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 6% 12%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 6% 16%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 16%;
+    --input: 240 6% 16%;
+    --ring: 238 84% 67%;
+  }
+
+  /* Palette: Emerald Mint (Hired / Growth style) */
+  [data-palette="emerald"] {
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 160 84% 39%;
+  }
+  .dark[data-palette="emerald"] {
+    --background: 160 10% 4%;
+    --card: 160 10% 6.5%;
+    --border: 160 6% 16%;
+    --primary: 158 75% 45%;
+    --primary-foreground: 160 80% 5%;
+    --ring: 158 75% 45%;
+  }
+
+  /* Palette: Obsidian Monochrome (Vercel / Resend style) */
+  [data-palette="monochrome"] {
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 0 0% 20%;
+  }
+  .dark[data-palette="monochrome"] {
+    --background: 0 0% 2%;
+    --card: 0 0% 5.5%;
+    --border: 0 0% 16%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --ring: 0 0% 80%;
+  }
+
+  /* Palette: Cyber Tangerine / Coral (Modern Raycast warm, NOT muddy) */
+  [data-palette="cyber"] {
+    --primary: 16 90% 52%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 16 90% 52%;
+  }
+  .dark[data-palette="cyber"] {
+    --background: 240 10% 4%;
+    --card: 240 10% 6.5%;
+    --border: 240 6% 16%;
+    --primary: 16 95% 58%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 16 95% 58%;
+  }
+
+  /* Palette: Classic Orange (Original baseline) */
+  [data-palette="classic-orange"] {
+    --primary: 26 73% 51%;
+    --primary-foreground: 40 20% 98%;
+    --ring: 26 73% 51%;
+  }
+  .dark[data-palette="classic-orange"] {
     --background: 30 8% 7%;
     --foreground: 40 15% 92%;
     --card: 30 8% 9.5%;

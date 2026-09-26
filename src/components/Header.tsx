@@ -9,14 +9,15 @@ import {
   Globe, 
   Briefcase, 
   Calendar,
-  RotateCcw 
+  RotateCcw,
+  Palette
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
 import { BrandLogo, type LogoConcept } from './BrandLogo';
-import { LogoPreviewModal } from './LogoPreviewModal';
+import { ThemeAndLogoModal, type ColorPalette } from './ThemeAndLogoModal';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -29,13 +30,26 @@ export function Header() {
 
   const [queryInput, setQueryInput] = useState(queryParam);
   const [logoConcept, setLogoConcept] = useState<LogoConcept>(() => {
-    return (localStorage.getItem('careeragent_logo_concept') as LogoConcept) || 'northstar';
+    return (localStorage.getItem('careeragent_logo_concept') as LogoConcept) || 'wordmark';
   });
-  const [showLogoModal, setShowLogoModal] = useState(false);
+  const [palette, setPalette] = useState<ColorPalette>(() => {
+    return (localStorage.getItem('careeragent_palette') as ColorPalette) || 'indigo';
+  });
+  const [showDesignModal, setShowDesignModal] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-palette', palette);
+  }, [palette]);
 
   const handleSelectLogo = (concept: LogoConcept) => {
     setLogoConcept(concept);
     localStorage.setItem('careeragent_logo_concept', concept);
+  };
+
+  const handleSelectPalette = (newPalette: ColorPalette) => {
+    setPalette(newPalette);
+    localStorage.setItem('careeragent_palette', newPalette);
+    document.documentElement.setAttribute('data-palette', newPalette);
   };
 
   useEffect(() => {
@@ -168,23 +182,26 @@ export function Header() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Row: Brand | Search Form | Theme & GitHub */}
         <div className="flex h-16 items-center justify-between gap-3 sm:gap-6">
-          {/* Brand Logo with quick picker pill */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Brand Logo with quick design studio button */}
+          <div className="flex items-center gap-2.5 shrink-0">
             <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity">
               <BrandLogo concept={logoConcept} className="h-6 w-6" />
-              <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
+              <div className="hidden md:flex items-center">
+                <span className="font-normal text-lg tracking-tight text-foreground/80">Career</span>
+                <span className="font-bold text-lg tracking-tight text-foreground">Agent</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse ml-1" />
+              </div>
             </Link>
 
-            {/* Quick Logo Selector Pill */}
+            {/* Quick Design Studio Button */}
             <button
               type="button"
-              onClick={() => setShowLogoModal(true)}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer"
-              title="Click to preview the 4 logo concepts"
+              onClick={() => setShowDesignModal(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/25 hover:bg-primary/20 transition-all cursor-pointer shadow-2xs"
+              title="Click to preview & test color palettes and logo styles"
             >
-              <span>Logo</span>
-              <span className="opacity-40">•</span>
-              <span className="capitalize">{logoConcept}</span>
+              <Palette className="h-3 w-3" />
+              <span className="capitalize">{palette}</span>
             </button>
           </div>
 
@@ -287,11 +304,13 @@ export function Header() {
         </div>
       </div>
 
-      <LogoPreviewModal
-        isOpen={showLogoModal}
-        onClose={() => setShowLogoModal(false)}
+      <ThemeAndLogoModal
+        isOpen={showDesignModal}
+        onClose={() => setShowDesignModal(false)}
         activeConcept={logoConcept}
         onSelectConcept={handleSelectLogo}
+        activePalette={palette}
+        onSelectPalette={handleSelectPalette}
       />
     </header>
   );

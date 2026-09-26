@@ -10,15 +10,12 @@ import {
   Briefcase, 
   Calendar,
   RotateCcw,
-  Orbit,
-  Zap
+  Orbit
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
-
-type BrandIcon = 'orbit' | 'prompt-arrow' | 'zap';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -30,13 +27,16 @@ export function Header() {
   const dateParam = searchParams.get('date') || '';
 
   const [queryInput, setQueryInput] = useState(queryParam);
-  const [brandIcon, setBrandIcon] = useState<BrandIcon>(() => {
-    return (localStorage.getItem('careeragent_brand_icon') as BrandIcon) || 'orbit';
-  });
 
-  const selectBrandIcon = (icon: BrandIcon) => {
-    setBrandIcon(icon);
-    localStorage.setItem('careeragent_brand_icon', icon);
+  // Determine current active theme (handling system preference)
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
   };
 
   useEffect(() => {
@@ -169,63 +169,11 @@ export function Header() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Row: Brand | Search Form | Theme & GitHub */}
         <div className="flex h-16 items-center justify-between gap-3 sm:gap-6">
-          {/* Brand Logo & Icon Preview */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity">
-              <span className="text-primary flex items-center justify-center">
-                {brandIcon === 'orbit' && <Orbit className="h-6 w-6 stroke-[2.2]" />}
-                {brandIcon === 'prompt-arrow' && (
-                  <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="4 17 9 12 4 7" />
-                    <line x1="12" y1="16" x2="19" y2="9" />
-                    <polyline points="13 9 19 9 19 15" />
-                  </svg>
-                )}
-                {brandIcon === 'zap' && <Zap className="h-6 w-6 fill-current" />}
-              </span>
-              <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
-            </Link>
-
-            {/* Quick Pill Selector to compare live */}
-            <div className="hidden lg:flex items-center bg-muted/80 p-0.5 rounded-lg border border-border text-[11px] font-medium text-muted-foreground">
-              <button
-                type="button"
-                onClick={() => selectBrandIcon('orbit')}
-                className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                  brandIcon === 'orbit' 
-                    ? 'bg-background text-foreground shadow-2xs font-semibold' 
-                    : 'hover:text-foreground'
-                }`}
-                title="Select Orbit icon"
-              >
-                Orbit
-              </button>
-              <button
-                type="button"
-                onClick={() => selectBrandIcon('prompt-arrow')}
-                className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                  brandIcon === 'prompt-arrow' 
-                    ? 'bg-background text-foreground shadow-2xs font-semibold' 
-                    : 'hover:text-foreground'
-                }`}
-                title="Select > ↗ prompt & arrow icon"
-              >
-                &gt; ↗ Arrow
-              </button>
-              <button
-                type="button"
-                onClick={() => selectBrandIcon('zap')}
-                className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                  brandIcon === 'zap' 
-                    ? 'bg-background text-foreground shadow-2xs font-semibold' 
-                    : 'hover:text-foreground'
-                }`}
-                title="Select Zap (GitHub default)"
-              >
-                Zap (GitHub)
-              </button>
-            </div>
-          </div>
+          {/* Brand Logo with Orbit */}
+          <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity shrink-0">
+            <Orbit className="h-6 w-6 stroke-[2.2]" />
+            <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
+          </Link>
 
           {/* Integrated Search Input (LinkedIn style beside logo) */}
           <form 
@@ -264,11 +212,16 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              className="text-muted-foreground hover:text-foreground h-9 w-9"
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground h-9 w-9 transition-colors cursor-pointer"
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label="Toggle theme"
             >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              {isDark ? (
+                <Sun className="h-4 w-4 text-amber-500 transition-all rotate-0 scale-100" />
+              ) : (
+                <Moon className="h-4 w-4 text-foreground transition-all rotate-0 scale-100" />
+              )}
               <span className="sr-only">Toggle theme</span>
             </Button>
           </div>

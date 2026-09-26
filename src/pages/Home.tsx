@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Loader2, Filter, X, MapPin } from 'lucide-react';
+import { Search, Loader2, Filter, X, MapPin, Briefcase, Clock, RotateCcw, Sparkles } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { fetcher } from '../lib/api';
 import type { JobsResponse } from '../lib/api';
@@ -129,140 +129,182 @@ export function Home() {
 
   return (
     <main className="w-full">
-      {/* Search Hero Section - unified with max-w-5xl container */}
+      {/* Search Hero Section */}
       <section className="pt-10 sm:pt-14 pb-8 px-4 sm:px-6 border-b border-border bg-background">
-        <div className="container mx-auto max-w-5xl text-center">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
-            Find your next career move
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-6">
-            Discover crowdsourced jobs fetched directly from company ATS platforms.
-          </p>
-
-          {/* Search Input Bar */}
-          <form 
-            onSubmit={handleSearchSubmit}
-            className="max-w-2xl mx-auto relative flex items-center bg-card border border-border rounded-full p-1.5 shadow-xs focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all"
-          >
-            <Search className="h-4 w-4 text-muted-foreground ml-3.5 mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Job title, keywords, or company..."
-              value={queryInput}
-              onChange={(e) => setQueryInput(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-hidden pr-2"
-            />
-            {queryInput && (
-              <button
-                type="button"
-                onClick={clearQuery}
-                className="p-1 mr-1 text-muted-foreground hover:text-foreground rounded-full transition-colors cursor-pointer"
-                title="Clear query"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-            <Button
-              type="submit"
-              className="h-8 rounded-full px-5 text-xs font-semibold shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
-            >
-              Search
-            </Button>
-          </form>
-
-          {/* Filters Bar: Workplace & Experience (YOE) */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-5">
-            {/* Workplace Segment */}
-            <div className="inline-flex items-center rounded-full border border-border bg-card/80 p-0.5 text-xs shadow-2xs">
-              {WORKPLACE_OPTIONS.map(({ label, value }) => {
-                const isActive = (workplaceParam || '') === value;
-                return (
-                  <button
-                    key={value || 'all-workplace'}
-                    type="button"
-                    onClick={() => updateFilters({ workplace_type: value || null })}
-                    className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-2xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Experience / YOE Segment */}
-            <div className="inline-flex items-center rounded-full border border-border bg-card/80 p-0.5 text-xs shadow-2xs">
-              {YOE_OPTIONS.map(({ label, value }) => {
-                const isActive = (yoeParam || '') === value;
-                return (
-                  <button
-                    key={value || 'all-yoe'}
-                    type="button"
-                    onClick={() => updateFilters({ yoe: value || null })}
-                    className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-2xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Reset All Filters */}
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 underline transition-colors cursor-pointer"
-              >
-                Reset filters
-              </button>
-            )}
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2.5">
+              Find your next career move
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Discover crowdsourced jobs fetched directly from company ATS platforms.
+            </p>
           </div>
 
-          {/* Active Chips (Company / Location) */}
-          {(companyParam || locationParam) && (
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-              {companyParam && (
-                <span className="inline-flex items-center gap-1.5 h-7 rounded-full px-3 text-xs font-medium bg-secondary text-foreground border border-border shadow-2xs">
-                  Company: <span className="font-semibold">{companyParam}</span>
-                  <button
-                    type="button"
-                    onClick={() => updateFilters({ company: null })}
-                    className="hover:opacity-70 ml-0.5 text-muted-foreground cursor-pointer"
-                    title="Remove company filter"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
+          {/* Unified Search & Filter Command Card */}
+          <div className="max-w-3xl mx-auto bg-card border border-border rounded-xl shadow-xs overflow-hidden">
+            {/* Search Input Bar */}
+            <form 
+              onSubmit={handleSearchSubmit}
+              className="flex items-center px-3.5 py-2 gap-2"
+            >
+              <Search className="h-4 w-4 text-muted-foreground shrink-0 ml-1" />
+              <input
+                type="text"
+                placeholder="Job title, keywords, or company..."
+                value={queryInput}
+                onChange={(e) => setQueryInput(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 outline-hidden py-1 px-1"
+              />
+              {queryInput && (
+                <button
+                  type="button"
+                  onClick={clearQuery}
+                  className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer"
+                  title="Clear query"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               )}
-              {locationParam && (
-                <span className="inline-flex items-center gap-1.5 h-7 rounded-full px-3 text-xs font-medium bg-secondary text-foreground border border-border shadow-2xs">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  Location: <span className="font-semibold">{locationParam}</span>
-                  <button
-                    type="button"
-                    onClick={() => updateFilters({ location: null })}
-                    className="hover:opacity-70 ml-0.5 text-muted-foreground cursor-pointer"
-                    title="Remove location filter"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
+              <Button
+                type="submit"
+                size="sm"
+                className="h-8 px-4 text-xs font-semibold shrink-0 cursor-pointer"
+              >
+                Search
+              </Button>
+            </form>
+
+            {/* Filter Toolbar Strip */}
+            <div className="bg-muted/40 border-t border-border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-5">
+                {/* Workplace Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 shrink-0">
+                    <Briefcase className="h-3.5 w-3.5" />
+                    <span>Workplace</span>
+                  </span>
+                  <div className="inline-flex items-center rounded-lg border border-border/70 bg-background/60 p-0.5 shadow-2xs">
+                    {WORKPLACE_OPTIONS.map(({ label, value }) => {
+                      const isActive = (workplaceParam || '') === value;
+                      return (
+                        <button
+                          key={value || 'all-workplace'}
+                          type="button"
+                          onClick={() => updateFilters({ workplace_type: value || null })}
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                            isActive
+                              ? 'bg-card text-foreground font-semibold shadow-xs border border-border/80'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Experience / YOE Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 shrink-0">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>Experience</span>
+                  </span>
+                  <div className="inline-flex items-center rounded-lg border border-border/70 bg-background/60 p-0.5 shadow-2xs">
+                    {YOE_OPTIONS.map(({ label, value }) => {
+                      const isActive = (yoeParam || '') === value;
+                      return (
+                        <button
+                          key={value || 'all-yoe'}
+                          type="button"
+                          onClick={() => updateFilters({ yoe: value || null })}
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                            isActive
+                              ? 'bg-card text-foreground font-semibold shadow-xs border border-border/80'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Reset All Filters Button */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/80 transition-colors cursor-pointer shrink-0"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span>Clear filters</span>
+                </button>
               )}
             </div>
-          )}
+
+            {/* Active Criteria Chips (Company / Location) */}
+            {(companyParam || locationParam) && (
+              <div className="bg-muted/20 border-t border-border/60 px-3.5 py-2 flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-muted-foreground text-[11px] uppercase tracking-wider font-semibold mr-1">
+                  Active:
+                </span>
+                {companyParam && (
+                  <span className="inline-flex items-center gap-1.5 h-6 rounded-md px-2.5 text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-2xs">
+                    Company: <strong className="font-semibold">{companyParam}</strong>
+                    <button
+                      type="button"
+                      onClick={() => updateFilters({ company: null })}
+                      className="hover:opacity-75 text-muted-foreground hover:text-foreground cursor-pointer"
+                      title="Remove company filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {locationParam && (
+                  <span className="inline-flex items-center gap-1.5 h-6 rounded-md px-2.5 text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-2xs">
+                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                    Location: <strong className="font-semibold">{locationParam}</strong>
+                    <button
+                      type="button"
+                      onClick={() => updateFilters({ location: null })}
+                      className="hover:opacity-75 text-muted-foreground hover:text-foreground cursor-pointer"
+                      title="Remove location filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Job Listings Container - strictly aligned with max-w-5xl */}
-      <div className="container mx-auto max-w-5xl px-4 sm:px-6 py-8">
+      {/* Job Listings Container */}
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 py-6">
+        {/* Results Header Bar */}
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-border/60 text-xs text-muted-foreground">
+          <div className="font-medium text-foreground">
+            {isLoadingInitialData ? (
+              'Loading active positions...'
+            ) : (
+              <>
+                Showing <span className="font-semibold text-foreground">{jobs.length}</span> {jobs.length === 1 ? 'role' : 'roles'}
+                {hasActiveFilters && <span className="text-muted-foreground ml-1.5 font-normal">(filtered)</span>}
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span>Sorted by published date</span>
+          </div>
+        </div>
+
         <div className="space-y-4">
           {isLoadingInitialData && (
             <div className="flex flex-col items-center justify-center py-20 gap-3">

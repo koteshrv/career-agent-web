@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
 import { 
@@ -17,6 +17,7 @@ const MAX_SEARCH_DEPTH = 100; // API ceiling: offset + limit <= 100
 
 export function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isSideviewDismissed, setIsSideviewDismissed] = useState(false);
 
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -96,9 +97,13 @@ export function Home() {
   }, [rawJobs, dateParam]);
 
   const selectedJob = useMemo(() => {
-    if (!selectedJobId) return null;
-    return jobs.find((j) => j.id === selectedJobId) || null;
-  }, [jobs, selectedJobId]);
+    if (selectedJobId) {
+      return jobs.find((j) => j.id === selectedJobId) || null;
+    }
+    if (isSideviewDismissed) return null;
+    // Default to first job on load (LinkedIn style)
+    return jobs.length > 0 ? jobs[0] : null;
+  }, [jobs, selectedJobId, isSideviewDismissed]);
 
   const isLoadingInitialData = !data && !error;
   const isLoadingMore =
@@ -186,7 +191,10 @@ export function Home() {
                 key={job.id}
                 job={job}
                 isSelected={selectedJob?.id === job.id}
-                onSelectJob={(clickedJob) => updateFilters({ job: clickedJob.id })}
+                onSelectJob={(clickedJob) => {
+                  setIsSideviewDismissed(false);
+                  updateFilters({ job: clickedJob.id });
+                }}
                 onSelectCompany={(company: string) => updateFilters({ q: company, job: null })}
                 onSelectLocation={(location: string) => updateFilters({ q: location, job: null })}
               />
@@ -231,7 +239,10 @@ export function Home() {
             <div className="hidden lg:block lg:w-7/12 xl:w-7/12 h-full overflow-hidden">
               <JobDetailPane
                 job={selectedJob}
-                onClose={() => updateFilters({ job: null })}
+                onClose={() => {
+                  setIsSideviewDismissed(true);
+                  updateFilters({ job: null });
+                }}
                 onSelectCompany={(company) => updateFilters({ q: company, job: null })}
                 onSelectLocation={(location) => updateFilters({ q: location, job: null })}
               />
@@ -239,14 +250,17 @@ export function Home() {
           )}
         </div>
 
-        {/* Mobile / Tablet Sheet Drawer (Screen < 1024px) */}
-        {selectedJob && (
+        {/* Mobile / Tablet Sheet Drawer (Screen < 1024px) - only when user explicitly tapped a card */}
+        {selectedJob && Boolean(selectedJobId) && (
           <div className="fixed inset-0 z-50 lg:hidden bg-background/80 backdrop-blur-xs flex flex-col justify-end">
             <div className="fixed inset-0" onClick={() => updateFilters({ job: null })} />
             <div className="relative w-full h-[92vh] bg-card border-t border-border rounded-t-2xl shadow-2xl overflow-hidden flex flex-col">
               <JobDetailPane
                 job={selectedJob}
-                onClose={() => updateFilters({ job: null })}
+                onClose={() => {
+                  setIsSideviewDismissed(true);
+                  updateFilters({ job: null });
+                }}
                 onSelectCompany={(company) => updateFilters({ q: company, job: null })}
                 onSelectLocation={(location) => updateFilters({ q: location, job: null })}
               />

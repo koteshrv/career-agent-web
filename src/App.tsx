@@ -7,9 +7,9 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
       <Router>
-        <div className="min-h-screen flex flex-col font-sans bg-background text-foreground">
+        <div className="h-screen h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-hidden">
           <Header />
-          <div className="flex-1">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <Routes>
               <Route path="/" element={<Home />} />
             </Routes>

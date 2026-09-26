@@ -128,7 +128,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-6 space-y-6">
           {/* Job Identity Section */}
           <div className="space-y-4">
             <div className="flex items-start gap-3.5">
@@ -185,8 +185,8 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                   {meta.seniority}
                 </Badge>
               )}
-              {currentJob.ats_provider && (
-                <Badge variant="outline" className="text-xs text-muted-foreground font-normal border-border/60">
+              {currentJob.ats_provider && currentJob.ats_provider.toLowerCase() !== 'custom' && (
+                <Badge variant="outline" className="text-xs text-muted-foreground font-normal border-border/60 capitalize">
                   via {currentJob.ats_provider}
                 </Badge>
               )}
@@ -325,10 +325,6 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
 
           {/* Full Job Description (Cleaned Markdown) */}
           <div className="space-y-3 pt-2 border-t border-border">
-            <h3 className="text-base font-bold text-foreground">
-              About the Role
-            </h3>
-
             {isFetchingDetail ? (
               <div className="flex items-center justify-center py-12 gap-2 text-xs text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -346,22 +342,6 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
               </p>
             )}
           </div>
-        </div>
-
-        {/* Sticky Bottom Apply Footer */}
-        <div className="p-4 border-t border-border bg-card flex items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground truncate">
-            {currentJob.title} • <span className="font-semibold text-foreground">{currentJob.company}</span>
-          </div>
-          <Button
-            asChild
-            className="h-9 px-5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm shrink-0 cursor-pointer"
-          >
-            <a href={destinationUrl} target="_blank" rel="noopener noreferrer">
-              Apply Now
-              <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
-            </a>
-          </Button>
         </div>
       </aside>
 

@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   Search, 
   Loader2, 
-  Sparkles 
+  Clock 
 } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { JobDetailPane } from '../components/JobDetailPane';
@@ -21,7 +21,7 @@ export function Home() {
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
   const workplaceParam = searchParams.get('workplace_type') || '';
-  const sortParam = searchParams.get('sort') || '';
+  const dateParam = searchParams.get('date') || '';
   const selectedJobId = searchParams.get('job') || '';
 
   const updateFilters = (updates: Record<string, string | null>) => {
@@ -41,7 +41,7 @@ export function Home() {
   };
 
   const hasActiveFilters = Boolean(
-    queryParam || countryParam || workplaceParam || sortParam
+    queryParam || countryParam || workplaceParam || dateParam
   );
 
   // SWR Infinite key generator respecting limit=20 and depth limit of 100
@@ -59,7 +59,6 @@ export function Home() {
     if (queryParam) params.set('q', queryParam);
     if (countryParam) params.set('country', countryParam);
     if (workplaceParam) params.set('workplace_type', workplaceParam);
-    if (sortParam) params.set('sort', sortParam);
 
     return `/v1/jobs?${params.toString()}`;
   };
@@ -70,9 +69,31 @@ export function Home() {
     { revalidateFirstPage: false }
   );
 
-  const jobs = useMemo(() => {
+  const rawJobs = useMemo(() => {
     return data ? data.flatMap((page) => (page && Array.isArray(page.jobs) ? page.jobs : [])) : [];
   }, [data]);
+
+  const jobs = useMemo(() => {
+    if (!dateParam) return rawJobs;
+    const now = Date.now();
+    const maxAgeMs =
+      dateParam === '24h'
+        ? 24 * 60 * 60 * 1000
+        : dateParam === 'week'
+        ? 7 * 24 * 60 * 60 * 1000
+        : dateParam === 'month'
+        ? 30 * 24 * 60 * 60 * 1000
+        : null;
+
+    if (!maxAgeMs) return rawJobs;
+
+    return rawJobs.filter((job) => {
+      const timeStr = job.posted_at || job.created_at;
+      if (!timeStr) return true;
+      const time = new Date(timeStr).getTime();
+      return now - time <= maxAgeMs;
+    });
+  }, [rawJobs, dateParam]);
 
   const selectedJob = useMemo(() => {
     if (!selectedJobId) return null;
@@ -94,11 +115,11 @@ export function Home() {
     isSearchDepthLimit;
 
   return (
-    <main className="w-full">
+    <main className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
       {/* Main Full-Height Viewport Container */}
-      <div className={`container mx-auto transition-all duration-300 ${selectedJob ? 'max-w-7xl' : 'max-w-5xl'} px-4 sm:px-6 py-4`}>
+      <div className={`container mx-auto flex-1 min-h-0 flex flex-col transition-all duration-300 ${selectedJob ? 'max-w-7xl' : 'max-w-5xl'} px-4 sm:px-6 pt-3 pb-2`}>
         {/* Results Header Bar */}
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60 text-xs text-muted-foreground">
+        <div className="shrink-0 flex items-center justify-between pb-2.5 mb-2 border-b border-border/60 text-xs text-muted-foreground">
           <div className="font-medium text-foreground">
             {isLoadingInitialData ? (
               'Searching active positions...'
@@ -110,15 +131,23 @@ export function Home() {
             )}
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span>{sortParam === 'random' ? 'Discovery shuffle' : 'Sorted by newest'}</span>
+            <Clock className="h-3.5 w-3.5 text-primary" />
+            <span>
+              {dateParam === '24h'
+                ? 'Past 24 hours'
+                : dateParam === 'week'
+                ? 'Past week'
+                : dateParam === 'month'
+                ? 'Past month'
+                : 'All recent postings'}
+            </span>
           </div>
         </div>
 
         {/* Master-Detail Split Pane Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Left Column: Job Cards List */}
-          <div className={`${selectedJob ? 'w-full lg:w-5/12 xl:w-5/12' : 'w-full'} space-y-3 transition-all`}>
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-5 items-stretch overflow-hidden">
+          {/* Left Column: Job Cards List (Independently scrollable) */}
+          <div className={`${selectedJob ? 'w-full lg:w-5/12 xl:w-5/12' : 'w-full max-w-4xl mx-auto'} h-full overflow-y-auto overscroll-contain pr-1 sm:pr-2 space-y-3`}>
             {isLoadingInitialData && (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -197,9 +226,9 @@ export function Home() {
             )}
           </div>
 
-          {/* Right Column (Desktop): Sticky LinkedIn-Style Job Detail Pane */}
+          {/* Right Column (Desktop): Independently Scrollable Job Detail Pane */}
           {selectedJob && (
-            <div className="hidden lg:block lg:w-7/12 xl:w-7/12 sticky top-28 h-[calc(100vh-8rem)]">
+            <div className="hidden lg:block lg:w-7/12 xl:w-7/12 h-full overflow-hidden">
               <JobDetailPane
                 job={selectedJob}
                 onClose={() => updateFilters({ job: null })}

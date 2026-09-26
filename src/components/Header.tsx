@@ -9,6 +9,7 @@ import {
   X, 
   Globe, 
   Briefcase, 
+  Calendar,
   RotateCcw 
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
@@ -22,7 +23,7 @@ export function Header() {
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
   const workplaceParam = searchParams.get('workplace_type') || '';
-  const sortParam = searchParams.get('sort') || '';
+  const dateParam = searchParams.get('date') || '';
 
   const [queryInput, setQueryInput] = useState(queryParam);
 
@@ -58,7 +59,7 @@ export function Header() {
   };
 
   const hasActiveFilters = Boolean(
-    queryParam || countryParam || workplaceParam || sortParam
+    queryParam || countryParam || workplaceParam || dateParam
   );
 
   // Fetch dynamic countries list from GET /v1/countries
@@ -149,12 +150,13 @@ export function Header() {
         <div className="flex flex-wrap items-center justify-between gap-2 py-2 border-t border-border/40 text-xs text-muted-foreground">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Country Select */}
-            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2 py-1 shadow-2xs">
-              <Globe className="h-3 w-3 text-muted-foreground mr-1.5 shrink-0" />
+            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2.5 py-1 shadow-2xs hover:border-border transition-colors">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
               <select
                 value={countryParam}
                 onChange={(e) => updateFilters({ country: e.target.value || null })}
-                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer"
+                aria-label="Filter by country"
+                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer dark:bg-card [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
               >
                 <option value="">All Countries</option>
                 {countries.map((c) => (
@@ -166,12 +168,13 @@ export function Header() {
             </div>
 
             {/* Workplace Select */}
-            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2 py-1 shadow-2xs">
-              <Briefcase className="h-3 w-3 text-muted-foreground mr-1.5 shrink-0" />
+            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2.5 py-1 shadow-2xs hover:border-border transition-colors">
+              <Briefcase className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
               <select
                 value={workplaceParam}
                 onChange={(e) => updateFilters({ workplace_type: e.target.value || null })}
-                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer"
+                aria-label="Filter by workplace type"
+                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer dark:bg-card [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
               >
                 <option value="">Workplace: Any</option>
                 <option value="remote">Remote</option>
@@ -180,31 +183,20 @@ export function Header() {
               </select>
             </div>
 
-            {/* Sort Toggle */}
-            <div className="flex items-center gap-1 bg-card border border-border/80 rounded-lg p-0.5 shadow-2xs">
-              <span className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-1.5 hidden sm:inline">Sort:</span>
-              <button
-                type="button"
-                onClick={() => updateFilters({ sort: null })}
-                className={`px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-colors ${
-                  sortParam !== 'random'
-                    ? 'bg-muted text-foreground font-semibold shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+            {/* Date Posted Select (LinkedIn style) */}
+            <div className="flex items-center bg-card border border-border/80 rounded-lg px-2.5 py-1 shadow-2xs hover:border-border transition-colors">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
+              <select
+                value={dateParam}
+                onChange={(e) => updateFilters({ date: e.target.value || null })}
+                aria-label="Filter by date posted"
+                className="bg-transparent text-xs font-medium text-foreground outline-hidden cursor-pointer dark:bg-card [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
               >
-                Recent
-              </button>
-              <button
-                type="button"
-                onClick={() => updateFilters({ sort: 'random' })}
-                className={`px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-colors ${
-                  sortParam === 'random'
-                    ? 'bg-muted text-foreground font-semibold shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Shuffle
-              </button>
+                <option value="">Date: Any time</option>
+                <option value="24h">Past 24 hours</option>
+                <option value="week">Past week</option>
+                <option value="month">Past month</option>
+              </select>
             </div>
           </div>
 

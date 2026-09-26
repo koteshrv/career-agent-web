@@ -78,20 +78,30 @@ export function JobCard({
                 <span className="truncate max-w-[140px] sm:max-w-none">{job.company}</span>
               </button>
 
-              {job.location && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectLocation?.(job.location!);
-                  }}
-                  className="flex items-center gap-1 text-xs hover:text-foreground transition-colors cursor-pointer shrink-0"
-                  title="Filter by location"
-                >
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="truncate max-w-[160px] sm:max-w-[240px]">{job.location}</span>
-                </button>
-              )}
+              {job.location && job.location.toLowerCase() !== 'unknown' && (() => {
+                const locations = job.location.split(';').map((l) => l.trim()).filter(Boolean);
+                const primaryLocation = locations[0] || job.location;
+                const extraCount = locations.length - 1;
+                return (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectLocation?.(primaryLocation);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs hover:text-foreground transition-colors cursor-pointer shrink-0 max-w-[180px] sm:max-w-[260px]"
+                    title={extraCount > 0 ? `${job.location} (Click to filter by ${primaryLocation})` : `Filter by ${primaryLocation}`}
+                  >
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{primaryLocation}</span>
+                    {extraCount > 0 && (
+                      <span className="shrink-0 text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-xs border border-border/60">
+                        +{extraCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })()}
 
               {job.country_code && (
                 <span className="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-semibold uppercase bg-muted text-muted-foreground border border-border/60 shrink-0">

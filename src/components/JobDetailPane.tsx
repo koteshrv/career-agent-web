@@ -36,8 +36,8 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
   const [copied, setCopied] = useState(false);
   const { isReported, markReported } = useReportedJobs();
 
-  // If the job passed doesn't have cleaned_description or structured_metadata, fetch via GET /v1/jobs/:id
-  const needsFullFetch = Boolean(job && !job.cleaned_description && !job.raw_description);
+  // If the job passed doesn't have description, cleaned_description, or structured_metadata, fetch via GET /v1/jobs/:id
+  const needsFullFetch = Boolean(job && !job.description && !job.cleaned_description && !job.raw_description);
   const { data: detailData, isLoading: isFetchingDetail } = useSWR<JobDetailResponse>(
     needsFullFetch && job?.id ? `/v1/jobs/${job.id}` : null,
     fetcher
@@ -132,7 +132,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                   <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
                     {currentJob.title}
                   </h2>
-                  <div className="flex flex-wrap items-center gap-2 mt-1.5 text-sm">
+                  <div className="flex items-center gap-2 mt-1.5 text-sm">
                     <button
                       type="button"
                       onClick={() => onSelectCompany?.(currentJob.company)}
@@ -140,25 +140,26 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                     >
                       {currentJob.company}
                     </button>
-                    {currentJob.location && (
-                      <>
-                        <span className="text-muted-foreground">•</span>
-                        <button
-                          type="button"
-                          onClick={() => onSelectLocation?.(currentJob.location!)}
-                          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 cursor-pointer"
-                        >
-                          <MapPin className="h-3.5 w-3.5" />
-                          <span>{currentJob.location}</span>
-                        </button>
-                      </>
-                    )}
                     {currentJob.country_code && (
                       <Badge variant="outline" className="text-[11px] font-semibold uppercase px-1.5 py-0 border-border/70">
                         {currentJob.country_code}
                       </Badge>
                     )}
                   </div>
+
+                  {currentJob.location && currentJob.location.toLowerCase() !== 'unknown' && (
+                    <div className="flex items-start gap-1.5 mt-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                      <button
+                        type="button"
+                        onClick={() => onSelectLocation?.(currentJob.location!.split(';')[0].trim())}
+                        className="text-left text-muted-foreground hover:text-foreground hover:underline cursor-pointer leading-snug"
+                        title={currentJob.location.includes(';') ? `Filter by ${currentJob.location.split(';')[0].trim()} (click to search)` : 'Filter by location'}
+                      >
+                        {currentJob.location}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -321,10 +322,10 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 <span>Loading full job description...</span>
               </div>
-            ) : currentJob.cleaned_description || currentJob.raw_description ? (
+            ) : currentJob.description || currentJob.cleaned_description || currentJob.raw_description ? (
               <div className="prose prose-sm dark:prose-invert max-w-none text-xs sm:text-sm leading-relaxed text-foreground/90 space-y-3 break-words [&_h1]:text-lg [&_h1]:font-bold [&_h2]:text-base [&_h2]:font-semibold [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_p]:leading-relaxed">
                 <ReactMarkdown>
-                  {currentJob.cleaned_description || currentJob.raw_description || ''}
+                  {currentJob.description || currentJob.cleaned_description || currentJob.raw_description || ''}
                 </ReactMarkdown>
               </div>
             ) : (

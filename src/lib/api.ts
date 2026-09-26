@@ -27,6 +27,7 @@ export interface Job {
   country_code?: string | null;
   employment_type?: string;
   job_fingerprint?: string;
+  description?: string | null;
   cleaned_description?: string | null;
   raw_description?: string | null;
   structured_metadata?: StructuredMetadata;

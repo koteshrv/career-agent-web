@@ -22,6 +22,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ReportModal } from './ReportModal';
 import { formatRelativeTime, formatFullDate } from '../lib/utils';
+import { useReportedJobs } from '../lib/useReportedJobs';
 
 interface JobDetailPaneProps {
   job: Job | null;
@@ -32,8 +33,8 @@ interface JobDetailPaneProps {
 
 export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation }: JobDetailPaneProps) {
   const [showReportModal, setShowReportModal] = useState(false);
-  const [reported, setReported] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { isReported, markReported } = useReportedJobs();
 
   // If the job passed doesn't have cleaned_description or structured_metadata, fetch via GET /v1/jobs/:id
   const needsFullFetch = Boolean(job && !job.cleaned_description && !job.raw_description);
@@ -45,6 +46,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
   if (!job) return null;
 
   const currentJob: Job = detailData?.job || job;
+  const isCurrentJobReported = isReported(currentJob.id);
   const meta = currentJob.structured_metadata;
   const destinationUrl = currentJob.apply_url || currentJob.url;
 
@@ -90,18 +92,18 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
               {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
             </Button>
 
-            {/* Strict Quality Report Button */}
+            {/* Quality Report Button */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowReportModal(true)}
-              disabled={reported}
+              disabled={isCurrentJobReported}
               className={`h-8 w-8 cursor-pointer ${
-                reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive'
+                isCurrentJobReported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive'
               }`}
-              title={reported ? 'Reported' : 'Report expired or incorrect posting'}
+              title={isCurrentJobReported ? 'Reported' : 'Report expired or incorrect posting'}
             >
-              <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
+              <Flag className={`h-4 w-4 ${isCurrentJobReported ? 'fill-current' : ''}`} />
             </Button>
 
             {/* Close Pane (Mobile Sheet Drawer only) */}
@@ -343,7 +345,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
         jobTitle={currentJob.title}
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
-        onReportSuccess={() => setReported(true)}
+        onReportSuccess={() => markReported(currentJob.id)}
       />
     </>
   );

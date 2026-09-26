@@ -7,6 +7,7 @@ import { Button } from './ui/button';
 import { CompanyLogo } from './CompanyLogo';
 import { ReportModal } from './ReportModal';
 import { formatRelativeTime, formatFullDate } from '../lib/utils';
+import { useReportedJobs } from '../lib/useReportedJobs';
 
 export function JobCard({ 
   job, 
@@ -21,7 +22,8 @@ export function JobCard({
   onSelectCompany?: (company: string) => void;
   onSelectLocation?: (location: string) => void;
 }) {
-  const [reported, setReported] = useState(false);
+  const { isReported, markReported } = useReportedJobs();
+  const isCardReported = isReported(job.id);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const meta = job.structured_metadata;
@@ -153,11 +155,11 @@ export function JobCard({
                 e.stopPropagation();
                 setShowConfirm(true);
               }}
-              disabled={reported}
-              title={reported ? "Reported" : "Report Spam/Dead Link"}
-              className={`transition-colors h-9 w-9 ${reported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'}`}
+              disabled={isCardReported}
+              title={isCardReported ? "Reported" : "Report Spam/Dead Link"}
+              className={`transition-colors h-9 w-9 ${isCardReported ? 'text-green-500' : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'}`}
             >
-              <Flag className={`h-4 w-4 ${reported ? 'fill-current' : ''}`} />
+              <Flag className={`h-4 w-4 ${isCardReported ? 'fill-current' : ''}`} />
             </Button>
             <Button 
               asChild 
@@ -178,7 +180,7 @@ export function JobCard({
         jobTitle={job.title}
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}
-        onReportSuccess={() => setReported(true)}
+        onReportSuccess={() => markReported(job.id)}
       />
     </>
   );

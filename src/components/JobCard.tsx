@@ -126,7 +126,7 @@ export function JobCard({
                 {topTech.map((tech) => (
                   <span
                     key={tech}
-                    className="inline-flex items-center px-2 py-0.5 rounded-xs text-[11px] font-mono font-medium bg-muted/50 text-muted-foreground border border-border/40"
+                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted/60 text-muted-foreground border border-border/50"
                   >
                     {tech}
                   </span>

@@ -14,6 +14,7 @@ interface DropdownSelectProps {
   placeholder?: string;
   ariaLabel?: string;
   searchable?: boolean;
+  fullWidth?: boolean;
 }
 
 export function DropdownSelect({
@@ -24,6 +25,7 @@ export function DropdownSelect({
   placeholder = 'Select',
   ariaLabel,
   searchable = false,
+  fullWidth = false,
 }: DropdownSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,7 +77,7 @@ export function DropdownSelect({
     : options;
 
   return (
-    <div className="relative inline-block text-left" ref={containerRef}>
+    <div className={`relative text-left ${fullWidth ? 'w-full' : 'inline-block'}`} ref={containerRef}>
       {/* Trigger Button - Rounded matching the buttons */}
       <button
         type="button"
@@ -84,11 +86,15 @@ export function DropdownSelect({
         aria-expanded={isOpen}
         aria-label={ariaLabel || displayLabel}
         className={`h-8 px-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 hover:border-border text-foreground text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer select-none focus:outline-hidden focus:ring-1 focus:ring-primary/40 ${
+          fullWidth ? 'w-full justify-between' : ''
+        } ${
           isOpen ? 'border-primary/50 ring-1 ring-primary/30' : ''
         }`}
       >
-        {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
-        <span className="truncate max-w-[130px] sm:max-w-[180px]">{displayLabel}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
+          <span className="truncate">{displayLabel}</span>
+        </div>
         <ChevronDown
           className={`h-3 w-3 text-muted-foreground shrink-0 transition-transform duration-200 ${
             isOpen ? 'rotate-180 text-foreground' : ''
@@ -98,7 +104,7 @@ export function DropdownSelect({
 
       {/* Dropdown Menu - Rounded matching the buttons/cards */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 min-w-[170px] max-w-xs max-h-64 overflow-hidden rounded-xl border border-border bg-card shadow-lg p-1 z-50 flex flex-col animate-in fade-in-50 zoom-in-95">
+        <div className={`absolute top-full left-0 mt-1.5 ${fullWidth ? 'w-full' : 'min-w-[170px] max-w-xs'} max-h-64 overflow-hidden rounded-xl border border-border bg-card shadow-lg p-1 z-50 flex flex-col animate-in fade-in-50 zoom-in-95`}>
           {/* Optional Search Filter */}
           {searchable && options.length > 5 && (
             <div className="p-1 border-b border-border/60 mb-1">

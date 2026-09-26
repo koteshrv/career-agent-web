@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 import { 
@@ -10,7 +10,8 @@ import {
   Briefcase, 
   Calendar,
   RotateCcw,
-  Orbit
+  Orbit,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
@@ -27,6 +28,30 @@ export function Header() {
   const dateParam = searchParams.get('date') || '';
 
   const [queryInput, setQueryInput] = useState(queryParam);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Close filter popover on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    }
+    if (isFilterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterOpen]);
+
+  // Count active filters (country, workplace, date)
+  const activeFilterCount = [
+    Boolean(countryParam),
+    Boolean(workplaceParam),
+    Boolean(dateParam),
+  ].filter(Boolean).length;
 
   // Determine current active theme (handling system preference)
   const isDark =
@@ -70,10 +95,6 @@ export function Header() {
     setQueryInput('');
     setSearchParams(new URLSearchParams());
   };
-
-  const hasActiveFilters = Boolean(
-    queryParam || countryParam || workplaceParam || dateParam
-  );
 
   // Fetch dynamic countries list from GET /v1/countries
   const { data: countriesData } = useSWR<CountriesResponse>('/v1/countries', fetcher, {
@@ -165,20 +186,20 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background shadow-xs">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-xs shadow-2xs">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
-        {/* Main Row: Brand | Search Form | Theme & GitHub */}
-        <div className="flex h-16 items-center justify-between gap-3 sm:gap-6">
+        {/* Single Compact Header Row */}
+        <div className="flex h-14 sm:h-15 items-center justify-between gap-2.5 sm:gap-4">
           {/* Brand Logo with Orbit */}
           <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity shrink-0">
             <Orbit className="h-6 w-6 stroke-[2.2]" />
             <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
           </Link>
 
-          {/* Integrated Search Input (LinkedIn style beside logo) */}
+          {/* Integrated Search Input */}
           <form 
             onSubmit={handleSearchSubmit} 
-            className="flex-1 max-w-2xl flex items-center bg-card border border-border rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary"
+            className="flex-1 max-w-xl flex items-center bg-card border border-border rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary"
           >
             <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
             <input
@@ -207,8 +228,116 @@ export function Header() {
             </Button>
           </form>
 
-          {/* Right Action Icons */}
-          <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+          {/* Right Action Cluster: Filter Popover + Theme Toggle */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Filter Popover Trigger */}
+            <div className="relative" ref={filterRef}>
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen((prev) => !prev)}
+                className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                  activeFilterCount > 0
+                    ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                    : 'border-border bg-card text-foreground hover:bg-muted/70'
+                } ${isFilterOpen ? 'ring-1 ring-primary/40 border-primary' : ''}`}
+                title="Filter by country, workplace type, and date posted"
+                aria-expanded={isFilterOpen}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full text-[10px] font-bold bg-primary text-primary-foreground">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Floating Filter Popover Card */}
+              {isFilterOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-card border border-border rounded-2xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 space-y-3.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-border">
+                    <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                      <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+                      <span>Filter Postings</span>
+                      {activeFilterCount > 0 && (
+                        <span className="text-[11px] text-muted-foreground font-normal">
+                          ({activeFilterCount} active)
+                        </span>
+                      )}
+                    </div>
+                    {activeFilterCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearAllFilters}
+                        className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Reset</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Country Filter */}
+                  <div className="space-y-1 text-left">
+                    <label className="text-[11px] font-medium text-muted-foreground">Country</label>
+                    <DropdownSelect
+                      icon={<Globe className="h-3.5 w-3.5" />}
+                      value={countryParam}
+                      onChange={(val) => {
+                        localStorage.setItem('careeragent_country_initialized', 'true');
+                        updateFilters({ country: val || null });
+                      }}
+                      options={countryOptions}
+                      placeholder="All Countries"
+                      ariaLabel="Filter by country"
+                      searchable
+                      fullWidth
+                    />
+                  </div>
+
+                  {/* Workplace Filter */}
+                  <div className="space-y-1 text-left">
+                    <label className="text-[11px] font-medium text-muted-foreground">Workplace</label>
+                    <DropdownSelect
+                      icon={<Briefcase className="h-3.5 w-3.5" />}
+                      value={workplaceParam}
+                      onChange={(val) => updateFilters({ workplace_type: val || null })}
+                      options={workplaceOptions}
+                      placeholder="Workplace: Any"
+                      ariaLabel="Filter by workplace type"
+                      fullWidth
+                    />
+                  </div>
+
+                  {/* Date Filter */}
+                  <div className="space-y-1 text-left">
+                    <label className="text-[11px] font-medium text-muted-foreground">Date Posted</label>
+                    <DropdownSelect
+                      icon={<Calendar className="h-3.5 w-3.5" />}
+                      value={dateParam}
+                      onChange={(val) => updateFilters({ date: val || null })}
+                      options={dateOptions}
+                      placeholder="Date: Any time"
+                      ariaLabel="Filter by date posted"
+                      fullWidth
+                    />
+                  </div>
+
+                  {/* Done Button */}
+                  <div className="pt-2 border-t border-border flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={() => setIsFilterOpen(false)}
+                      className="h-7 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -225,57 +354,6 @@ export function Header() {
               <span className="sr-only">Toggle theme</span>
             </Button>
           </div>
-        </div>
-
-        {/* Filter Strip directly under search */}
-        <div className="flex flex-wrap items-center justify-between gap-2 py-2 border-t border-border/40 text-xs text-muted-foreground">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            {/* Country Select */}
-            <DropdownSelect
-              icon={<Globe className="h-3.5 w-3.5" />}
-              value={countryParam}
-              onChange={(val) => {
-                localStorage.setItem('careeragent_country_initialized', 'true');
-                updateFilters({ country: val || null });
-              }}
-              options={countryOptions}
-              placeholder="All Countries"
-              ariaLabel="Filter by country"
-              searchable
-            />
-
-            {/* Workplace Select */}
-            <DropdownSelect
-              icon={<Briefcase className="h-3.5 w-3.5" />}
-              value={workplaceParam}
-              onChange={(val) => updateFilters({ workplace_type: val || null })}
-              options={workplaceOptions}
-              placeholder="Workplace: Any"
-              ariaLabel="Filter by workplace type"
-            />
-
-            {/* Date Posted Select (LinkedIn style) */}
-            <DropdownSelect
-              icon={<Calendar className="h-3.5 w-3.5" />}
-              value={dateParam}
-              onChange={(val) => updateFilters({ date: val || null })}
-              options={dateOptions}
-              placeholder="Date: Any time"
-              ariaLabel="Filter by date posted"
-            />
-          </div>
-
-          {/* Reset Filters */}
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="flex items-center gap-1 hover:text-foreground font-medium text-xs cursor-pointer transition-colors"
-            >
-              <RotateCcw className="h-3 w-3" />
-              <span>Reset filters</span>
-            </button>
-          )}
         </div>
       </div>
     </header>

@@ -1,40 +1,144 @@
-export type LogoConcept = 'wordmark' | 'prompt-arrow' | 'launch-vector' | 'target-crosshair' | 'hexagon' | 'monogram';
+export type LogoConcept = 
+  | 'ascent' 
+  | 'nexus' 
+  | 'command-c' 
+  | 'briefcase-spark' 
+  | 'launch-vector' 
+  | 'wordmark';
 
 export const LOGO_OPTIONS: { id: LogoConcept; name: string; description: string }[] = [
   {
-    id: 'wordmark',
-    name: '1. Minimalist Wordmark + Pulse',
-    description: 'Clean typographic brand mark with an active live AI pulse dot',
+    id: 'ascent',
+    name: 'A. Career Ascent (Level Up)',
+    description: '3 vertical stepping bars symbolizing career leveling & salary growth',
+  },
+  {
+    id: 'nexus',
+    name: 'B. Agentic Nexus (Connected)',
+    description: 'Intersecting infinity loop connecting candidates directly to ATS portals',
+  },
+  {
+    id: 'command-c',
+    name: 'C. Command C (Career >_)',
+    description: 'Geometric letter C with an embedded terminal prompt arrow',
+  },
+  {
+    id: 'briefcase-spark',
+    name: 'D. Briefcase + AI Spark',
+    description: 'Minimalist modern career briefcase with an AI intelligence sparkle',
   },
   {
     id: 'launch-vector',
-    name: '2. Stealth Launch Vector (↗)',
-    description: 'Minimalist supersonic dart / paper plane launching your career forward',
+    name: 'E. Stealth Launch Vector (↗)',
+    description: 'Origami supersonic arrow launching your career forward',
   },
   {
-    id: 'prompt-arrow',
-    name: '3. Terminal Prompt & Vector (> ↗)',
-    description: 'Developer command prompt evolving into an upward career vector',
-  },
-  {
-    id: 'target-crosshair',
-    name: '4. Precision Job Crosshair',
-    description: 'Laser radar scanning & locking onto verified ATS job postings',
-  },
-  {
-    id: 'hexagon',
-    name: '5. Interlocking Aperture / Hexagon',
-    description: 'Precision autonomous radar lens (Linear & Ashby style)',
-  },
-  {
-    id: 'monogram',
-    name: '6. Obsidian CA Badge',
-    description: 'Razor-sharp geometric monogram for favicon and app icons',
+    id: 'wordmark',
+    name: 'F. Minimalist Wordmark & Pulse',
+    description: 'Clean typographic monogram badge with a live active pulse',
   },
 ];
 
-export function BrandLogo({ concept = 'wordmark', className = 'h-6 w-6' }: { concept?: LogoConcept; className?: string }) {
+export function BrandLogo({ concept = 'ascent', className = 'h-6 w-6' }: { concept?: LogoConcept; className?: string }) {
   switch (concept) {
+    case 'ascent':
+      // 3 Stepping Vertical Bars (Junior -> Senior -> Staff)
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
+          {/* Bar 1 (Short) */}
+          <rect x="5.5" y="13.5" width="3.2" height="6" rx="1.6" className="fill-muted-foreground/60" />
+          {/* Bar 2 (Medium) */}
+          <rect x="10.4" y="9" width="3.2" height="10.5" rx="1.6" className="fill-primary/70" />
+          {/* Bar 3 (Tall + Highlighted with upward arrow peak) */}
+          <rect x="15.3" y="4.5" width="3.2" height="15" rx="1.6" className="fill-primary" />
+          <circle cx="16.9" cy="4.5" r="1.5" className="fill-primary animate-ping opacity-60" />
+        </svg>
+      );
+
+    case 'nexus':
+      // Overlapping Intersecting Nodes / Infinity Loop
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
+          {/* Loop Left */}
+          <circle cx="9" cy="12" r="4.5" stroke="currentColor" strokeWidth="2.2" className="stroke-muted-foreground" />
+          {/* Loop Right (Primary) */}
+          <circle cx="15" cy="12" r="4.5" stroke="currentColor" strokeWidth="2.2" className="stroke-primary" />
+          {/* Center Connection Core */}
+          <circle cx="12" cy="12" r="2.2" className="fill-primary" />
+        </svg>
+      );
+
+    case 'command-c':
+      // Geometric C with an embedded terminal command prompt >
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-foreground text-background" />
+          {/* Bold geometric C */}
+          <path
+            d="M10.5 7.5H8C6.6 7.5 5.5 8.6 5.5 10V14C5.5 15.4 6.6 16.5 8 16.5H10.5"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            className="stroke-background"
+          />
+          {/* Terminal Prompt > in center */}
+          <path
+            d="M13 9.5L16.5 12L13 14.5"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="stroke-primary"
+          />
+        </svg>
+      );
+
+    case 'briefcase-spark':
+      // Modern Career Briefcase with an AI Spark Cutout
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
+          {/* Handle */}
+          <path
+            d="M9 7V5.5C9 4.7 9.7 4 10.5 4H13.5C14.3 4 15 4.7 15 5.5V7"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            className="stroke-muted-foreground"
+          />
+          {/* Bag Body */}
+          <rect x="4.5" y="7" width="15" height="12.5" rx="3" stroke="currentColor" strokeWidth="2" className="stroke-primary" />
+          {/* Inner Lock / Divider */}
+          <path d="M4.5 11.5H19.5" stroke="currentColor" strokeWidth="1.5" className="stroke-border" />
+          <circle cx="12" cy="11.5" r="1.8" className="fill-primary" />
+        </svg>
+      );
+
+    case 'launch-vector':
+      // Origami Supersonic Jet / Arrow
+      return (
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          <rect width="24" height="24" rx="6.5" className="fill-card border border-border/80" />
+          <path
+            d="M5.5 18.5L18.5 5.5M18.5 5.5H10.5M18.5 5.5V13.5"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="stroke-primary"
+          />
+          <path
+            d="M5.5 18.5L12 12"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            className="stroke-muted-foreground"
+          />
+        </svg>
+      );
+
     case 'wordmark':
       return (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -48,102 +152,6 @@ export function BrandLogo({ concept = 'wordmark', className = 'h-6 w-6' }: { con
             className="stroke-foreground dark:stroke-primary-foreground"
           />
           <circle cx="15.5" cy="12" r="2.2" className="fill-primary animate-pulse" />
-        </svg>
-      );
-
-    case 'launch-vector':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-          <rect width="24" height="24" rx="6.5" className="fill-primary/10 border border-primary/20" />
-          {/* Origami Stealth Jet */}
-          <path
-            d="M5 19L19 5M19 5H10M19 5V14"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="stroke-primary"
-          />
-          <path
-            d="M5 19L11.5 12.5"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            className="stroke-muted-foreground"
-          />
-        </svg>
-      );
-
-    case 'prompt-arrow':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-          <rect width="24" height="24" rx="6.5" className="fill-primary/10 border border-primary/20" />
-          <path
-            d="M6.5 8.5L10.5 12L6.5 15.5"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="stroke-muted-foreground"
-          />
-          <path
-            d="M13 15.5L17.5 11M17.5 11H13.5M17.5 11V15"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="stroke-primary"
-          />
-        </svg>
-      );
-
-    case 'target-crosshair':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-          <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" className="stroke-primary/40" />
-          <path d="M12 2V6M12 18V22M2 12H6M18 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="stroke-primary" />
-          <circle cx="12" cy="12" r="3" className="fill-primary" />
-        </svg>
-      );
-
-    case 'hexagon':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-          <polygon
-            points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            className="stroke-primary"
-          />
-          <polygon
-            points="12,7 16.5,9.5 16.5,14.5 12,17 7.5,14.5 7.5,9.5"
-            className="fill-primary/25 stroke-primary/50"
-            strokeWidth="1.2"
-          />
-          <circle cx="12" cy="12" r="2" className="fill-primary" />
-        </svg>
-      );
-
-    case 'monogram':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-          <rect width="24" height="24" rx="6.5" className="fill-foreground text-background" />
-          <path
-            d="M8.5 8C7.5 8.8 7 10.2 7 12C7 13.8 7.5 15.2 8.5 16"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            className="stroke-background"
-          />
-          <path
-            d="M13 16L15.5 8L18 16M14 13.5H17"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="stroke-primary"
-          />
         </svg>
       );
   }

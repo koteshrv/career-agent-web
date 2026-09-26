@@ -4,7 +4,6 @@ import useSWR from 'swr';
 import { 
   Moon, 
   Sun, 
-  Zap, 
   Search, 
   X, 
   Globe, 
@@ -16,6 +15,8 @@ import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
+import { BrandLogo, type LogoConcept } from './BrandLogo';
+import { LogoPreviewModal } from './LogoPreviewModal';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -27,6 +28,15 @@ export function Header() {
   const dateParam = searchParams.get('date') || '';
 
   const [queryInput, setQueryInput] = useState(queryParam);
+  const [logoConcept, setLogoConcept] = useState<LogoConcept>(() => {
+    return (localStorage.getItem('careeragent_logo_concept') as LogoConcept) || 'northstar';
+  });
+  const [showLogoModal, setShowLogoModal] = useState(false);
+
+  const handleSelectLogo = (concept: LogoConcept) => {
+    setLogoConcept(concept);
+    localStorage.setItem('careeragent_logo_concept', concept);
+  };
 
   useEffect(() => {
     setQueryInput(queryParam);
@@ -158,11 +168,25 @@ export function Header() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Row: Brand | Search Form | Theme & GitHub */}
         <div className="flex h-16 items-center justify-between gap-3 sm:gap-6">
-          {/* Brand Logo */}
-          <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity shrink-0">
-            <Zap className="h-6 w-6 fill-current" />
-            <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
-          </Link>
+          {/* Brand Logo with quick picker pill */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity">
+              <BrandLogo concept={logoConcept} className="h-6 w-6" />
+              <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
+            </Link>
+
+            {/* Quick Logo Selector Pill */}
+            <button
+              type="button"
+              onClick={() => setShowLogoModal(true)}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer"
+              title="Click to preview the 4 logo concepts"
+            >
+              <span>Logo</span>
+              <span className="opacity-40">•</span>
+              <span className="capitalize">{logoConcept}</span>
+            </button>
+          </div>
 
           {/* Integrated Search Input (LinkedIn style beside logo) */}
           <form 
@@ -262,6 +286,13 @@ export function Header() {
           )}
         </div>
       </div>
+
+      <LogoPreviewModal
+        isOpen={showLogoModal}
+        onClose={() => setShowLogoModal(false)}
+        activeConcept={logoConcept}
+        onSelectConcept={handleSelectLogo}
+      />
     </header>
   );
 }

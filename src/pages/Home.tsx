@@ -268,49 +268,6 @@ export function Home() {
                 </p>
               </div>
             )}
-
-            {/* In-Feed Footer (Option 1 - Clean & Minimalist, No GitHub) */}
-            {!isLoadingInitialData && !error && (
-              <footer className="pt-6 pb-10 mt-6 border-t border-border/50 text-xs text-muted-foreground">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground/85">CareerAgent</span>
-                    <span className="text-muted-foreground/30">•</span>
-                    <span>© {new Date().getFullYear()}</span>
-                    <span className="text-muted-foreground/30">•</span>
-                    <span className="text-[11px] text-muted-foreground/75">Verified ATS Feed</span>
-                  </div>
-
-                  <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px]">
-                    <a
-                      href="/llms.txt"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      llms.txt
-                    </a>
-                    <a
-                      href="https://api.careeragent.fyi/health"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      API Status
-                    </a>
-                    <a
-                      href="mailto:contact@careeragent.fyi"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Contact
-                    </a>
-                  </nav>
-                </div>
-                <p className="mt-2 text-[11px] text-muted-foreground/60 text-center sm:text-left">
-                  Direct indexing from Greenhouse, Lever, Ashby, and Workday. Zero recruiter spam.
-                </p>
-              </footer>
-            )}
           </div>
 
           {/* Right Column (Desktop): Constant Split View Job Detail Pane */}

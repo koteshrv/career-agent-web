@@ -9,15 +9,12 @@ import {
   Globe, 
   Briefcase, 
   Calendar,
-  RotateCcw,
-  Palette
+  RotateCcw
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
-import { BrandLogo, type LogoConcept } from './BrandLogo';
-import { ThemeAndLogoModal, type ColorPalette } from './ThemeAndLogoModal';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -29,28 +26,13 @@ export function Header() {
   const dateParam = searchParams.get('date') || '';
 
   const [queryInput, setQueryInput] = useState(queryParam);
-  const [logoConcept, setLogoConcept] = useState<LogoConcept>(() => {
-    return (localStorage.getItem('careeragent_logo_concept') as LogoConcept) || 'sparkles';
-  });
-  const [palette, setPalette] = useState<ColorPalette>(() => {
-    return (localStorage.getItem('careeragent_palette') as ColorPalette) || 'indigo';
-  });
-  const [showDesignModal, setShowDesignModal] = useState(false);
 
+  // Clean up legacy palette attributes if present
   useEffect(() => {
-    document.documentElement.setAttribute('data-palette', palette);
-  }, [palette]);
-
-  const handleSelectLogo = (concept: LogoConcept) => {
-    setLogoConcept(concept);
-    localStorage.setItem('careeragent_logo_concept', concept);
-  };
-
-  const handleSelectPalette = (newPalette: ColorPalette) => {
-    setPalette(newPalette);
-    localStorage.setItem('careeragent_palette', newPalette);
-    document.documentElement.setAttribute('data-palette', newPalette);
-  };
+    document.documentElement.removeAttribute('data-palette');
+    localStorage.removeItem('careeragent_palette');
+    localStorage.removeItem('careeragent_logo_concept');
+  }, []);
 
   useEffect(() => {
     setQueryInput(queryParam);
@@ -182,27 +164,14 @@ export function Header() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Row: Brand | Search Form | Theme & GitHub */}
         <div className="flex h-16 items-center justify-between gap-3 sm:gap-6">
-          {/* Brand Logo with quick design studio button */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity">
-              <BrandLogo concept={logoConcept} className="h-6 w-6" />
-              <div className="hidden md:flex items-center">
-                <span className="font-normal text-lg tracking-tight text-foreground/80">Career</span>
-                <span className="font-bold text-lg tracking-tight text-foreground">Agent</span>
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse ml-1" />
-              </div>
-            </Link>
-
-            {/* Quick Design Studio Button */}
-            <button
-              type="button"
-              onClick={() => setShowDesignModal(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/25 hover:bg-primary/20 transition-all cursor-pointer shadow-2xs"
-              title="Click to preview & test color palettes and logo styles"
+          {/* Brand Wordmark (Clean Minimalist) */}
+          <div className="flex items-center shrink-0">
+            <Link 
+              to="/" 
+              className="text-lg font-semibold tracking-tight text-foreground hover:opacity-80 transition-opacity select-none"
             >
-              <Palette className="h-3 w-3" />
-              <span className="capitalize">{palette}</span>
-            </button>
+              CareerAgent
+            </Link>
           </div>
 
           {/* Integrated Search Input (LinkedIn style beside logo) */}
@@ -303,15 +272,6 @@ export function Header() {
           )}
         </div>
       </div>
-
-      <ThemeAndLogoModal
-        isOpen={showDesignModal}
-        onClose={() => setShowDesignModal(false)}
-        activeConcept={logoConcept}
-        onSelectConcept={handleSelectLogo}
-        activePalette={palette}
-        onSelectPalette={handleSelectPalette}
-      />
     </header>
   );
 }

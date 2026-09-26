@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Google Sans', sans-serif;
+  --font-sans: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -36,155 +36,53 @@
 }
 
 @layer base {
-  /* Default: Electric Indigo (Linear / Stripe style) */
-  :root, [data-palette="indigo"] {
+  /* Minimalist Pure Monochrome (Light) */
+  :root {
     color-scheme: light;
-    --background: 240 5% 97%;
-    --foreground: 240 10% 10%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 92%;
-    --secondary-foreground: 240 10% 15%;
-    --muted: 240 5% 92%;
-    --muted-foreground: 240 5% 45%;
-    --accent: 240 5% 90%;
-    --accent-foreground: 240 10% 15%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 243 75% 59%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 9%;
     --radius: 0.5rem;
   }
 
-  .dark, .dark[data-palette="indigo"] {
+  /* Minimalist Pure Monochrome (Dark - Vercel / Resend style) */
+  .dark {
     color-scheme: dark;
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 6.5%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 6.5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 238 84% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 6% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 6% 12%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 240 6% 16%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 16%;
-    --input: 240 6% 16%;
-    --ring: 238 84% 67%;
-  }
-
-  /* Palette: Emerald Mint (Hired / Growth style) */
-  [data-palette="emerald"] {
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 160 84% 39%;
-  }
-  .dark[data-palette="emerald"] {
-    --background: 160 10% 4%;
-    --card: 160 10% 6.5%;
-    --border: 160 6% 16%;
-    --primary: 158 75% 45%;
-    --primary-foreground: 160 80% 5%;
-    --ring: 158 75% 45%;
-  }
-
-  /* Palette: Obsidian Monochrome (Vercel / Resend style) */
-  [data-palette="monochrome"] {
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --ring: 0 0% 20%;
-  }
-  .dark[data-palette="monochrome"] {
-    --background: 0 0% 2%;
-    --card: 0 0% 5.5%;
-    --border: 0 0% 16%;
+    --background: 0 0% 3.5%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 6.5%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 6.5%;
+    --popover-foreground: 0 0% 95%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --ring: 0 0% 80%;
-  }
-
-  /* Palette: Cyber Tangerine / Coral (Modern Raycast warm, NOT muddy) */
-  [data-palette="cyber"] {
-    --primary: 16 90% 52%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 16 90% 52%;
-  }
-  .dark[data-palette="cyber"] {
-    --background: 240 10% 4%;
-    --card: 240 10% 6.5%;
-    --border: 240 6% 16%;
-    --primary: 16 95% 58%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 16 95% 58%;
-  }
-
-  /* Palette: Electric Cyan (Cursor & Copilot style) */
-  [data-palette="cyan"] {
-    --primary: 189 94% 43%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 189 94% 43%;
-  }
-  .dark[data-palette="cyan"] {
-    --background: 240 10% 4%;
-    --card: 240 10% 6.5%;
-    --border: 240 6% 16%;
-    --primary: 189 95% 50%;
-    --primary-foreground: 240 10% 4%;
-    --ring: 189 95% 50%;
-  }
-
-  /* Palette: Nordic Violet (Raycast AI / Superhuman style) */
-  [data-palette="violet"] {
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 262 83% 58%;
-  }
-  .dark[data-palette="violet"] {
-    --background: 240 10% 4%;
-    --card: 240 10% 6.5%;
-    --border: 240 6% 16%;
-    --primary: 263 90% 66%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 263 90% 66%;
-  }
-
-  /* Palette: Classic Orange (Original baseline) */
-  [data-palette="classic-orange"] {
-    --primary: 26 73% 51%;
-    --primary-foreground: 40 20% 98%;
-    --ring: 26 73% 51%;
-  }
-  .dark[data-palette="classic-orange"] {
-    --background: 30 8% 7%;
-    --foreground: 40 15% 92%;
-    --card: 30 8% 9.5%;
-    --card-foreground: 40 15% 92%;
-    --popover: 30 8% 9%;
-    --popover-foreground: 40 15% 92%;
-    --primary: 26 73% 51%;
-    --primary-foreground: 30 20% 8%;
-    --secondary: 30 6% 15%;
-    --secondary-foreground: 40 15% 92%;
-    --muted: 30 6% 14%;
-    --muted-foreground: 30 8% 60%;
-    --accent: 30 6% 17%;
-    --accent-foreground: 40 15% 92%;
-    --destructive: 6 70% 45%;
-    --destructive-foreground: 40 15% 96%;
-    --border: 30 8% 17%;
-    --input: 30 8% 17%;
-    --ring: 26 73% 51%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 0 0% 98%;
   }
 }
 
@@ -193,6 +91,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
 }

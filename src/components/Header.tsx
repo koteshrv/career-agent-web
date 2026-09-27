@@ -306,22 +306,16 @@ export function Header() {
               >
                 Find Jobs
               </Link>
-              <Link
-                to="/tracker"
-                className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/tracker' ? 'text-foreground font-semibold' : 'text-muted-foreground'
-                }`}
-              >
-                Tracker
-              </Link>
-              <Link
-                to="/settings"
-                className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/settings' ? 'text-foreground font-semibold' : 'text-muted-foreground'
-                }`}
-              >
-                Companion Extension
-              </Link>
+              {isAuthenticated && (
+                <Link
+                  to="/tracker"
+                  className={`transition-colors hover:text-foreground ${
+                    location.pathname === '/tracker' ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                  }`}
+                >
+                  Tracker
+                </Link>
+              )}
             </nav>
           )}
 

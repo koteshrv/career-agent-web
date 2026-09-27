@@ -12,7 +12,6 @@ import {
   Building2, 
   FileText, 
   Orbit, 
-  Key, 
   ChevronRight
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -410,27 +409,27 @@ export function Landing() {
               Fair Pricing for Serious Job Seekers
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Start completely free, bring your own API key for unlimited AI usage, or upgrade to Pro for turnkey cloud access.
+              Start completely free with 3 AI match validations daily, or upgrade to Pro for unlimited scoring and companion extension autofill.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Free Tier */}
-            <div className="p-6 bg-card border border-border rounded-2xl shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="p-7 bg-card border border-border rounded-2xl shadow-2xs flex flex-col justify-between space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-base text-foreground">Free Tier</h3>
+                  <h3 className="font-bold text-lg text-foreground">Free Tier</h3>
                   <Badge variant="outline" className="text-[10px] font-semibold">Forever Free</Badge>
                 </div>
                 <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-3xl font-extrabold text-foreground">$0</span>
+                  <span className="text-4xl font-extrabold text-foreground">$0</span>
                   <span className="text-xs text-muted-foreground">/ month</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Perfect for browsing open roles and keeping track of your job search.
                 </p>
 
-                <div className="space-y-2.5 mt-6 text-xs">
+                <div className="space-y-3 mt-6 text-xs">
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                     <span>Search all direct ATS jobs</span>
@@ -455,39 +454,34 @@ export function Landing() {
               </div>
 
               <Link to="/jobs" className="w-full">
-                <Button variant="outline" className="w-full h-10 rounded-xl border-border bg-background hover:bg-muted text-xs font-semibold cursor-pointer">
+                <Button variant="outline" className="w-full h-11 rounded-xl border-border bg-background hover:bg-muted text-xs font-semibold cursor-pointer">
                   Start Free
                 </Button>
               </Link>
             </div>
 
-            {/* BYOK Tier (Bring Your Own Key) */}
-            <div className="p-6 bg-card border-2 border-primary rounded-2xl shadow-md flex flex-col justify-between space-y-6 relative ring-4 ring-primary/10">
+            {/* Pro Plan */}
+            <div className="p-7 bg-card border-2 border-primary rounded-2xl shadow-lg flex flex-col justify-between space-y-6 relative ring-4 ring-primary/10">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-primary text-primary-foreground text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                  Most Flexible / Dev Favorite
+                  Recommended for Active Seekers
                 </span>
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Key className="h-4 w-4 text-primary" />
-                    <h3 className="font-bold text-base text-foreground">BYOK (Own Key)</h3>
-                  </div>
-                  <Badge className="text-[10px] font-semibold bg-primary/15 text-primary border-primary/20">
-                    No Subscription
-                  </Badge>
+                  <h3 className="font-bold text-lg text-foreground">Pro Plan</h3>
+                  <Badge className="text-[10px] font-semibold bg-primary/15 text-primary border-primary/20">Full Access</Badge>
                 </div>
                 <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-3xl font-extrabold text-foreground">$0</span>
-                  <span className="text-xs text-muted-foreground">+ your model API cost (~$0.50/mo)</span>
+                  <span className="text-4xl font-extrabold text-foreground">$19</span>
+                  <span className="text-xs text-muted-foreground">/ month</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Provide your own OpenAI, Anthropic, or Gemini API key. Zero markup, unlimited power.
+                  For engineers who want unlimited AI matching and instant form autofill.
                 </p>
 
-                <div className="space-y-2.5 mt-6 text-xs">
+                <div className="space-y-3 mt-6 text-xs">
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                     <span className="font-medium">Unlimited AI Fit & Gap Scoring</span>
@@ -498,70 +492,24 @@ export function Landing() {
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Unlimited Recruiter Outreach Emails</span>
+                    <span className="font-medium">Unlimited Recruiter Cold Outreach Emails</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span>Keys stored 100% locally in browser</span>
+                    <span className="font-medium">Companion Extension 1-Click ATS Autofill</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span>Support for Claude 3.5, GPT-4o & Gemini</span>
-                  </div>
-                </div>
-              </div>
-
-              <Link to="/settings" className="w-full">
-                <Button className="w-full h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm cursor-pointer">
-                  Configure BYOK in Settings
-                </Button>
-              </Link>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="p-6 bg-card border border-border rounded-2xl shadow-2xs flex flex-col justify-between space-y-6">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-base text-foreground">Pro Cloud</h3>
-                  <Badge variant="outline" className="text-[10px] font-semibold">Turnkey</Badge>
-                </div>
-                <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-3xl font-extrabold text-foreground">$19</span>
-                  <span className="text-xs text-muted-foreground">/ month</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  For engineers who want all AI features ready out-of-the-box without API keys.
-                </p>
-
-                <div className="space-y-2.5 mt-6 text-xs">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>No API key setup required</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Unlimited AI Matching & Tailoring</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Priority Companion Extension Autofill</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Early-bird ATS notifications</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Priority support</span>
+                    <span>Priority direct company portal indexing</span>
                   </div>
                 </div>
               </div>
 
               <Button 
                 onClick={openAuthModal}
-                className="w-full h-10 rounded-xl bg-foreground text-background hover:bg-foreground/90 text-xs font-semibold cursor-pointer"
+                className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md cursor-pointer"
               >
-                Get Started
+                Get Started with Pro
               </Button>
             </div>
           </div>

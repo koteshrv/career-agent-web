@@ -7,7 +7,7 @@ export interface User {
   avatarUrl?: string;
   provider: 'google' | 'email' | 'guest';
   createdAt: string;
-  plan: 'free' | 'pro' | 'byok';
+  plan: 'free' | 'pro';
 }
 
 interface AuthContextType {

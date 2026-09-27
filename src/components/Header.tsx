@@ -13,7 +13,8 @@ import {
   Orbit,
   SlidersHorizontal,
   User as UserIcon,
-  Kanban
+  Kanban,
+  Building2
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
@@ -437,6 +438,20 @@ export function Header() {
             >
               <Kanban className="h-3.5 w-3.5 text-primary" />
               <span className="hidden sm:inline">Tracker</span>
+            </Link>
+
+            {/* Monitored Portals */}
+            <Link
+              to="/portals"
+              className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                location.pathname === '/portals'
+                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                  : 'border-border bg-card text-foreground hover:bg-muted/70'
+              }`}
+              title="Monitored ATS Portals (Greenhouse, Lever, Ashby, Workday)"
+            >
+              <Building2 className="h-3.5 w-3.5 text-primary" />
+              <span className="hidden sm:inline">Portals</span>
             </Link>
 
             {/* Candidate Profile */}

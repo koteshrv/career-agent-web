@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { 
-  User, 
   Mail, 
   MapPin, 
   Link2, 
@@ -161,15 +160,14 @@ export function Profile() {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto bg-background px-4 sm:px-6 py-6 pb-24">
       <div className="container mx-auto max-w-4xl space-y-6">
-        {/* Top Header Banner */}
+        {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <User className="h-6 w-6 text-primary" />
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Candidate Master Profile
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Fill your background once. The CareerAgent Extension reads this to autofill applications on Greenhouse, Lever, and Workday.
+              Fill your background once. The companion extension reads this to autofill applications on Greenhouse, Lever, and Workday.
             </p>
           </div>
 
@@ -189,6 +187,38 @@ export function Profile() {
                 'Save & Sync to Extension'
               )}
             </Button>
+          </div>
+        </div>
+
+        {/* Banner: Extension Requirement & 100% Local Privacy Notice */}
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-5 shadow-2xs space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground tracking-wider uppercase">
+              Important Info
+            </span>
+            <h2 className="text-xs sm:text-sm font-bold text-foreground">
+              Requires Extension &bull; 100% Stored Locally (No Server)
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
+              <p className="font-semibold text-foreground flex items-center gap-1.5">
+                <span>1. Install the Companion Extension</span>
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                To use 1-click autofill on Greenhouse, Lever, and Workday, you need to install the companion browser extension. The extension reads the profile you fill here.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
+              <p className="font-semibold text-foreground flex items-center gap-1.5">
+                <span>2. Zero Server Storage & Zero Tracking</span>
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                We do not have a server or database storing your personal information. Everything is saved strictly on your own computer in browser local storage and stays 100% private to you.
+              </p>
+            </div>
           </div>
         </div>
 

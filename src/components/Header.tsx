@@ -10,7 +10,6 @@ import {
   Briefcase, 
   Calendar, 
   RotateCcw, 
-  Orbit, 
   SlidersHorizontal,
   User as UserIcon,
   Kanban
@@ -215,8 +214,7 @@ export function Header() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex h-14 sm:h-15 items-center justify-between gap-3 sm:gap-6">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity shrink-0">
-            <Orbit className="h-6 w-6 stroke-[2.2]" />
+          <Link to="/" className="hover:opacity-90 transition-opacity shrink-0">
             <span className="font-bold text-lg tracking-tight text-foreground">
               careeragent<span className="text-primary font-semibold">.fyi</span>
             </span>

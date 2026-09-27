@@ -204,12 +204,12 @@ export function AuthModal() {
                 className="w-full h-8 text-xs text-muted-foreground hover:text-foreground hover:bg-muted font-normal gap-1.5 cursor-pointer"
               >
                 <UserCheck className="h-3.5 w-3.5 text-primary" />
-                Continue as Guest (100% Private & Local)
+                Continue as Guest Mode
               </Button>
 
               <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground text-center">
                 <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                No server tracking. All your profile data stays in your browser.
+                Secure & encrypted. Your profile syncs seamlessly with your companion extension.
               </div>
             </div>
           </div>

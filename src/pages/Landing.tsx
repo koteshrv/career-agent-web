@@ -6,13 +6,14 @@ import {
   Upload, 
   Sparkles, 
   CheckCircle2, 
-  ShieldCheck, 
-  Zap, 
   Clock, 
-  Building2, 
-  FileText, 
   Orbit, 
-  ChevronRight
+  ChevronRight,
+  Bell,
+  Send,
+  SlidersHorizontal,
+  Flame,
+  Check
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -30,12 +31,51 @@ const POPULAR_SEARCHES = [
   'Staff Engineer',
 ];
 
+const RECENT_VERIFIED_DROPS = [
+  { company: 'Stripe', role: 'Staff Infrastructure Engineer', time: '18m ago', type: 'Direct Portal', badge: 'Active' },
+  { company: 'Datadog', role: 'Senior Frontend Engineer', time: '34m ago', type: 'Direct ATS', badge: 'Early' },
+  { company: 'Anthropic', role: 'Systems & Reliability Engineer', time: '1h ago', type: 'Direct Portal', badge: 'High Match' },
+  { company: 'Vercel', role: 'Fullstack Platform Engineer', time: '1h 20m ago', type: 'Direct ATS', badge: 'Active' },
+];
+
+const SIMULATOR_PRESETS = {
+  backend: {
+    title: 'Staff Backend Engineer (Distributed Systems)',
+    company: 'Stripe',
+    score: 94,
+    matched: ['Go', 'Distributed Systems', 'PostgreSQL', 'High Concurrency', 'gRPC'],
+    missing: ['Kafka'],
+    bullet: 'Architected event-driven microservices processing 12M+ transactions daily with 99.99% availability, reducing p99 latency from 140ms to 42ms.',
+    outreach: "Hi Sarah — noticed Stripe opened the Staff Infrastructure req. Having scaled distributed microservices handling 12M+ tx/day, I'd love to share how our caching patterns align with your payments reliability roadmap.",
+  },
+  frontend: {
+    title: 'Senior Frontend Engineer (Design Systems)',
+    company: 'Figma',
+    score: 91,
+    matched: ['React', 'TypeScript', 'Tailwind CSS', 'Web Performance', 'Next.js'],
+    missing: ['WebGL'],
+    bullet: 'Spearheaded design system overhaul across 40+ production surfaces, cutting layout shift to zero and improving Lighthouse performance from 71 to 96.',
+    outreach: "Hi Alex — saw Figma's new Senior Frontend role. I recently rebuilt our core design system across 40+ components, cutting render times by 35%. Would love to chat about the team's upcoming UI roadmap.",
+  },
+  ai: {
+    title: 'AI / ML Systems Engineer',
+    company: 'Scale AI',
+    score: 88,
+    matched: ['Python', 'PyTorch', 'Model Serving', 'Docker', 'Kubernetes'],
+    missing: ['Triton Server'],
+    bullet: 'Built high-throughput model serving pipeline using TensorRT and Docker, slashing inference inference cost by 40% while maintaining sub-50ms latency.',
+    outreach: "Hi Marcus — saw the AI Systems opening at Scale. I built a sub-50ms model serving cluster serving 5M daily embeddings. Would love to connect regarding your inference infrastructure challenges.",
+  },
+};
+
 export function Landing() {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const [activePreset, setActivePreset] = useState<'backend' | 'frontend' | 'ai'>('backend');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,31 +129,36 @@ export function Landing() {
     }, 800);
   };
 
+  const currentPresetData = SIMULATOR_PRESETS[activePreset];
+
   return (
     <div className="flex-1 overflow-y-auto bg-background text-foreground scroll-smooth">
       {/* Hero Section */}
-      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-border/60 overflow-hidden">
+      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-22 border-b border-border/60 overflow-hidden">
         {/* Subtle background ambient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary/7 rounded-full blur-[140px] pointer-events-none" />
 
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 relative z-10 text-center">
-          {/* Tagline Badge */}
+          {/* Tagline Badge with Live Pulse */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/25 bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase mb-6 animate-in fade-in slide-in-from-top-3 duration-500">
-            <Orbit className="h-3.5 w-3.5 animate-spin-slow" />
-            Direct ATS Job Index & AI Agent
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Direct Employer Portals & Real-Time Job Index
           </div>
 
           {/* Main Headline */}
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12] mb-5">
-            Automate your tech job search.<br />
-            <span className="text-muted-foreground font-semibold">Match with AI. </span>
-            <span className="text-primary italic">Apply in seconds.</span>
+            Apply in the first 2 hours.<br />
+            <span className="text-muted-foreground font-semibold">Before the recruiter pile hits </span>
+            <span className="text-primary italic">500.</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
-            Verified tech jobs straight from employer ATS endpoints (Greenhouse, Lever, Ashby, Workday).
-            Zero ghost jobs, instant 0–100% resume match scoring, and tailored recruiter outreach.
+            Verified tech jobs indexed straight from official employer career pages and custom ATS endpoints.
+            Score your resume across 10 jobs for free, generate tailored pitches, and get real-time drop alerts the minute dream companies hire.
           </p>
 
           {/* Hero Search Box */}
@@ -126,7 +171,7 @@ export function Landing() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search jobs by title, tech stack, or company (e.g. React, Python, Datadog)..."
+                placeholder="Search jobs by title, tech stack, or company (e.g. React, Python, Stripe)..."
                 className="w-full py-4 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
               />
               <div className="pr-2">
@@ -154,15 +199,46 @@ export function Landing() {
             </div>
           </div>
 
+          {/* Live Recent Drops Ticker Banner */}
+          <div className="max-w-3xl mx-auto mb-8 bg-card/60 backdrop-blur-xs border border-border rounded-xl p-3 shadow-2xs text-left">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/60 text-[11px]">
+              <div className="flex items-center gap-2 font-semibold text-foreground">
+                <Flame className="h-3.5 w-3.5 text-amber-500" />
+                <span>Live Verified Job Drops</span>
+                <span className="text-[10px] text-muted-foreground font-normal">(Direct from employer portals)</span>
+              </div>
+              <Link to="/jobs" className="text-primary hover:underline font-semibold flex items-center gap-0.5">
+                View All <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              {RECENT_VERIFIED_DROPS.map((drop, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => navigate(`/jobs?q=${encodeURIComponent(drop.company)}`)}
+                  className="flex items-center justify-between p-2 rounded-lg bg-background border border-border/80 hover:border-primary/50 transition-colors cursor-pointer"
+                >
+                  <div className="min-w-0 pr-2">
+                    <p className="font-semibold text-foreground truncate">{drop.company} • <span className="font-normal text-muted-foreground">{drop.role}</span></p>
+                    <p className="text-[10px] text-muted-foreground">{drop.type} • {drop.time}</p>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+                    {drop.badge}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Quick CTA Actions */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button
               size="lg"
               onClick={openAuthModal}
               className="h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-md gap-2 cursor-pointer"
             >
               <Sparkles className="h-4 w-4" />
-              {user ? 'Update Profile & Match Jobs' : 'Sign In & Match Resume'}
+              {user ? 'Update Profile & Match 10 Jobs' : 'Upload Resume & Match 10 Jobs Free'}
             </Button>
             <Link to="/jobs">
               <Button
@@ -170,7 +246,7 @@ export function Landing() {
                 size="lg"
                 className="h-11 px-6 rounded-xl border-border bg-card text-foreground hover:bg-muted font-semibold text-xs shadow-2xs gap-2 cursor-pointer"
               >
-                Explore All Jobs
+                Browse All Direct Jobs
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -178,7 +254,194 @@ export function Landing() {
         </div>
       </section>
 
-      {/* The 3-Step Flow: Login -> Upload Resume -> Boom: Matched Jobs */}
+      {/* The Recruiter Pipeline Reality: 2 Hours vs 48 Hours */}
+      <section className="py-14 sm:py-18 border-b border-border/60 bg-muted/20">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-foreground text-xs font-semibold mb-2">
+              <Clock className="h-3.5 w-3.5 text-primary" />
+              The Recruiter Reality
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+              Why Speed Determines 80% of Interview Callbacks
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Most recruiters manage 20 open reqs simultaneously. They review applications first-in, first-out — and stop as soon as their first 5 screens are booked.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* The 48-Hour Black Hole */}
+            <div className="p-6 rounded-2xl bg-card border border-destructive/25 shadow-2xs space-y-4 relative">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <span className="text-xs font-bold text-destructive flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-destructive" />
+                  The Typical 48-Hour Applicant
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground">Applicant #412</span>
+              </div>
+              <ul className="space-y-3 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-foreground">Hour 36:</span> Discovers posting on a stale job board aggregator.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-foreground">Hour 38:</span> Spends 45 minutes retyping work history into a lengthy ATS form.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-foreground">Hour 48:</span> Recruiter has already filled their 5 phone screen slots from early applicants.
+                </li>
+                <li className="flex items-start gap-2 text-destructive font-medium">
+                  Result: Resume sits unread in the ATS backlog. Automated rejection 3 weeks later.
+                </li>
+              </ul>
+            </div>
+
+            {/* The CareerAgent Advantage */}
+            <div className="p-6 rounded-2xl bg-card border-2 border-primary shadow-sm space-y-4 relative ring-4 ring-primary/10">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
+                  The CareerAgent Edge
+                </span>
+                <span className="text-[11px] font-mono text-primary font-bold">Applicant #6</span>
+              </div>
+              <ul className="space-y-3 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-foreground">Minute 10:</span> Instant Drop Alert fires via Telegram/Email as the role goes live on the employer portal.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-foreground">Minute 15:</span> AI match score (92%) and tailored resume bullets generated instantly.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-foreground">Minute 20:</span> Companion Extension populates 100% of application fields in 3 seconds.
+                </li>
+                <li className="flex items-start gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                  Result: Recruiter opens your application first thing tomorrow morning. Screen booked by Thursday.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Match & Tailored Material Simulator */}
+      <section className="py-16 sm:py-20 border-b border-border/60">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-3">
+              See How the AI Match Engine Works
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Select a sample engineering discipline below to preview real-time 0–100% fit scoring, matched skills breakdown, and tailored materials.
+            </p>
+
+            {/* Role Preset Switcher */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-muted border border-border mt-5">
+              <button
+                onClick={() => setActivePreset('backend')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activePreset === 'backend' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Backend Engineer
+              </button>
+              <button
+                onClick={() => setActivePreset('frontend')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activePreset === 'frontend' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Frontend Engineer
+              </button>
+              <button
+                onClick={() => setActivePreset('ai')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activePreset === 'ai' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                AI / ML Systems
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Simulator Card Preview */}
+          <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-lg space-y-5 animate-in fade-in duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-3">
+              <div>
+                <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">{currentPresetData.company}</span>
+                <h3 className="font-bold text-base text-foreground">{currentPresetData.title}</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">Match Score:</span>
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  {currentPresetData.score}% Fit
+                </span>
+              </div>
+            </div>
+
+            {/* Matched vs Missing Skills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-3.5 rounded-xl bg-background border border-border space-y-1.5">
+                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <Check className="h-3 w-3" /> Matched Skills & Stack
+                </span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {currentPresetData.matched.map((s) => (
+                    <span key={s} className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-background border border-border space-y-1.5">
+                <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  <SlidersHorizontal className="h-3 w-3" /> Gap to Address in Outreach
+                </span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {currentPresetData.missing.map((s) => (
+                    <span key={s} className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-medium">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tailored Bullet Point */}
+            <div className="p-3.5 rounded-xl bg-background border border-border space-y-1 text-xs">
+              <span className="text-[11px] font-semibold text-primary flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> Generated Tailored Resume Bullet (1-Click Copy)
+              </span>
+              <p className="text-foreground leading-relaxed italic">
+                "{currentPresetData.bullet}"
+              </p>
+            </div>
+
+            {/* Recruiter Outreach Cold DM */}
+            <div className="p-3.5 rounded-xl bg-background border border-border space-y-1 text-xs">
+              <span className="text-[11px] font-semibold text-primary flex items-center gap-1">
+                <Send className="h-3 w-3" /> 3-Sentence Recruiter Check-In Template
+              </span>
+              <p className="text-muted-foreground leading-relaxed">
+                "{currentPresetData.outreach}"
+              </p>
+            </div>
+
+            <div className="pt-2 text-center">
+              <Button
+                onClick={openAuthModal}
+                className="h-10 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm gap-2 cursor-pointer"
+              >
+                <Upload className="h-3.5 w-3.5" />
+                Upload Your Resume to Score Live Roles
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The 3-Step Flow: Upload Resume -> 10 Free Matches -> Boom */}
       <section className="py-16 sm:py-20 border-b border-border/60 bg-muted/20">
         <div className="container mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -186,7 +449,7 @@ export function Landing() {
               How CareerAgent Works
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              No endless form filling or fake job aggregators. Three straightforward steps to match and apply.
+              Direct employer data, zero recruiter spam, and immediate personalized job matches.
             </p>
           </div>
 
@@ -198,12 +461,12 @@ export function Landing() {
                   01
                 </span>
                 <Badge variant="outline" className="text-[10px] font-medium border-border">
-                  Zero Friction
+                  Quick Start
                 </Badge>
               </div>
               <h3 className="font-bold text-base text-foreground">Sign In or Guest Mode</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Connect via Google SSO or continue instantly as a Guest. 100% private: all profile data is stored locally in your browser.
+                Connect via Google SSO or continue instantly as a Guest. Your candidate profile syncs securely across the web app and companion extension.
               </p>
               <div className="pt-2 mt-auto">
                 <button
@@ -225,9 +488,9 @@ export function Landing() {
                   AI Parsing
                 </Badge>
               </div>
-              <h3 className="font-bold text-base text-foreground">Upload Resume</h3>
+              <h3 className="font-bold text-base text-foreground">Drop Resume (10 Free Matches)</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Drop your resume or paste your skills. Our local parser extracts your tech stack, years of experience, and target roles in seconds.
+                Upload your resume. Our parsing engine extracts your tech stack, years of experience, and target roles, calculating 0–100% fit scores across live roles.
               </p>
               <div className="pt-2 mt-auto">
                 <label className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
@@ -246,9 +509,9 @@ export function Landing() {
                   Boom!
                 </Badge>
               </div>
-              <h3 className="font-bold text-base text-foreground">Matched Jobs & Outreach</h3>
+              <h3 className="font-bold text-base text-foreground">Apply & Track with Nudges</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Instantly see 0–100% fit scores on live roles, get tailored resume bullets, and generate 3-sentence recruiter cold emails with 1-click copy.
+                Apply in seconds via the companion extension, track applications on the Kanban board, and get automatic 3-day recruiter follow-up check-in nudges.
               </p>
               <div className="pt-2 mt-auto">
                 <Link
@@ -270,14 +533,14 @@ export function Landing() {
                 </div>
                 <h4 className="font-bold text-base text-foreground">Boom! Profile Analyzed Successfully</h4>
                 <p className="text-xs text-muted-foreground">
-                  Extracted skills: React, TypeScript, Node.js, Python, AWS. Redirecting to your matched jobs...
+                  Extracted skills: React, TypeScript, Node.js, Python, AWS. Loading your 10 free AI-matched roles...
                 </p>
               </div>
             ) : isUploading ? (
               <div className="space-y-3 py-3">
                 <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
                 <p className="text-xs font-semibold text-foreground">Parsing resume skills and experience...</p>
-                <p className="text-[11px] text-muted-foreground">Running locally in browser via CareerAgent parser</p>
+                <p className="text-[11px] text-muted-foreground">Running secure parsing engine via CareerAgent</p>
               </div>
             ) : (
               <label
@@ -296,10 +559,10 @@ export function Landing() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">
-                    Drop your resume here to unlock AI match scores
+                    Drop your resume here to unlock your 10 Free AI Matches
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Supports PDF, DOCX, or TXT. 100% private — your resume never leaves your computer.
+                    Supports PDF, DOCX, or TXT. Parsed securely and synced to your profile.
                   </p>
                 </div>
                 <Button
@@ -308,7 +571,7 @@ export function Landing() {
                   variant="outline"
                   className="h-8 px-4 text-xs font-semibold rounded-lg border-border bg-background hover:bg-muted pointer-events-none mt-2"
                 >
-                  Select File
+                  Select Resume File
                 </Button>
               </label>
             )}
@@ -316,101 +579,39 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Feature Showcase Grid */}
-      <section className="py-16 sm:py-20 border-b border-border/60">
+      {/* Transparent Pricing Section with Global + India PPP Toggle */}
+      <section id="pricing" className="py-16 sm:py-24 border-b border-border/60">
         <div className="container mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-3">
-              Engineered for the Modern Tech Job Hunt
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Say goodbye to ghost listings, black-hole applications, and copy-pasting the same answers hundreds of times.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Feature 1 */}
-            <div className="p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">Direct ATS Monitoring</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Indexed directly from official Greenhouse, Ashby, Lever, and Workday employer endpoints. No stale job boards or expired listings.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">0–100% Fit & Gap Breakdown</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                See exact match scores for every job based on your tech stack and YoE. Identify matched skills and missing qualifications instantly.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <FileText className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">Tailored Resume Bullets</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                1-click generation of metrics-driven bullet points customized to the job’s specific requirements. Ready to copy into your CV.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Clock className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">3-Day Follow-Up Alert Queue</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Never get ghosted. The tracker automatically flags applications reaching 3+ days with pre-drafted recruiter check-in emails.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Building2 className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">Company Portals Directory</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Browse direct career portals across AI/ML, Dev Tools, Fintech, and Enterprise SaaS. Filter by ATS provider and jump straight to open roles.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Zap className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">Companion Chrome Extension</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Populates your name, experience, links, and answers on Greenhouse, Lever, Ashby, and Workday applications in 3 seconds.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Transparent Pricing Section */}
-      <section id="pricing" className="py-16 sm:py-24 border-b border-border/60 bg-muted/20">
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-foreground text-xs font-semibold mb-3">
-              Simple & Transparent
+              Coffee-Price SaaS
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-3">
-              Fair Pricing for Serious Job Seekers
+              Affordable Pricing for Serious Tech Job Seekers
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Start completely free with 3 AI match validations daily, or upgrade to Pro for unlimited scoring and companion extension autofill.
+            <p className="text-xs sm:text-sm text-muted-foreground mb-5">
+              Free to search and match your first 10 roles. Upgrade to Pro for the price of a coffee to unlock instant drop alerts and unlimited scoring.
             </p>
+
+            {/* Currency Switcher */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-muted border border-border">
+              <button
+                onClick={() => setCurrency('USD')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  currency === 'USD' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                🇺🇸 USD ($)
+              </button>
+              <button
+                onClick={() => setCurrency('INR')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  currency === 'INR' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                🇮🇳 INR (₹)
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
@@ -422,25 +623,27 @@ export function Landing() {
                   <Badge variant="outline" className="text-[10px] font-semibold">Forever Free</Badge>
                 </div>
                 <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-4xl font-extrabold text-foreground">$0</span>
+                  <span className="text-4xl font-extrabold text-foreground">
+                    {currency === 'USD' ? '$0' : '₹0'}
+                  </span>
                   <span className="text-xs text-muted-foreground">/ month</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Perfect for browsing open roles and keeping track of your job search.
+                  Everything you need to search direct tech jobs and match your top roles.
                 </p>
 
                 <div className="space-y-3 mt-6 text-xs">
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Search all direct ATS jobs</span>
+                    <span>Search all direct employer career portals</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                     <span>Company Portals Directory access</span>
                   </div>
-                  <div className="flex items-center gap-2 text-foreground">
+                  <div className="flex items-center gap-2 text-foreground font-medium text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>3 AI Match & Bullet generations / day</span>
+                    <span>10 Free AI-matched jobs scored against your resume</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
@@ -448,7 +651,7 @@ export function Landing() {
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>100% Local Browser Privacy</span>
+                    <span>Encrypted profile sync across devices</span>
                   </div>
                 </div>
               </div>
@@ -470,21 +673,29 @@ export function Landing() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-lg text-foreground">Pro Plan</h3>
-                  <Badge className="text-[10px] font-semibold bg-primary/15 text-primary border-primary/20">Full Access</Badge>
+                  <h3 className="font-bold text-lg text-foreground">Pro Pass</h3>
+                  <Badge className="text-[10px] font-semibold bg-primary/15 text-primary border-primary/20">
+                    {currency === 'USD' ? 'Just $4.99/mo' : 'Just ₹299/mo'}
+                  </Badge>
                 </div>
                 <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-4xl font-extrabold text-foreground">$19</span>
+                  <span className="text-4xl font-extrabold text-foreground">
+                    {currency === 'USD' ? '$4.99' : '₹299'}
+                  </span>
                   <span className="text-xs text-muted-foreground">/ month</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  For engineers who want unlimited AI matching and instant form autofill.
+                  The cost of a single coffee. Apply in the first 2 hours and stand out from the 500-resume pile.
                 </p>
 
                 <div className="space-y-3 mt-6 text-xs">
+                  <div className="flex items-center gap-2 text-foreground font-semibold text-primary">
+                    <Bell className="h-4 w-4 text-primary shrink-0" />
+                    <span>Instant Company Drop Alerts (Telegram / Email)</span>
+                  </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Unlimited AI Fit & Gap Scoring</span>
+                    <span className="font-medium">Unlimited AI Fit & Gap Scoring on every role</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
@@ -496,11 +707,11 @@ export function Landing() {
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Companion Extension 1-Click ATS Autofill</span>
+                    <span className="font-medium">Companion Extension 1-Click Form Autofill</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span>Priority direct company portal indexing</span>
+                    <span>3-Month Season Pass Option ({currency === 'USD' ? '$12 one-time' : '₹699 one-time'})</span>
                   </div>
                 </div>
               </div>
@@ -537,7 +748,7 @@ export function Landing() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} careeragent.fyi. 100% client-side privacy.
+              &copy; {new Date().getFullYear()} careeragent.fyi. Encrypted candidate profile sync & verified direct job engine.
             </p>
           </div>
         </div>

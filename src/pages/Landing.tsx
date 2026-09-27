@@ -198,50 +198,50 @@ export function Landing() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[450px] bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
 
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 relative z-10 text-center">
-          {/* Linear-Style Status Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border/80 bg-card/80 backdrop-blur-md text-foreground text-xs font-mono font-medium shadow-2xs mb-6 animate-in fade-in slide-in-from-top-3 duration-500">
+          {/* Live Status Indicator */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border/70 bg-card/80 backdrop-blur-md text-foreground text-xs font-mono shadow-2xs mb-6">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-muted-foreground">8,420+ LIVE DIRECT ROLES</span>
-            <span className="text-border">|</span>
-            <span className="text-primary font-semibold">APPLY IN HOUR 1–2</span>
+            <span className="text-muted-foreground">8,420+ live direct roles</span>
+            <span className="text-border">·</span>
+            <span className="text-foreground font-medium">Direct employer career portals</span>
           </div>
 
-          {/* Headline with Craft Negative Tracking */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.035em] text-foreground leading-[1.08] max-w-4xl mx-auto mb-6">
-            The command center for your tech job search.
+          {/* Headline - Uniform, confident typography without single-word accenting */}
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.08] max-w-4xl mx-auto mb-6">
+            The command center for your tech job search
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8 font-normal">
-            Direct employer postings without recruiter middlemen. Score your resume across 10 jobs free, generate tailored outreach, and get instant drop alerts before the applicant pile hits 500.
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
+            Verified tech jobs straight from employer career endpoints. Zero ghost jobs, instant resume match scoring across 10 jobs free, tailored recruiter outreach, and real-time drop alerts before the applicant queue fills up.
           </p>
 
-          {/* Raycast / Linear Style Command Search Bar */}
+          {/* Command Search Bar */}
           <div className="max-w-2xl mx-auto mb-6">
             <form 
               onSubmit={handleSearchSubmit} 
-              className="relative flex items-center bg-card/90 backdrop-blur-md border border-border rounded-2xl p-1.5 shadow-xl focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all"
+              className="relative flex items-center bg-card border border-border rounded-xl p-1.5 shadow-lg focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all"
             >
               <div className="pl-3 pr-2 text-muted-foreground">
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search jobs by title, company, or stack (e.g. Go, React, Stripe)..."
+                placeholder="Search by title, company, or stack (e.g. Go, React, Distributed Systems)..."
                 className="w-full py-2.5 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-sans"
               />
               <div className="flex items-center gap-1.5 pr-1">
-                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-mono text-muted-foreground bg-muted/60 border border-border/80 rounded-md">
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-mono text-muted-foreground bg-muted border border-border/80 rounded-md">
                   ⌘K
                 </kbd>
                 <Button 
                   type="submit" 
-                  className="h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-sm cursor-pointer"
+                  className="h-9 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-xs cursor-pointer"
                 >
                   Search
                 </Button>
@@ -250,12 +250,12 @@ export function Landing() {
 
             {/* Trending Quick Search Chips */}
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 text-xs text-muted-foreground font-mono">
-              <span className="font-semibold text-foreground/70 uppercase text-[10px] tracking-wider">Fast Filters:</span>
+              <span className="text-muted-foreground text-[11px]">Quick filters:</span>
               {POPULAR_SEARCHES.map((term) => (
                 <button
                   key={term}
                   onClick={() => navigate(`/jobs?q=${encodeURIComponent(term)}`)}
-                  className="px-2.5 py-1 rounded-lg border border-border/70 bg-card hover:bg-muted text-foreground/90 transition-colors cursor-pointer text-[11px]"
+                  className="px-2.5 py-1 rounded-md border border-border bg-card/60 hover:bg-muted text-foreground transition-colors cursor-pointer text-[11px]"
                 >
                   {term}
                 </button>
@@ -268,10 +268,10 @@ export function Landing() {
             <Button
               size="lg"
               onClick={openAuthModal}
-              className="h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-md gap-2 cursor-pointer"
+              className="h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-sm gap-2 cursor-pointer"
             >
               <Sparkles className="h-4 w-4" />
-              {user ? 'View Your 10 Matched Roles' : 'Upload Resume & Get 10 Matches Free'}
+              {user ? 'View Your 10 Matched Roles' : 'Get 10 Matches Free with Resume'}
             </Button>
             <Link to="/jobs">
               <Button
@@ -279,32 +279,32 @@ export function Landing() {
                 size="lg"
                 className="h-11 px-6 rounded-xl border-border bg-card text-foreground hover:bg-muted font-semibold text-xs shadow-2xs gap-2 cursor-pointer"
               >
-                Browse All 8,420+ Direct Jobs
+                Browse All Direct Roles
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* LINEAR-STYLE PRODUCT COCKPIT WINDOW (Interactive Real-Time Preview) */}
+        {/* Interactive Product Cockpit Window */}
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 mt-12 relative z-20">
           <div className="rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden text-left">
             {/* Window Chrome Titlebar */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/70 bg-muted/40 text-xs">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-border inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-border inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-border inline-block" />
                 </div>
                 <span className="ml-3 font-mono text-[11px] text-muted-foreground flex items-center gap-1.5">
                   <Terminal className="h-3 w-3 text-primary" />
-                  careeragent.fyi / interactive-live-inspector
+                  live-dispatch-console
                 </span>
               </div>
-              <div className="flex items-center gap-2 font-mono text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+              <div className="flex items-center gap-2 font-mono text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                LIVE STREAMING ATS FEED
+                Live streaming feed
               </div>
             </div>
 
@@ -312,9 +312,9 @@ export function Landing() {
             <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[440px]">
               {/* Left Column: Live Verified Job Stream (5 cols) */}
               <div className="lg:col-span-5 border-b lg:border-b-0 lg:border-r border-border/70 p-3 sm:p-4 space-y-2 bg-muted/10">
-                <div className="flex items-center justify-between px-2 pb-1.5 text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-                  <span>Live Requisition Queue</span>
-                  <span>Fit Score</span>
+                <div className="flex items-center justify-between px-2 pb-1.5 text-[11px] font-mono text-muted-foreground">
+                  <span>Direct requisition queue</span>
+                  <span>Fit score</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -334,14 +334,14 @@ export function Landing() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className="font-bold text-xs text-foreground truncate">{job.company}</span>
-                              <span className="text-[10px] font-mono text-muted-foreground">• {job.postedTime}</span>
+                              <span className="text-[10px] font-mono text-muted-foreground">· {job.postedTime}</span>
                             </div>
                             <p className="text-xs text-muted-foreground font-medium truncate mt-0.5">{job.role}</p>
                             <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 mt-1">{job.salary}</p>
                           </div>
 
                           <div className="flex flex-col items-end shrink-0">
-                            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                               {job.score}%
                             </span>
                             <span className="text-[9px] font-mono text-muted-foreground mt-1">{job.portalType}</span>
@@ -375,13 +375,13 @@ export function Landing() {
                         </Badge>
                       </div>
                       <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mt-0.5">{selectedJob.role}</h4>
-                      <p className="text-[11px] font-mono text-muted-foreground">{selectedJob.location} • {selectedJob.salary}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground">{selectedJob.location} · {selectedJob.salary}</p>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-xs font-mono font-semibold text-muted-foreground">Compatibility</div>
-                      <div className="text-xl font-mono font-black text-emerald-600 dark:text-emerald-400">
-                        {selectedJob.score}% MATCH
+                      <div className="text-xs font-mono text-muted-foreground">Compatibility</div>
+                      <div className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {selectedJob.score}% match
                       </div>
                     </div>
                   </div>
@@ -390,7 +390,7 @@ export function Landing() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3.5 text-xs">
                     <div className="p-3 rounded-xl bg-background border border-border/80 space-y-1.5">
                       <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-                        <span className="flex items-center gap-1"><Check className="h-3 w-3" /> Matched Stack</span>
+                        <span className="flex items-center gap-1"><Check className="h-3 w-3" /> Matched stack</span>
                         <span>100%</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -404,8 +404,8 @@ export function Landing() {
 
                     <div className="p-3 rounded-xl bg-background border border-border/80 space-y-1.5">
                       <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-amber-600 dark:text-amber-400">
-                        <span className="flex items-center gap-1"><SlidersHorizontal className="h-3 w-3" /> Skill Gap</span>
-                        <span>Addressed in Bullet</span>
+                        <span className="flex items-center gap-1"><SlidersHorizontal className="h-3 w-3" /> Skill gap</span>
+                        <span>Addressed in bullet</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {selectedJob.missing.map((s) => (
@@ -419,31 +419,31 @@ export function Landing() {
 
                   {/* Tailored Resume Bullet with 1-Click Copy */}
                   <div className="mt-3.5 p-3 rounded-xl bg-background border border-border/80 space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-primary">
-                      <span className="flex items-center gap-1.5"><Sparkles className="h-3 w-3" /> Tailored Resume Bullet (Metrics-Engineered)</span>
+                    <div className="flex items-center justify-between text-[11px] font-mono font-medium text-primary">
+                      <span className="flex items-center gap-1.5"><Sparkles className="h-3 w-3" /> Tailored resume bullet</span>
                       <button
                         onClick={handleCopyBullet}
                         className="hover:underline flex items-center gap-1 cursor-pointer text-[10px]"
                       >
                         {copiedBullet ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-                        {copiedBullet ? 'Copied to Clipboard!' : 'Copy Bullet'}
+                        {copiedBullet ? 'Copied' : 'Copy'}
                       </button>
                     </div>
-                    <p className="text-xs text-foreground italic leading-relaxed">
+                    <p className="text-xs text-foreground leading-relaxed">
                       "{selectedJob.bullet}"
                     </p>
                   </div>
 
                   {/* Recruiter Outreach with 1-Click Copy */}
                   <div className="mt-3 p-3 rounded-xl bg-background border border-border/80 space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-primary">
-                      <span className="flex items-center gap-1.5"><Send className="h-3 w-3" /> 3-Sentence Recruiter Outreach Pitch</span>
+                    <div className="flex items-center justify-between text-[11px] font-mono font-medium text-primary">
+                      <span className="flex items-center gap-1.5"><Send className="h-3 w-3" /> 3-sentence recruiter note</span>
                       <button
                         onClick={handleCopyOutreach}
                         className="hover:underline flex items-center gap-1 cursor-pointer text-[10px]"
                       >
                         {copiedOutreach ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-                        {copiedOutreach ? 'Copied Pitch!' : 'Copy Email'}
+                        {copiedOutreach ? 'Copied note' : 'Copy note'}
                       </button>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
@@ -456,7 +456,7 @@ export function Landing() {
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/70">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                     <Zap className="h-3.5 w-3.5 text-primary" />
-                    <span>Companion Extension: Autofills Greenhouse/Lever/Ashby</span>
+                    <span>Autofill companion: Fills direct application fields in 3 seconds</span>
                   </div>
 
                   <Button
@@ -468,17 +468,17 @@ export function Landing() {
                     {isAutofilling ? (
                       <>
                         <span className="w-3 h-3 rounded-full border border-primary-foreground border-t-transparent animate-spin" />
-                        Autofilling 14 Form Fields...
+                        Populating form fields...
                       </>
                     ) : autofillDone ? (
                       <>
                         <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-                        Form Populated in 1.4s!
+                        Form populated in 1.4s
                       </>
                     ) : (
                       <>
                         <Zap className="h-3.5 w-3.5" />
-                        Simulate 1-Click Autofill
+                        Simulate 1-click autofill
                       </>
                     )}
                   </Button>
@@ -489,50 +489,49 @@ export function Landing() {
         </div>
       </section>
 
-      {/* RAYCAST-STYLE DROP ALERT SHOWCASE: "Be Applicant #6, Not #412" */}
-      <section className="py-16 sm:py-22 border-b border-border/60 bg-muted/20">
+      {/* DROP ALERT SHOWCASE */}
+      <section className="py-16 sm:py-20 border-b border-border/60 bg-muted/20">
         <div className="container mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-foreground text-xs font-mono font-semibold mb-3">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-foreground text-xs font-mono mb-3">
               <Bell className="h-3.5 w-3.5 text-primary" />
-              REAL-TIME DROP ALERTS
+              Real-time drop alerts
             </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.03em] text-foreground mb-3">
-              Apply in the first 2 hours.
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">
+              Apply in the first two hours
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Recruiters manage 20 open reqs and stop reviewing applications once their first 5 phone screens are booked. 
-              Our bot pings your Telegram or Email within 5 minutes of a job dropping on official employer career pages.
+              Recruiters manage dozens of open roles and usually pause active review once their initial batch of interview screens is scheduled. Direct drop alerts ping your Telegram or Email within minutes of an opening going live.
             </p>
           </div>
 
-          {/* Hyper-realistic Telegram / macOS Alert Card Mockup */}
-          <div className="max-w-xl mx-auto bg-card border border-border/80 rounded-2xl shadow-xl p-5 sm:p-6 space-y-4 relative">
+          {/* Alert Notification Mockup */}
+          <div className="max-w-xl mx-auto bg-card border border-border rounded-xl shadow-lg p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border text-xs">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
                   <Orbit className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-xs text-foreground">CareerAgent Alert Bot</h4>
-                  <p className="text-[10px] text-muted-foreground font-mono">Telegram & Email Direct Notification</p>
+                  <h4 className="font-semibold text-xs text-foreground">CareerAgent Alert Dispatcher</h4>
+                  <p className="text-[10px] text-muted-foreground font-mono">Telegram · Email webhook</p>
                 </div>
               </div>
               <span className="text-[10px] font-mono text-muted-foreground">Just now</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-background border border-border/80 space-y-2 text-xs">
+            <div className="p-3.5 rounded-lg bg-background border border-border space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-foreground">⚡ Stripe dropped: Staff Infrastructure Engineer</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-bold">
-                  95% Match
+                <span className="font-semibold text-foreground">Stripe opened: Staff Infrastructure Engineer</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-semibold">
+                  95% match
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                <span className="font-semibold text-foreground">Timing advantage:</span> Dropped 11 minutes ago on Ashby. Only 6 applicants in the pipeline so far.
+                <span className="font-medium text-foreground">Timing window:</span> Published 11 minutes ago on employer portal. Applicant count under 10.
               </p>
               <p className="text-[11px] font-mono text-foreground/80">
-                Skills: Go • Distributed Systems • High Concurrency • PostgreSQL
+                Stack: Go · Distributed Systems · High Concurrency · PostgreSQL
               </p>
             </div>
 
@@ -541,18 +540,18 @@ export function Landing() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedJob(COCKPIT_JOBS[0])}
-                className="h-9 rounded-xl border-border bg-background hover:bg-muted text-xs font-semibold gap-1.5 cursor-pointer"
+                className="h-9 rounded-lg border-border bg-background hover:bg-muted text-xs font-semibold gap-1.5 cursor-pointer"
               >
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                Preview Tailored Bullets
+                Preview tailored bullets
               </Button>
               <Link to="/jobs?q=Stripe">
                 <Button
                   size="sm"
-                  className="w-full h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold gap-1.5 cursor-pointer shadow-sm"
+                  className="w-full h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Zap className="h-3.5 w-3.5" />
-                  Apply Early (Top 10)
+                  View live posting
                 </Button>
               </Link>
             </div>
@@ -560,67 +559,67 @@ export function Landing() {
         </div>
       </section>
 
-      {/* LINEAR-STYLE BENTO GRID: Core Engine Features */}
-      <section className="py-16 sm:py-24 border-b border-border/60">
+      {/* CORE ENGINE SPECIFICATION */}
+      <section className="py-16 sm:py-20 border-b border-border/60">
         <div className="container mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.03em] text-foreground mb-3">
-              Engineered with extreme craft.
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">
+              Built for precision job seekers
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Everything built for high-conviction tech engineers and product managers who respect their time.
+              Every component designed to maximize response rates and eliminate repetitive application friction.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Bento 1: Direct ATS Indexing */}
-            <div className="p-6 bg-card border border-border rounded-2xl shadow-2xs space-y-3 flex flex-col justify-between">
+            {/* Feature 1 */}
+            <div className="p-6 bg-card border border-border rounded-xl space-y-3 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                  <ShieldCheck className="h-5 w-5" />
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <ShieldCheck className="h-4 w-4" />
                 </div>
-                <h3 className="font-bold text-sm text-foreground">Zero Recruiter Spam</h3>
+                <h3 className="font-semibold text-sm text-foreground">Direct employer indexing</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                  We scrape directly from employer career endpoints and custom ATS platforms. No stale aggregators, expired ghost jobs, or third-party recruiters.
+                  Scraped directly from employer career endpoints and custom ATS platforms. No stale aggregators, expired postings, or third-party recruiters.
                 </p>
               </div>
-              <div className="pt-3 border-t border-border/70 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
-                <span>Verified First-Party</span>
-                <span className="text-emerald-500 font-semibold">100% Direct</span>
+              <div className="pt-3 border-t border-border flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <span>Direct endpoints</span>
+                <span className="text-emerald-500 font-medium">100% verified</span>
               </div>
             </div>
 
-            {/* Bento 2: 1-Click Form Fill Extension */}
-            <div className="p-6 bg-card border border-border rounded-2xl shadow-2xs space-y-3 flex flex-col justify-between">
+            {/* Feature 2 */}
+            <div className="p-6 bg-card border border-border rounded-xl space-y-3 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                  <Zap className="h-5 w-5" />
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <Zap className="h-4 w-4" />
                 </div>
-                <h3 className="font-bold text-sm text-foreground">3-Second Form Fill</h3>
+                <h3 className="font-semibold text-sm text-foreground">Rapid form autofill</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                  Fill your background once. Our companion Chrome extension maps contact info, links, work authorization, and customized essay responses in 3 seconds.
+                  Set up your candidate background once. The companion browser extension maps contact details, URLs, work authorization, and custom questions in seconds.
                 </p>
               </div>
-              <div className="pt-3 border-t border-border/70 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
-                <span>Greenhouse, Ashby, Lever</span>
-                <span className="text-primary font-semibold">1-Click</span>
+              <div className="pt-3 border-t border-border flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <span>Major ATS platforms</span>
+                <span className="text-primary font-medium">1-click fill</span>
               </div>
             </div>
 
-            {/* Bento 3: 3-Day Follow-Up Alert Queue */}
-            <div className="p-6 bg-card border border-border rounded-2xl shadow-2xs space-y-3 flex flex-col justify-between">
+            {/* Feature 3 */}
+            <div className="p-6 bg-card border border-border rounded-xl space-y-3 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                  <Clock className="h-5 w-5" />
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <Clock className="h-4 w-4" />
                 </div>
-                <h3 className="font-bold text-sm text-foreground">3-Day Follow-Up Nudges</h3>
+                <h3 className="font-semibold text-sm text-foreground">3-day follow-up cadence</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                  Never get ghosted in the ATS black hole. The integrated Kanban board automatically generates polished recruiter follow-up check-in emails after 3 days.
+                  Avoid disappearing into an ATS queue. The built-in tracker flags applications due for a follow-up after 3 days and drafts ready-to-send check-in messages.
                 </p>
               </div>
-              <div className="pt-3 border-t border-border/70 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
-                <span>Automated Queue</span>
-                <span className="text-amber-500 font-semibold">Snooze 3d / 7d</span>
+              <div className="pt-3 border-t border-border flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <span>Follow-up queue</span>
+                <span className="text-amber-500 font-medium">Smart alerts</span>
               </div>
             </div>
           </div>
@@ -632,20 +631,20 @@ export function Landing() {
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 text-center">
           <div className="max-w-2xl mx-auto mb-6">
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mb-2">
-              Ready to see your top 10 matched jobs?
+              Ready to review your top 10 matches?
             </h3>
             <p className="text-xs text-muted-foreground">
-              Drop your resume below. Our parsing engine extracts your tech stack and calculates instant 0–100% fit scores across 8,420+ verified roles.
+              Drop your resume below. Our parsing engine extracts your tech stack and calculates instant 0–100% fit scores across 8,420+ direct roles.
             </p>
           </div>
 
-          <div className="max-w-xl mx-auto bg-card border-2 border-dashed border-primary/30 hover:border-primary/60 rounded-2xl p-7 text-center transition-colors shadow-sm">
+          <div className="max-w-xl mx-auto bg-card border-2 border-dashed border-primary/30 hover:border-primary/60 rounded-xl p-7 text-center transition-colors shadow-2xs">
             {uploadSuccess ? (
               <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <h4 className="font-bold text-sm text-foreground">Profile Analyzed Successfully</h4>
+                <h4 className="font-semibold text-sm text-foreground">Resume parsed successfully</h4>
                 <p className="text-xs text-muted-foreground">
                   Extracted stack: React, TypeScript, Node.js, Python, AWS. Loading your matched roles...
                 </p>
@@ -653,8 +652,8 @@ export function Landing() {
             ) : isUploading ? (
               <div className="space-y-3 py-3">
                 <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
-                <p className="text-xs font-semibold text-foreground">Parsing resume skills and experience...</p>
-                <p className="text-[11px] text-muted-foreground font-mono">Running secure parsing engine via CareerAgent</p>
+                <p className="text-xs font-semibold text-foreground">Extracting experience and technical stack...</p>
+                <p className="text-[11px] text-muted-foreground font-mono">Encrypted sync with your candidate profile</p>
               </div>
             ) : (
               <label
@@ -668,12 +667,12 @@ export function Landing() {
                   onChange={handleFileInput}
                   className="hidden"
                 />
-                <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <Upload className="h-5 w-5" />
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">
-                    Drop your resume to unlock your 10 Free AI Matches
+                    Drop resume to unlock 10 free AI matches
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Supports PDF, DOCX, or TXT. Synced securely to your candidate profile.
@@ -685,7 +684,7 @@ export function Landing() {
                   variant="outline"
                   className="h-8 px-4 text-xs font-semibold rounded-lg border-border bg-background hover:bg-muted pointer-events-none mt-2"
                 >
-                  Select File
+                  Select file
                 </Button>
               </label>
             )}
@@ -693,51 +692,48 @@ export function Landing() {
         </div>
       </section>
 
-      {/* COFFEE-PRICE SAAS PRICING (USD $ / INR ₹ SWITCHER) */}
+      {/* PRICING (USD $ / INR ₹ SWITCHER) */}
       <section id="pricing" className="py-16 sm:py-24 border-b border-border/60 bg-muted/20">
         <div className="container mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-foreground text-xs font-mono font-semibold mb-3">
-              Coffee-Price SaaS
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.03em] text-foreground mb-3">
-              Affordable pricing for serious engineers.
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">
+              Simple, transparent pricing
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-5">
-              Free to search and match your first 10 roles. Upgrade to Pro for the price of a coffee to unlock instant drop alerts and unlimited scoring.
+            <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+              Free to search all direct jobs and score your first 10 roles. Upgrade to Pro for the price of a coffee to unlock instant drop alerts and unlimited scoring.
             </p>
 
             {/* Currency Switcher */}
             <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-card border border-border shadow-2xs">
               <button
                 onClick={() => setCurrency('USD')}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
-                  currency === 'USD' ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
+                  currency === 'USD' ? 'bg-primary text-primary-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                🇺🇸 USD ($)
+                USD ($)
               </button>
               <button
                 onClick={() => setCurrency('INR')}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
-                  currency === 'INR' ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
+                  currency === 'INR' ? 'bg-primary text-primary-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                🇮🇳 INR (₹)
+                INR (₹)
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Free Tier */}
-            <div className="p-7 bg-card border border-border rounded-2xl shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="p-7 bg-card border border-border rounded-2xl flex flex-col justify-between space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-lg text-foreground">Free Tier</h3>
-                  <Badge variant="outline" className="text-[10px] font-mono font-semibold">Forever Free</Badge>
+                  <h3 className="font-bold text-lg text-foreground">Free</h3>
+                  <Badge variant="outline" className="text-[10px] font-mono">No card needed</Badge>
                 </div>
                 <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-4xl font-mono font-black text-foreground">
+                  <span className="text-4xl font-mono font-bold text-foreground">
                     {currency === 'USD' ? '$0' : '₹0'}
                   </span>
                   <span className="text-xs text-muted-foreground font-mono">/ month</span>
@@ -757,75 +753,69 @@ export function Landing() {
                   </div>
                   <div className="flex items-center gap-2 text-foreground font-medium text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>10 Free AI-matched jobs scored against your resume</span>
+                    <span>10 free AI-matched roles scored against resume</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Kanban Application Tracker & 3d Nudges</span>
+                    <span>Kanban application tracker with 3-day follow-up nudges</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Encrypted profile sync across devices</span>
+                    <span>Encrypted cloud profile sync across devices</span>
                   </div>
                 </div>
               </div>
 
               <Link to="/jobs" className="w-full">
                 <Button variant="outline" className="w-full h-11 rounded-xl border-border bg-background hover:bg-muted text-xs font-semibold cursor-pointer">
-                  Start Free
+                  Start free
                 </Button>
               </Link>
             </div>
 
             {/* Pro Plan */}
-            <div className="p-7 bg-card border-2 border-primary rounded-2xl shadow-xl flex flex-col justify-between space-y-6 relative ring-4 ring-primary/10">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-primary text-primary-foreground text-[10px] font-mono font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                  Recommended for Active Seekers
-                </span>
-              </div>
-
+            <div className="p-7 bg-card border-2 border-primary rounded-2xl shadow-xl flex flex-col justify-between space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-lg text-foreground">Pro Pass</h3>
-                  <Badge className="text-[10px] font-mono font-semibold bg-primary/15 text-primary border-primary/20">
-                    {currency === 'USD' ? 'Just $4.99/mo' : 'Just ₹299/mo'}
+                  <h3 className="font-bold text-lg text-foreground">Pro</h3>
+                  <Badge className="text-[10px] font-mono font-medium bg-primary/15 text-primary border-primary/20">
+                    {currency === 'USD' ? '$4.99 / mo' : '₹299 / mo'}
                   </Badge>
                 </div>
                 <div className="flex items-baseline gap-1 my-3">
-                  <span className="text-4xl font-mono font-black text-foreground">
+                  <span className="text-4xl font-mono font-bold text-foreground">
                     {currency === 'USD' ? '$4.99' : '₹299'}
                   </span>
                   <span className="text-xs text-muted-foreground font-mono">/ month</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  The price of a single coffee. Apply in the first 2 hours and stand out from the 500-resume pile.
+                  Apply in the first two hours and stand out before applications pile up.
                 </p>
 
                 <div className="space-y-3 mt-6 text-xs">
-                  <div className="flex items-center gap-2 text-foreground font-semibold text-primary">
+                  <div className="flex items-center gap-2 text-foreground font-medium text-primary">
                     <Bell className="h-4 w-4 text-primary shrink-0" />
-                    <span>Instant Company Drop Alerts (Telegram / Email)</span>
+                    <span>Instant company drop alerts via Telegram and Email</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Unlimited AI Fit & Gap Scoring on every role</span>
+                    <span>Unlimited AI fit and gap scoring on all roles</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Unlimited Tailored Resume Bullets</span>
+                    <span>Unlimited tailored resume bullet points</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Unlimited Recruiter Cold Outreach Emails</span>
+                    <span>Unlimited recruiter outreach pitch drafting</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium">Companion Extension 1-Click Form Autofill</span>
+                    <span>Companion extension 1-click form autofill</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span>3-Month Season Pass Option ({currency === 'USD' ? '$12 one-time' : '₹699 one-time'})</span>
+                    <span>Optional 3-month season pass ({currency === 'USD' ? '$12' : '₹699'} one-time)</span>
                   </div>
                 </div>
               </div>
@@ -834,7 +824,7 @@ export function Landing() {
                 onClick={openAuthModal}
                 className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md cursor-pointer"
               >
-                Get Started with Pro
+                Upgrade to Pro
               </Button>
             </div>
           </div>

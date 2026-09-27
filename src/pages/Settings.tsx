@@ -139,15 +139,15 @@ export function Settings() {
           )}
         </div>
 
-        {/* Local Storage & Privacy */}
+        {/* Data Architecture & Privacy */}
         <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            Local-First Privacy Architecture
+            Encrypted Sync & Data Management
           </div>
 
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Your candidate profile, work history, and job tracker applications are saved directly in your browser's local storage (<code className="bg-muted px-1.5 py-0.5 rounded font-mono text-[11px]">localStorage</code>). Zero personal resume data or contact information is sent to third-party ad networks.
+            Your candidate profile, work history, and job tracker entries sync securely between your web session and the companion browser extension. All sensitive career data is encrypted in transit and at rest.
           </p>
 
           <div className="grid grid-cols-2 gap-3 pt-1 text-xs">

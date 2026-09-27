@@ -217,7 +217,7 @@ export function Header() {
     { value: 'month', label: 'Past month' },
   ];
 
-  const isJobsRoute = location.pathname === '/jobs';
+  const isJobsRoute = location.pathname === '/' || location.pathname === '/jobs';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-xs shadow-2xs">
@@ -299,9 +299,9 @@ export function Header() {
           ) : (
             <nav className="flex items-center gap-6 text-sm font-medium">
               <Link
-                to="/jobs"
+                to="/"
                 className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/jobs' ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                  location.pathname === '/' || location.pathname === '/jobs' ? 'text-foreground font-semibold' : 'text-muted-foreground'
                 }`}
               >
                 Find Jobs
@@ -424,6 +424,18 @@ export function Header() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Quick Tracker shortcut on job feed when authenticated */}
+            {isJobsRoute && isAuthenticated && (
+              <Link
+                to="/tracker"
+                className="hidden sm:inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl border border-border bg-card text-foreground text-xs font-medium hover:bg-muted transition-colors shadow-2xs"
+                title="View Application Tracker"
+              >
+                <Kanban className="h-3.5 w-3.5 text-primary" />
+                <span>Tracker</span>
+              </Link>
             )}
 
             {/* Theme Toggle */}

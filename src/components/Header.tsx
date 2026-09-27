@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import useSWR from 'swr';
 import { 
   Moon, 
@@ -11,16 +11,34 @@ import {
   Calendar,
   RotateCcw,
   Orbit,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
+import { getStoredApplications } from '../lib/profileStorage';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const [appCount, setAppCount] = useState(0);
+
+  // Sync application count with tracker
+  useEffect(() => {
+    const updateCount = () => {
+      setAppCount(getStoredApplications().length);
+    };
+    updateCount();
+    window.addEventListener('storage', updateCount);
+    window.addEventListener('message', updateCount);
+    return () => {
+      window.removeEventListener('storage', updateCount);
+      window.removeEventListener('message', updateCount);
+    };
+  }, [location.pathname]);
 
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -272,13 +290,55 @@ export function Header() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Single Compact Header Row */}
         <div className="flex h-14 sm:h-15 items-center justify-between gap-2.5 sm:gap-4">
-          {/* Brand Logo with Orbit */}
-          <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity shrink-0">
-            <Orbit className="h-6 w-6 stroke-[2.2]" />
-            <span className="font-bold text-lg tracking-tight text-foreground hidden md:block">CareerAgent</span>
-          </Link>
+          {/* Brand Logo with Orbit & Navigation */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+            <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity">
+              <Orbit className="h-6 w-6 stroke-[2.2]" />
+              <span className="font-bold text-lg tracking-tight text-foreground hidden lg:block">CareerAgent</span>
+            </Link>
 
-          {/* Integrated Search Input with Tokenized Keyword Chips */}
+            {/* Navigation Tabs */}
+            <nav className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/80">
+              <Link
+                to="/"
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  location.pathname === '/'
+                    ? 'bg-card text-foreground shadow-2xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Jobs
+              </Link>
+              <Link
+                to="/tracker"
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  location.pathname === '/tracker'
+                    ? 'bg-card text-foreground shadow-2xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <span>Tracker</span>
+                {appCount > 0 && (
+                  <span className="h-4 min-w-4 px-1 rounded-full text-[10px] font-bold bg-primary text-primary-foreground inline-flex items-center justify-center">
+                    {appCount}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to="/profile"
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  location.pathname === '/profile'
+                    ? 'bg-card text-foreground shadow-2xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Profile
+              </Link>
+            </nav>
+          </div>
+
+          {/* Integrated Search Input with Tokenized Keyword Chips (Only on /) */}
+          {location.pathname === '/' ? (
           <form 
             onSubmit={handleSearchSubmit} 
             onClick={() => inputRef.current?.focus()}
@@ -344,115 +404,133 @@ export function Header() {
               Search
             </Button>
           </form>
+          ) : (
+            <div className="flex-1" />
+          )}
 
-          {/* Right Action Cluster: Filter Popover + Theme Toggle */}
+          {/* Right Action Cluster: Filter Popover + Settings + Theme Toggle */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Filter Popover Trigger */}
-            <div className="relative" ref={filterRef}>
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen((prev) => !prev)}
-                className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
-                  activeFilterCount > 0
-                    ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
-                    : 'border-border bg-card text-foreground hover:bg-muted/70'
-                } ${isFilterOpen ? 'ring-1 ring-primary/40 border-primary' : ''}`}
-                title="Filter by country, workplace type, and date posted"
-                aria-expanded={isFilterOpen}
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full text-[10px] font-bold bg-primary text-primary-foreground">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
+            {location.pathname === '/' && (
+              /* Filter Popover Trigger */
+              <div className="relative" ref={filterRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen((prev) => !prev)}
+                  className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                    activeFilterCount > 0
+                      ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                      : 'border-border bg-card text-foreground hover:bg-muted/70'
+                  } ${isFilterOpen ? 'ring-1 ring-primary/40 border-primary' : ''}`}
+                  title="Filter by country, workplace type, and date posted"
+                  aria-expanded={isFilterOpen}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Filters</span>
+                  {activeFilterCount > 0 && (
+                    <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full text-[10px] font-bold bg-primary text-primary-foreground">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
 
-              {/* Floating Filter Popover Card */}
-              {isFilterOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-card border border-border rounded-2xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 space-y-3.5">
-                  <div className="flex items-center justify-between pb-2 border-b border-border">
-                    <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
-                      <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
-                      <span>Filter Postings</span>
+                {/* Floating Filter Popover Card */}
+                {isFilterOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-card border border-border rounded-2xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 space-y-3.5">
+                    <div className="flex items-center justify-between pb-2 border-b border-border">
+                      <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                        <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+                        <span>Filter Postings</span>
+                        {activeFilterCount > 0 && (
+                          <span className="text-[11px] text-muted-foreground font-normal">
+                            ({activeFilterCount} active)
+                          </span>
+                        )}
+                      </div>
                       {activeFilterCount > 0 && (
-                        <span className="text-[11px] text-muted-foreground font-normal">
-                          ({activeFilterCount} active)
-                        </span>
+                        <button
+                          type="button"
+                          onClick={clearAllFilters}
+                          className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          <span>Reset</span>
+                        </button>
                       )}
                     </div>
-                    {activeFilterCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={clearAllFilters}
-                        className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
+
+                    {/* Country Filter */}
+                    <div className="space-y-1 text-left">
+                      <label className="text-[11px] font-medium text-muted-foreground">Country</label>
+                      <DropdownSelect
+                        icon={<Globe className="h-3.5 w-3.5" />}
+                        value={countryParam}
+                        onChange={(val) => {
+                          localStorage.setItem('careeragent_country_initialized', 'true');
+                          updateFilters({ country: val || null });
+                        }}
+                        options={countryOptions}
+                        placeholder="All"
+                        ariaLabel="Filter by country"
+                        searchable
+                        fullWidth
+                      />
+                    </div>
+
+                    {/* Workplace Filter */}
+                    <div className="space-y-1 text-left">
+                      <label className="text-[11px] font-medium text-muted-foreground">Workplace</label>
+                      <DropdownSelect
+                        icon={<Briefcase className="h-3.5 w-3.5" />}
+                        value={workplaceParam}
+                        onChange={(val) => updateFilters({ workplace_type: val || null })}
+                        options={workplaceOptions}
+                        placeholder="Any"
+                        ariaLabel="Filter by workplace type"
+                        fullWidth
+                      />
+                    </div>
+
+                    {/* Date Filter */}
+                    <div className="space-y-1 text-left">
+                      <label className="text-[11px] font-medium text-muted-foreground">Date Posted</label>
+                      <DropdownSelect
+                        icon={<Calendar className="h-3.5 w-3.5" />}
+                        value={dateParam}
+                        onChange={(val) => updateFilters({ date: val || null })}
+                        options={dateOptions}
+                        placeholder="Any time"
+                        ariaLabel="Filter by date posted"
+                        fullWidth
+                      />
+                    </div>
+
+                    {/* Done Button */}
+                    <div className="pt-2 border-t border-border flex justify-end">
+                      <Button
+                        size="sm"
+                        onClick={() => setIsFilterOpen(false)}
+                        className="h-7 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
                       >
-                        <RotateCcw className="h-3 w-3" />
-                        <span>Reset</span>
-                      </button>
-                    )}
+                        Done
+                      </Button>
+                    </div>
                   </div>
+                )}
+              </div>
+            )}
 
-                  {/* Country Filter */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-medium text-muted-foreground">Country</label>
-                    <DropdownSelect
-                      icon={<Globe className="h-3.5 w-3.5" />}
-                      value={countryParam}
-                      onChange={(val) => {
-                        localStorage.setItem('careeragent_country_initialized', 'true');
-                        updateFilters({ country: val || null });
-                      }}
-                      options={countryOptions}
-                      placeholder="All"
-                      ariaLabel="Filter by country"
-                      searchable
-                      fullWidth
-                    />
-                  </div>
-
-                  {/* Workplace Filter */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-medium text-muted-foreground">Workplace</label>
-                    <DropdownSelect
-                      icon={<Briefcase className="h-3.5 w-3.5" />}
-                      value={workplaceParam}
-                      onChange={(val) => updateFilters({ workplace_type: val || null })}
-                      options={workplaceOptions}
-                      placeholder="Any"
-                      ariaLabel="Filter by workplace type"
-                      fullWidth
-                    />
-                  </div>
-
-                  {/* Date Filter */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-medium text-muted-foreground">Date Posted</label>
-                    <DropdownSelect
-                      icon={<Calendar className="h-3.5 w-3.5" />}
-                      value={dateParam}
-                      onChange={(val) => updateFilters({ date: val || null })}
-                      options={dateOptions}
-                      placeholder="Any time"
-                      ariaLabel="Filter by date posted"
-                      fullWidth
-                    />
-                  </div>
-
-                  {/* Done Button */}
-                  <div className="pt-2 border-t border-border flex justify-end">
-                    <Button
-                      size="sm"
-                      onClick={() => setIsFilterOpen(false)}
-                      className="h-7 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
-                    >
-                      Done
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Companion Settings Link */}
+            <Link
+              to="/settings"
+              className={`h-9 w-9 rounded-xl border flex items-center justify-center text-xs transition-all shadow-2xs ${
+                location.pathname === '/settings'
+                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                  : 'border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/70'
+              }`}
+              title="Companion Extension & Sync Settings"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Link>
 
             {/* Theme Toggle */}
             <Button

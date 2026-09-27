@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Home } from './pages/Home';
+import { Profile } from './pages/Profile';
+import { Tracker } from './pages/Tracker';
+import { Settings } from './pages/Settings';
 import { ThemeProvider } from './components/ThemeProvider';
 
 function App() {
@@ -12,6 +15,9 @@ function App() {
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/tracker" element={<Tracker />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
         </div>

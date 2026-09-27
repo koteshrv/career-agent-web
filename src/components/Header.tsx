@@ -14,15 +14,19 @@ import {
   SlidersHorizontal,
   User as UserIcon,
   Kanban,
-  Building2
+  Building2,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
+  const { user, openAuthModal, logout } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
@@ -209,7 +213,7 @@ export function Header() {
     { value: 'month', label: 'Past month' },
   ];
 
-  const isJobsRoute = location.pathname === '/' || location.pathname === '/jobs';
+  const isJobsRoute = location.pathname === '/jobs';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-xs shadow-2xs">
@@ -291,31 +295,37 @@ export function Header() {
               </Button>
             </form>
           ) : (
-            <nav className="flex items-center gap-6 text-sm font-medium">
+            <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium">
               <Link
-                to="/"
+                to="/jobs"
                 className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/' || location.pathname === '/jobs' ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                  location.pathname === '/jobs' ? 'text-primary font-semibold' : 'text-muted-foreground'
                 }`}
               >
-                Find Jobs
+                Jobs
+              </Link>
+              <Link
+                to="/portals"
+                className={`transition-colors hover:text-foreground ${
+                  location.pathname === '/portals' ? 'text-primary font-semibold' : 'text-muted-foreground'
+                }`}
+              >
+                Portals
               </Link>
               <Link
                 to="/tracker"
                 className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/tracker' ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                  location.pathname === '/tracker' ? 'text-primary font-semibold' : 'text-muted-foreground'
                 }`}
               >
                 Tracker
               </Link>
-              <Link
-                to="/profile"
-                className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/profile' ? 'text-foreground font-semibold' : 'text-muted-foreground'
-                }`}
+              <a
+                href="/#pricing"
+                className="transition-colors hover:text-foreground text-muted-foreground"
               >
-                Profile
-              </Link>
+                Pricing
+              </a>
             </nav>
           )}
 
@@ -426,47 +436,77 @@ export function Header() {
               </div>
             )}
 
-            {/* Application Tracker */}
-            <Link
-              to="/tracker"
-              className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
-                location.pathname === '/tracker'
-                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
-                  : 'border-border bg-card text-foreground hover:bg-muted/70'
-              }`}
-              title="View Application Tracker"
-            >
-              <Kanban className="h-3.5 w-3.5 text-primary" />
-              <span className="hidden sm:inline">Tracker</span>
-            </Link>
+            {/* If on /jobs, show direct links to Tracker & Portals on desktop */}
+            {isJobsRoute && (
+              <>
+                <Link
+                  to="/tracker"
+                  className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                    location.pathname === '/tracker'
+                      ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                      : 'border-border bg-card text-foreground hover:bg-muted/70'
+                  }`}
+                  title="View Application Tracker"
+                >
+                  <Kanban className="h-3.5 w-3.5 text-primary" />
+                  <span className="hidden sm:inline">Tracker</span>
+                </Link>
 
-            {/* Monitored Portals */}
-            <Link
-              to="/portals"
-              className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
-                location.pathname === '/portals'
-                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
-                  : 'border-border bg-card text-foreground hover:bg-muted/70'
-              }`}
-              title="Monitored ATS Portals (Greenhouse, Lever, Ashby, Workday)"
-            >
-              <Building2 className="h-3.5 w-3.5 text-primary" />
-              <span className="hidden sm:inline">Portals</span>
-            </Link>
+                <Link
+                  to="/portals"
+                  className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                    location.pathname === '/portals'
+                      ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                      : 'border-border bg-card text-foreground hover:bg-muted/70'
+                  }`}
+                  title="Monitored ATS Portals"
+                >
+                  <Building2 className="h-3.5 w-3.5 text-primary" />
+                  <span className="hidden sm:inline">Portals</span>
+                </Link>
+              </>
+            )}
 
-            {/* Candidate Profile */}
-            <Link
-              to="/profile"
-              className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
-                location.pathname === '/profile'
-                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
-                  : 'border-border bg-card text-foreground hover:bg-muted/70'
-              }`}
-              title="Candidate Profile & Autofill Settings"
-            >
-              <UserIcon className="h-3.5 w-3.5 text-primary" />
-              <span className="hidden sm:inline">Profile</span>
-            </Link>
+            {/* Candidate Profile / Auth */}
+            {user ? (
+              <div className="flex items-center gap-1.5">
+                <Link
+                  to="/profile"
+                  className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                    location.pathname === '/profile'
+                      ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                      : 'border-border bg-card text-foreground hover:bg-muted/70'
+                  }`}
+                  title="Candidate Profile & Autofill Settings"
+                >
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="h-4 w-4 rounded-full object-cover" />
+                  ) : (
+                    <UserIcon className="h-3.5 w-3.5 text-primary" />
+                  )}
+                  <span className="hidden sm:inline font-semibold">{user.name.split(' ')[0]}</span>
+                </Link>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={logout}
+                  className="text-muted-foreground hover:text-foreground h-9 w-9 transition-colors cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                onClick={openAuthModal}
+                className="h-9 px-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-2xs gap-1.5 cursor-pointer"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span>Sign In</span>
+              </Button>
+            )}
 
             {/* Theme Toggle */}
             <Button

@@ -3,21 +3,26 @@ import {
   Kanban, 
   Plus, 
   Search, 
-  Clock, 
   Building2, 
   MapPin, 
   ExternalLink, 
   AlertCircle, 
   Trash2, 
-  X
+  X,
+  Mail,
+  Copy,
+  Check,
+  CalendarClock
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { 
   getStoredApplications, 
   updateApplicationStatus, 
   updateApplicationFollowUp, 
+  snoozeApplicationFollowUp,
   deleteTrackedApplication, 
-  addTrackedApplication 
+  addTrackedApplication,
+  getStoredProfile
 } from '../lib/profileStorage';
 import type { TrackedApplication, ApplicationStatus } from '../types/tracker';
 import { STATUS_CONFIG } from '../types/tracker';
@@ -28,6 +33,9 @@ export function Tracker() {
   const [applications, setApplications] = useState<TrackedApplication[]>(getStoredApplications);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [nudgeApp, setNudgeApp] = useState<TrackedApplication | null>(null);
+  const [copiedNudge, setCopiedNudge] = useState(false);
+  const profile = useMemo(() => getStoredProfile(), []);
 
   // Form state for adding manual job
   const [newCompany, setNewCompany] = useState('');
@@ -39,6 +47,18 @@ export function Tracker() {
 
   const refreshApplications = () => {
     setApplications(getStoredApplications());
+  };
+
+  const getNudgeEmail = (app: TrackedApplication) => {
+    const candidateName = profile.firstName
+      ? `${profile.firstName} ${profile.lastName}`.trim()
+      : 'Candidate';
+    const appliedFormatted = new Date(app.appliedDate).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    });
+
+    return `Hi ${app.company} Recruiting Team,\n\nI hope your week is going well! I am writing to follow up on my application for the ${app.title} role submitted on ${appliedFormatted}.\n\nI remain very excited about ${app.company} and would welcome any updates on the interview timeline or next steps. If any additional materials or code samples would be helpful, please let me know!\n\nThank you for your time and consideration,\n\nBest regards,\n${candidateName}\n${profile.linkedinUrl || profile.portfolioUrl || ''}`;
   };
 
   useEffect(() => {
@@ -146,21 +166,28 @@ export function Tracker() {
         </div>
       </div>
 
-      {/* 3-Day Follow-Up Alert Banner */}
+      {/* 3-Day Follow-Up Alert Banner (From career-agent) */}
       {followUpsDue.length > 0 && (
         <div className="shrink-0 bg-amber-500/10 border-b border-amber-500/30 px-4 sm:px-6 py-2.5">
-          <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-600 dark:text-amber-400">
+          <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-600 dark:text-amber-400">
             <div className="flex items-center gap-2 font-medium">
               <AlertCircle className="h-4 w-4 shrink-0 text-amber-500" />
               <span>
-                <strong>{followUpsDue.length} follow-up reminder{followUpsDue.length > 1 ? 's' : ''} due:</strong>{' '}
-                {followUpsDue.map((a) => a.company).join(', ')} (applied 3+ days ago).
+                <strong>{followUpsDue.length} follow-up reminder{followUpsDue.length > 1 ? 's' : ''} due:</strong> applied 3+ days ago without company reply.
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground">
-                Nudge recruiter to stay top-of-mind
-              </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {followUpsDue.slice(0, 3).map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setNudgeApp(a)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 border border-amber-500/30 cursor-pointer transition-colors"
+                >
+                  <Mail className="h-3 w-3" />
+                  <span>Nudge {a.company}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -246,19 +273,28 @@ export function Tracker() {
 
                         {/* Follow-up due prompt on Applied card */}
                         {app.status === 'APPLIED' && (
-                          <div className="pt-1 border-t border-border/60 flex items-center justify-between text-[11px]">
-                            <button
-                              type="button"
-                              onClick={() => handleFollowUpToggle(app.id, Boolean(app.followedUp))}
-                              className={`flex items-center gap-1 text-[11px] cursor-pointer transition-colors ${
-                                app.followedUp
-                                  ? 'text-emerald-600 dark:text-emerald-400'
-                                  : 'text-amber-600 dark:text-amber-400 font-medium hover:underline'
-                              }`}
-                            >
-                              <Clock className="h-3 w-3" />
-                              {app.followedUp ? 'Followed up' : '3d Follow-up due'}
-                            </button>
+                          <div className="pt-1.5 border-t border-border/60 flex items-center justify-between text-[11px]">
+                            {app.followedUp ? (
+                              <button
+                                type="button"
+                                onClick={() => handleFollowUpToggle(app.id, true)}
+                                className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer"
+                                title="Click to reset follow-up status"
+                              >
+                                <Check className="h-3 w-3" />
+                                <span>Followed up</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setNudgeApp(app)}
+                                className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                                title="Draft recruiter follow-up email"
+                              >
+                                <Mail className="h-3 w-3 text-amber-500" />
+                                <span>Draft Nudge (3d)</span>
+                              </button>
+                            )}
                             <span className="text-muted-foreground text-[10px]">
                               {new Date(app.appliedDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                             </span>
@@ -297,6 +333,100 @@ export function Tracker() {
           })}
         </div>
       </div>
+
+      {/* Recruiter Follow-up Nudge Modal (From career-agent) */}
+      {nudgeApp && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-lg w-full p-5 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-start justify-between pb-3 border-b border-border">
+              <div>
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span>Follow-Up Nudge for {nudgeApp.company}</span>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Applied for {nudgeApp.title} on {new Date(nudgeApp.appliedDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNudgeApp(null)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                Pre-Written 3-Day Recruiter Check-In
+              </label>
+              <div className="p-3.5 rounded-xl bg-background border border-border/80 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground max-h-56 overflow-y-auto selection:bg-primary/20">
+                {getNudgeEmail(nudgeApp)}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 border-t border-border">
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    snoozeApplicationFollowUp(nudgeApp.id, 3);
+                    refreshApplications();
+                    setNudgeApp(null);
+                  }}
+                  className="h-8 px-2.5 text-xs cursor-pointer"
+                  title="Postpone follow-up reminder by 3 days"
+                >
+                  <CalendarClock className="h-3 w-3 mr-1" />
+                  Snooze 3d
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    snoozeApplicationFollowUp(nudgeApp.id, 7);
+                    refreshApplications();
+                    setNudgeApp(null);
+                  }}
+                  className="h-8 px-2.5 text-xs cursor-pointer"
+                  title="Postpone follow-up reminder by 7 days"
+                >
+                  Snooze 7d
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(getNudgeEmail(nudgeApp));
+                    setCopiedNudge(true);
+                    setTimeout(() => setCopiedNudge(false), 2000);
+                  }}
+                  className="h-8 px-3 text-xs font-semibold gap-1.5 cursor-pointer bg-secondary text-foreground hover:bg-secondary/80"
+                >
+                  {copiedNudge ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  <span>{copiedNudge ? 'Copied Email!' : 'Copy Email'}</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    updateApplicationFollowUp(nudgeApp.id, true);
+                    refreshApplications();
+                    setNudgeApp(null);
+                  }}
+                  className="h-8 px-3 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                >
+                  Mark Followed Up
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Manual Add Job Modal */}
       {isAddOpen && (

@@ -94,6 +94,17 @@ export function updateApplicationFollowUp(id: string, followedUp: boolean): void
   saveStoredApplications(updated);
 }
 
+export function snoozeApplicationFollowUp(id: string, days: number): void {
+  const current = getStoredApplications();
+  const nextDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+  const updated = current.map((app) =>
+    app.id === id
+      ? { ...app, followUpDate: nextDate, followedUp: false, updatedAt: new Date().toISOString() }
+      : app
+  );
+  saveStoredApplications(updated);
+}
+
 export function deleteTrackedApplication(id: string): void {
   const current = getStoredApplications();
   saveStoredApplications(current.filter((a) => a.id !== id));

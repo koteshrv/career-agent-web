@@ -9,48 +9,43 @@ import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { Portals } from './pages/Portals';
 import { ThemeProvider } from './components/ThemeProvider';
-import { AuthProvider } from './context/AuthContext';
-import { AuthModal } from './components/AuthModal';
 
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
-      <AuthProvider>
-        <Router>
-          <div className="h-screen h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-hidden">
-            <Header />
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <Routes>
-                {/* Canonical Jobs Feed */}
-                <Route path="/" element={<Home />} />
-                <Route path="/jobs" element={<Navigate to="/" replace />} />
-                <Route path="/explore" element={<Navigate to="/" replace />} />
-                <Route path="/dashboard" element={<Navigate to="/" replace />} />
-                <Route path="/home" element={<Navigate to="/" replace />} />
+      <Router>
+        <div className="h-screen h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-hidden">
+          <Header />
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <Routes>
+              {/* Canonical Jobs Feed */}
+              <Route path="/" element={<Home />} />
+              <Route path="/jobs" element={<Navigate to="/" replace />} />
+              <Route path="/explore" element={<Navigate to="/" replace />} />
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+              <Route path="/home" element={<Navigate to="/" replace />} />
 
-                {/* Pipeline & Tracking */}
-                <Route path="/tracker" element={<Tracker />} />
-                <Route path="/pipeline" element={<Navigate to="/tracker" replace />} />
-                <Route path="/applications" element={<Navigate to="/tracker" replace />} />
-                <Route path="/followups" element={<Followups />} />
+              {/* Pipeline & Tracking */}
+              <Route path="/tracker" element={<Tracker />} />
+              <Route path="/pipeline" element={<Navigate to="/tracker" replace />} />
+              <Route path="/applications" element={<Navigate to="/tracker" replace />} />
+              <Route path="/followups" element={<Followups />} />
 
-                {/* Tools & Utilities */}
-                <Route path="/quick-generate" element={<QuickGenerate />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/portals" element={<Portals />} />
+              {/* Tools & Utilities */}
+              <Route path="/quick-generate" element={<QuickGenerate />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/portals" element={<Portals />} />
 
-                {/* Account & Preferences */}
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
+              {/* Account & Preferences */}
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
-            <AuthModal />
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </div>
-        </Router>
-      </AuthProvider>
+        </div>
+      </Router>
     </ThemeProvider>
   );
 }

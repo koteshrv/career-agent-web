@@ -20,13 +20,21 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<SidebarLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="home" element={<Dashboard />} />
-              <Route path="explore" element={<Explore />} />
-              <Route path="jobs" element={<Navigate to="/explore" replace />} />
+              {/* Default root is Explore (the live jobs engine) */}
+              <Route index element={<Explore />} />
+              <Route path="explore" element={<Navigate to="/" replace />} />
+              <Route path="jobs" element={<Navigate to="/" replace />} />
+
+              {/* Cockpit dashboard */}
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="home" element={<Navigate to="/dashboard" replace />} />
+
+              {/* Pipeline (Kanban tracker) */}
               <Route path="pipeline" element={<Tracker />} />
               <Route path="applications" element={<Navigate to="/pipeline" replace />} />
               <Route path="tracker" element={<Navigate to="/pipeline" replace />} />
+
+              {/* Sub-tools */}
               <Route path="followups" element={<Followups />} />
               <Route path="portals" element={<Portals />} />
               <Route path="quick-generate" element={<QuickGenerate />} />

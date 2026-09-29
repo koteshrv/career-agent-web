@@ -23,8 +23,8 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 
 export const NAV_ITEMS = [
-  { to: "/", label: "Home", title: "Home", subtitle: "What's happening, and what to do next.", icon: Home, exact: true },
-  { to: "/explore", label: "Explore", title: "Explore", subtitle: "Scan the public ATS network — Greenhouse, Lever, Ashby, Workday.", icon: Rocket },
+  { to: "/", label: "Explore", title: "Explore Jobs", subtitle: "Search 8,420+ verified openings directly from 150+ company ATS portals.", icon: Rocket, exact: true },
+  { to: "/dashboard", label: "Dashboard", title: "Cockpit Dashboard", subtitle: "What's happening, and what to do next.", icon: Home },
   { to: "/pipeline", label: "Pipeline", title: "Pipeline", subtitle: "Every job you're tracking, in one list.", icon: Briefcase },
   { to: "/followups", label: "Follow-ups", title: "Follow-ups", subtitle: "Applications waiting on a nudge.", icon: CalendarClock },
   { to: "/portals", label: "Portals", title: "Portals", subtitle: "The companies CareerAgent monitors for new roles.", icon: Database },
@@ -177,6 +177,16 @@ export function SidebarLayout() {
 
             {/* Right Action Icons */}
             <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="https://github.com/koteshrv/career-agent"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-semibold shadow-2xs transition-colors"
+                title="Star CareerAgent on GitHub"
+              >
+                <span className="text-amber-500">⭐</span>
+                <span>Star on GitHub</span>
+              </a>
               {/* Theme Toggle */}
               <button
                 type="button"

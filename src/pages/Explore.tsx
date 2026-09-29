@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import useSWR from 'swr';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { 
   Search, 
   X, 
@@ -28,6 +28,15 @@ export function Explore() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => {
+    return localStorage.getItem('careeragent_hide_welcome') !== 'true';
+  });
+
+  const handleDismissBanner = () => {
+    setShowWelcomeBanner(false);
+    localStorage.setItem('careeragent_hide_welcome', 'true');
+  };
 
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -246,6 +255,43 @@ export function Explore() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden">
+      {/* Welcome Hero Banner for New Visitors */}
+      {showWelcomeBanner && (
+        <div className="bg-primary/10 border-b border-primary/20 px-4 sm:px-6 py-2.5 shrink-0 transition-all">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="w-5 h-5 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                ⚡
+              </span>
+              <p className="text-foreground">
+                <strong className="font-bold">100% Free & Open-Source ATS Engine:</strong>{' '}
+                <span className="text-muted-foreground">
+                  8,420+ fresh roles synced directly from company career portals. No recruiting agency spam.
+                </span>
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+              <Link
+                to="/settings"
+                className="text-primary hover:underline font-semibold flex items-center gap-1"
+              >
+                <span>Free Companion Extension</span>
+                <span aria-hidden="true">&rarr;</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleDismissBanner}
+                className="text-muted-foreground hover:text-foreground p-0.5 rounded-sm cursor-pointer"
+                title="Dismiss banner"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search & Filter Header Strip */}
       <div className="p-4 sm:px-6 border-b border-border bg-card/60 shrink-0">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">

@@ -137,7 +137,7 @@ export function Home() {
   return (
     <main className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
       {/* Main Full-Height Viewport Container */}
-      <div className={`container mx-auto flex-1 min-h-0 flex flex-col transition-all duration-300 ${selectedJob ? 'max-w-7xl' : 'max-w-5xl'} px-4 sm:px-6 pt-3 pb-2`}>
+      <div className={`w-full max-w-[1720px] mx-auto flex-1 min-h-0 flex flex-col px-4 sm:px-6 lg:px-8 pt-2.5 pb-2`}>
         {/* Results Header Bar */}
         <div className="shrink-0 flex items-center justify-between pb-2.5 mb-2 border-b border-border/60 text-xs text-muted-foreground">
           <div className="font-medium text-foreground">
@@ -172,7 +172,7 @@ export function Home() {
         {/* Master-Detail Split Pane Layout */}
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-5 items-stretch overflow-hidden">
           {/* Left Column: Job Cards List (Independently scrollable) */}
-          <div className={`${selectedJob ? 'w-full lg:w-5/12 xl:w-5/12' : 'w-full max-w-4xl mx-auto'} h-full overflow-y-auto overscroll-contain pr-1 sm:pr-2 space-y-3`}>
+          <div className={`${selectedJob ? 'w-full lg:w-[440px] xl:w-[480px] 2xl:w-[520px] shrink-0' : 'w-full max-w-4xl mx-auto'} h-full overflow-y-auto overscroll-contain pr-1 sm:pr-2 space-y-3`}>
             {isLoadingInitialData && (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -282,7 +282,7 @@ export function Home() {
 
           {/* Right Column (Desktop): Constant Split View Job Detail Pane */}
           {selectedJob && (
-            <div className="hidden lg:block lg:w-7/12 xl:w-7/12 h-full overflow-hidden">
+            <div className="hidden lg:block flex-1 min-w-0 h-full overflow-hidden">
               <JobDetailPane
                 job={selectedJob}
                 onClose={() => updateFilters({ job: null })}

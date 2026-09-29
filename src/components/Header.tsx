@@ -217,7 +217,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-xs shadow-2xs">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 sm:h-15 items-center justify-between gap-3 sm:gap-6">
           {/* Brand Logo */}
           <Link to="/" className="flex items-center space-x-2 text-primary hover:opacity-90 transition-opacity shrink-0">
@@ -232,7 +232,7 @@ export function Header() {
             <form 
               onSubmit={handleSearchSubmit} 
               onClick={() => inputRef.current?.focus()}
-              className="flex-1 max-w-xl flex items-center bg-card border border-border rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary min-w-0 cursor-text"
+              className="flex-1 max-w-2xl flex items-center bg-card border border-border rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary min-w-0 cursor-text"
             >
               <Search className="h-4 w-4 text-muted-foreground mr-1.5 shrink-0" />
 

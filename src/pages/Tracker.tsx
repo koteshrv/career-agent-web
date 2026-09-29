@@ -128,7 +128,7 @@ export function Tracker() {
     <div className="flex-1 min-h-0 flex flex-col bg-background overflow-hidden">
       {/* Top Action Bar */}
       <div className="shrink-0 border-b border-border bg-card/60 px-4 sm:px-6 py-3">
-        <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="w-full max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Kanban className="h-5 w-5 text-primary" />
             <div>
@@ -169,7 +169,7 @@ export function Tracker() {
       {/* 3-Day Follow-Up Alert Banner (From career-agent) */}
       {followUpsDue.length > 0 && (
         <div className="shrink-0 bg-amber-500/10 border-b border-amber-500/30 px-4 sm:px-6 py-2.5">
-          <div className="container mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-600 dark:text-amber-400">
+          <div className="w-full max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-600 dark:text-amber-400">
             <div className="flex items-center gap-2 font-medium">
               <AlertCircle className="h-4 w-4 shrink-0 text-amber-500" />
               <span>
@@ -195,7 +195,7 @@ export function Tracker() {
 
       {/* Kanban Board Container */}
       <div className="flex-1 min-h-0 overflow-x-auto p-4 sm:p-6">
-        <div className="container mx-auto max-w-7xl h-full flex gap-4 min-w-[1000px]">
+        <div className="w-full max-w-[1720px] mx-auto h-full flex gap-4 min-w-[1000px]">
           {COLUMNS.map((colKey) => {
             const config = STATUS_CONFIG[colKey];
             const colApps = filteredApps.filter((a) => a.status === colKey);

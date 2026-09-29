@@ -1,10 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Header } from './components/Header';
-import { Home } from './pages/Home';
-import { Profile } from './pages/Profile';
+import { SidebarLayout } from './components/SidebarLayout';
+import { Dashboard } from './pages/Dashboard';
+import { Explore } from './pages/Explore';
 import { Tracker } from './pages/Tracker';
+import { Followups } from './pages/Followups';
 import { Portals } from './pages/Portals';
+import { QuickGenerate } from './pages/QuickGenerate';
+import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
+import { Profile } from './pages/Profile';
 import { ThemeProvider } from './components/ThemeProvider';
 import { AuthProvider } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
@@ -14,20 +18,25 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
       <AuthProvider>
         <Router>
-          <div className="h-screen h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-hidden">
-            <Header />
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/jobs" element={<Navigate to="/" replace />} />
-                <Route path="/tracker" element={<Tracker />} />
-                <Route path="/portals" element={<Portals />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-            </div>
-            <AuthModal />
-          </div>
+          <Routes>
+            <Route path="/" element={<SidebarLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="home" element={<Dashboard />} />
+              <Route path="explore" element={<Explore />} />
+              <Route path="jobs" element={<Navigate to="/explore" replace />} />
+              <Route path="pipeline" element={<Tracker />} />
+              <Route path="applications" element={<Navigate to="/pipeline" replace />} />
+              <Route path="tracker" element={<Navigate to="/pipeline" replace />} />
+              <Route path="followups" element={<Followups />} />
+              <Route path="portals" element={<Portals />} />
+              <Route path="quick-generate" element={<QuickGenerate />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="profile" element={<Profile />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <AuthModal />
         </Router>
       </AuthProvider>
     </ThemeProvider>

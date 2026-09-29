@@ -35,6 +35,11 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-status-new: hsl(var(--status-new));
+  --color-status-applied: hsl(var(--status-applied));
+  --color-status-interviewing: hsl(var(--status-interviewing));
+  --color-status-rejected: hsl(var(--status-rejected));
+
   --radius: var(--radius);
 }
 
@@ -61,6 +66,11 @@
     --input: 40 10% 93%;
     --ring: 26 73% 51%;
     --radius: 0.5rem;
+
+    --status-new: 217 91% 55%;
+    --status-applied: 32 85% 50%;
+    --status-interviewing: 142 71% 40%;
+    --status-rejected: 6 70% 45%;
   }
 
   .dark {
@@ -84,6 +94,11 @@
     --border: 30 8% 17%;
     --input: 30 8% 17%;
     --ring: 26 73% 51%;
+
+    --status-new: 217 91% 55%;
+    --status-applied: 32 85% 50%;
+    --status-interviewing: 142 71% 40%;
+    --status-rejected: 6 70% 45%;
   }
 }
 

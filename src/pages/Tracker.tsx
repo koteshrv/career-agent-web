@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Plus, 
-  Search, 
   Building2, 
   MapPin, 
   ExternalLink, 
@@ -30,7 +30,8 @@ const COLUMNS: ApplicationStatus[] = ['SAVED', 'APPLIED', 'INTERVIEWING', 'OFFER
 
 export function Tracker() {
   const [applications, setApplications] = useState<TrackedApplication[]>(getStoredApplications);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [nudgeApp, setNudgeApp] = useState<TrackedApplication | null>(null);
   const [copiedNudge, setCopiedNudge] = useState(false);
@@ -138,18 +139,6 @@ export function Tracker() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Search Input */}
-            <div className="relative w-48 sm:w-60">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search company or title..."
-                className="w-full h-8 pl-8 pr-3 rounded-lg bg-background border border-border text-foreground text-xs placeholder:text-muted-foreground outline-hidden focus:ring-1 focus:ring-primary focus:border-primary"
-              />
-            </div>
-
             <Button
               size="sm"
               onClick={() => setIsAddOpen(true)}

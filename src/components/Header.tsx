@@ -321,12 +321,6 @@ export function Header() {
                 Tracker
               </Link>
               <a
-                href="/#workflow"
-                className="transition-colors hover:text-foreground text-muted-foreground"
-              >
-                How it works
-              </a>
-              <a
                 href="/#pricing"
                 className="transition-colors hover:text-foreground text-muted-foreground"
               >

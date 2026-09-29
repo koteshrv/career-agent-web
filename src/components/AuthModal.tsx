@@ -253,7 +253,7 @@ export function AuthModal() {
                   {isParsing ? 'Analyzing skills & experience...' : 'Click to upload or drag & drop'}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  PDF, DOCX, or TXT (Secure candidate profile sync)
+                  PDF, DOCX, or TXT (Parsed 100% locally in browser)
                 </p>
               </div>
             </label>

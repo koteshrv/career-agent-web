@@ -413,7 +413,7 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                     <span>AI Profile Fit Analysis</span>
                   </h3>
                   <p className="text-[11px] text-muted-foreground">
-                    Evaluated against your candidate profile (encrypted sync)
+                    Evaluated against your local candidate profile
                   </p>
                 </div>
               </div>

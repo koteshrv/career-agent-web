@@ -190,33 +190,33 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Banner: Extension Integration & Encrypted Cloud Sync Notice */}
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 space-y-3">
+        {/* Banner: Extension Requirement & 100% Local Privacy Notice */}
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-5 shadow-2xs space-y-3">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-primary text-primary-foreground tracking-wide">
-              Extension sync
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground tracking-wider uppercase">
+              Important Info
             </span>
-            <h2 className="text-xs sm:text-sm font-semibold text-foreground">
-              Encrypted Cloud Sync · Powers ATS Autofill
+            <h2 className="text-xs sm:text-sm font-bold text-foreground">
+              Requires Extension &bull; 100% Stored Locally (No Server)
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-lg bg-card border border-border space-y-1">
+            <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
               <p className="font-semibold text-foreground flex items-center gap-1.5">
-                <span>1. Companion browser extension</span>
+                <span>1. Install the Companion Extension</span>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                To use 1-click autofill on Greenhouse, Lever, Ashby, and Workday, install the companion browser extension. The extension automatically syncs with your candidate profile here.
+                To use 1-click autofill on Greenhouse, Lever, and Workday, you need to install the companion browser extension. The extension reads the profile you fill here.
               </p>
             </div>
 
-            <div className="p-3 rounded-lg bg-card border border-border space-y-1">
+            <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
               <p className="font-semibold text-foreground flex items-center gap-1.5">
-                <span>2. Secure profile encryption</span>
+                <span>2. Zero Server Storage & Zero Tracking</span>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Your profile information is transmitted over encrypted channels and synced securely between your web dashboard and the browser extension. Never shared with third-party ad brokers.
+                We do not have a server or database storing your personal information. Everything is saved strictly on your own computer in browser local storage and stays 100% private to you.
               </p>
             </div>
           </div>

@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { 
-  Home, 
   Rocket, 
   Briefcase, 
   CalendarClock, 
-  Database, 
   Zap, 
   LineChart, 
   Settings, 
@@ -23,12 +21,10 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 
 export const NAV_ITEMS = [
-  { to: "/", label: "Explore", title: "Explore Jobs", subtitle: "Search 8,420+ verified openings directly from 150+ company ATS portals.", icon: Rocket, exact: true },
-  { to: "/dashboard", label: "Dashboard", title: "Cockpit Dashboard", subtitle: "What's happening, and what to do next.", icon: Home },
+  { to: "/", label: "Explore Jobs", title: "Explore Jobs", subtitle: "8,420+ verified direct company openings across 150+ ATS portals.", icon: Rocket, exact: true },
   { to: "/pipeline", label: "Pipeline", title: "Pipeline", subtitle: "Every job you're tracking, in one list.", icon: Briefcase },
   { to: "/followups", label: "Follow-ups", title: "Follow-ups", subtitle: "Applications waiting on a nudge.", icon: CalendarClock },
-  { to: "/portals", label: "Portals", title: "Portals", subtitle: "The companies CareerAgent monitors for new roles.", icon: Database },
-  { to: "/quick-generate", label: "Quick Generate", title: "Quick Generate", subtitle: "Instantly generate a tailored resume or cover letter.", icon: Zap },
+  { to: "/quick-generate", label: "Quick Generate", title: "Quick Generate", subtitle: "Instantly generate tailored cover letters and resume bullets.", icon: Zap },
   { to: "/analytics", label: "Analytics", title: "Analytics", subtitle: "Insights and metrics on your job search progress.", icon: LineChart },
   { to: "/settings", label: "Settings", title: "Settings", subtitle: "Manage your candidate profile, BYOK API keys, and extension sync.", icon: Settings },
 ];

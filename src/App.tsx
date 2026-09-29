@@ -1,10 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { SidebarLayout } from './components/SidebarLayout';
-import { Dashboard } from './pages/Dashboard';
 import { Explore } from './pages/Explore';
 import { Tracker } from './pages/Tracker';
 import { Followups } from './pages/Followups';
-import { Portals } from './pages/Portals';
 import { QuickGenerate } from './pages/QuickGenerate';
 import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
@@ -20,23 +18,20 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<SidebarLayout />}>
-              {/* Default root is Explore (the live jobs engine) */}
+              {/* Default root is Explore Jobs */}
               <Route index element={<Explore />} />
               <Route path="explore" element={<Navigate to="/" replace />} />
               <Route path="jobs" element={<Navigate to="/" replace />} />
-
-              {/* Cockpit dashboard */}
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="home" element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Navigate to="/" replace />} />
+              <Route path="home" element={<Navigate to="/" replace />} />
 
               {/* Pipeline (Kanban tracker) */}
               <Route path="pipeline" element={<Tracker />} />
               <Route path="applications" element={<Navigate to="/pipeline" replace />} />
               <Route path="tracker" element={<Navigate to="/pipeline" replace />} />
 
-              {/* Sub-tools */}
+              {/* Core candidate workflows */}
               <Route path="followups" element={<Followups />} />
-              <Route path="portals" element={<Portals />} />
               <Route path="quick-generate" element={<QuickGenerate />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="settings" element={<Settings />} />

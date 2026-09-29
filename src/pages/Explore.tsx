@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import useSWR from 'swr';
 import { useSearchParams, Link } from 'react-router-dom';
@@ -6,13 +6,9 @@ import {
   Search, 
   X, 
   Globe, 
-  Briefcase, 
-  Calendar, 
   RotateCcw, 
-  SlidersHorizontal,
-  Clock,
-  AlertCircle,
-  Loader2
+  Loader2,
+  ArrowRight
 } from 'lucide-react';
 import { JobCard } from '../components/JobCard';
 import { JobDetailPane } from '../components/JobDetailPane';
@@ -25,18 +21,7 @@ const MAX_SEARCH_DEPTH = 100;
 
 export function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => {
-    return localStorage.getItem('careeragent_hide_welcome') !== 'true';
-  });
-
-  const handleDismissBanner = () => {
-    setShowWelcomeBanner(false);
-    localStorage.setItem('careeragent_hide_welcome', 'true');
-  };
 
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -54,19 +39,6 @@ export function Explore() {
   }, [queryParam]);
 
   const [queryInput, setQueryInput] = useState('');
-
-  // Close filter popover on click outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setIsFilterOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const updateFilters = (updates: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams);
@@ -143,6 +115,15 @@ export function Explore() {
     setSearchParams(new URLSearchParams());
   };
 
+  // Quick 1-click filter toggle helpers
+  const toggleWorkplace = (type: string) => {
+    updateFilters({ workplace_type: workplaceParam === type ? null : type });
+  };
+
+  const toggleDate = (date: string) => {
+    updateFilters({ date: dateParam === date ? null : date });
+  };
+
   const activeFilterCount = [
     Boolean(countryParam),
     Boolean(workplaceParam),
@@ -163,20 +144,6 @@ export function Explore() {
       ...countries.map((c) => ({ value: c.code, label: c.name })),
     ];
   }, [countries]);
-
-  const workplaceOptions = [
-    { value: '', label: 'Any Workplace' },
-    { value: 'remote', label: 'Remote' },
-    { value: 'hybrid', label: 'Hybrid' },
-    { value: 'onsite', label: 'Onsite' },
-  ];
-
-  const dateOptions = [
-    { value: '', label: 'Any Time' },
-    { value: '24h', label: 'Past 24 hours' },
-    { value: 'week', label: 'Past week' },
-    { value: 'month', label: 'Past month' },
-  ];
 
   // SWR Infinite key generator
   const getKey = (pageIndex: number, previousPageData: JobsResponse | null) => {
@@ -254,60 +221,24 @@ export function Explore() {
     isSearchDepthLimit;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden">
-      {/* Welcome Hero Banner for New Visitors */}
-      {showWelcomeBanner && (
-        <div className="bg-primary/10 border-b border-primary/20 px-4 sm:px-6 py-2.5 shrink-0 transition-all">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
-            <div className="flex items-center gap-2.5">
-              <span className="w-5 h-5 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                ⚡
-              </span>
-              <p className="text-foreground">
-                <strong className="font-bold">100% Free & Open-Source ATS Engine:</strong>{' '}
-                <span className="text-muted-foreground">
-                  8,420+ fresh roles synced directly from company career portals. No recruiting agency spam.
-                </span>
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
-              <Link
-                to="/settings"
-                className="text-primary hover:underline font-semibold flex items-center gap-1"
-              >
-                <span>Free Companion Extension</span>
-                <span aria-hidden="true">&rarr;</span>
-              </Link>
-              <button
-                type="button"
-                onClick={handleDismissBanner}
-                className="text-muted-foreground hover:text-foreground p-0.5 rounded-sm cursor-pointer"
-                title="Dismiss banner"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Search & Filter Header Strip */}
-      <div className="p-4 sm:px-6 border-b border-border bg-card/60 shrink-0">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
-          {/* Keyword Search Input */}
+    <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden bg-background">
+      {/* Sleek, Minimalist Command & Filter Bar */}
+      <div className="border-b border-border/80 bg-card px-4 sm:px-6 py-3 shrink-0 space-y-2.5">
+        {/* Search Input Row */}
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
           <div 
             onClick={() => inputRef.current?.focus()}
-            className="flex-1 flex items-center bg-background border border-border rounded-xl px-3 py-1.5 shadow-2xs focus-within:ring-1 focus-within:ring-primary focus-within:border-primary min-w-0 cursor-text"
+            className="flex-1 flex items-center bg-muted/40 hover:bg-muted/60 focus-within:bg-background border border-border/80 rounded-xl px-3 py-1.5 shadow-2xs focus-within:ring-1 focus-within:ring-primary/40 focus-within:border-primary/60 min-w-0 transition-colors cursor-text"
           >
             <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
+
             <div className="flex-1 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 py-0.5">
               {keywords.map((kw, idx) => (
                 <span
                   key={`${kw}-${idx}`}
-                  className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-md text-xs font-medium bg-secondary text-foreground border border-border shrink-0 select-none shadow-2xs"
+                  className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-md text-xs font-medium bg-card text-foreground border border-border shrink-0 select-none shadow-2xs"
                 >
-                  <span className="truncate max-w-[140px] sm:max-w-[180px]">{kw}</span>
+                  <span className="truncate max-w-[130px] sm:max-w-[180px]">{kw}</span>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -326,17 +257,17 @@ export function Explore() {
                 type="text"
                 placeholder={
                   keywords.length === 0
-                    ? "Search title, company, or skills (e.g. Python, React)..."
+                    ? "Search roles, companies, or tech stack (e.g. React, Go, Remote)..."
                     : "Add keyword..."
                 }
                 value={queryInput}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                className="min-w-[120px] flex-1 bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-hidden py-0.5"
+                className="min-w-[140px] flex-1 bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-hidden py-0.5"
               />
             </div>
 
-            {(keywords.length > 0 || queryInput) && (
+            {(keywords.length > 0 || queryInput) ? (
               <button
                 type="button"
                 onClick={(e) => {
@@ -344,128 +275,141 @@ export function Explore() {
                   clearQuery();
                 }}
                 className="text-muted-foreground hover:text-foreground p-0.5 mr-1 cursor-pointer shrink-0"
+                title="Clear query"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
+            ) : (
+              <kbd className="hidden md:inline-flex items-center text-[10px] text-muted-foreground/70 font-mono bg-muted/60 px-1.5 py-0.5 rounded border border-border/50 select-none">
+                ↵ enter
+              </kbd>
             )}
           </div>
+        </div>
 
-          {/* Quick Filters */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-36 hidden sm:block">
+        {/* Minimalist Controls & Fast Toggles Strip */}
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 text-xs pt-0.5">
+          {/* Left: Quick Pill Toggles */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Country Selector */}
+            <div className="w-36">
               <DropdownSelect
-                icon={<Globe className="h-3.5 w-3.5" />}
+                icon={<Globe className="h-3 w-3" />}
                 value={countryParam}
                 onChange={(val) => updateFilters({ country: val || null })}
                 options={countryOptions}
-                placeholder="Country"
+                placeholder="Country: All"
                 searchable
                 fullWidth
               />
             </div>
 
-            <div className="w-32 hidden md:block">
-              <DropdownSelect
-                icon={<Briefcase className="h-3.5 w-3.5" />}
-                value={workplaceParam}
-                onChange={(val) => updateFilters({ workplace_type: val || null })}
-                options={workplaceOptions}
-                placeholder="Workplace"
-                fullWidth
-              />
-            </div>
+            {/* Quick 1-Click Toggles */}
+            <button
+              type="button"
+              onClick={() => toggleWorkplace('remote')}
+              className={`h-7 px-2.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer select-none ${
+                workplaceParam === 'remote'
+                  ? 'border-primary/40 bg-primary/10 text-primary font-semibold'
+                  : 'border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              Remote
+            </button>
 
-            <div className="w-32 hidden lg:block">
-              <DropdownSelect
-                icon={<Calendar className="h-3.5 w-3.5" />}
-                value={dateParam}
-                onChange={(val) => updateFilters({ date: val || null })}
-                options={dateOptions}
-                placeholder="Date"
-                fullWidth
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => toggleWorkplace('hybrid')}
+              className={`h-7 px-2.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer select-none ${
+                workplaceParam === 'hybrid'
+                  ? 'border-primary/40 bg-primary/10 text-primary font-semibold'
+                  : 'border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              Hybrid
+            </button>
 
-            {/* Mobile / Full Filter Toggle */}
-            <div className="relative sm:hidden" ref={filterRef}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="h-9 px-2.5 text-xs gap-1.5"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                <span>Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold inline-flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </Button>
-            </div>
+            <button
+              type="button"
+              onClick={() => toggleDate('24h')}
+              className={`h-7 px-2.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer select-none ${
+                dateParam === '24h'
+                  ? 'border-primary/40 bg-primary/10 text-primary font-semibold'
+                  : 'border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              Past 24h
+            </button>
 
-            {activeFilterCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
+            <button
+              type="button"
+              onClick={() => toggleDate('week')}
+              className={`h-7 px-2.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer select-none ${
+                dateParam === 'week'
+                  ? 'border-primary/40 bg-primary/10 text-primary font-semibold'
+                  : 'border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              Past Week
+            </button>
+
+            {/* Reset Filters Button */}
+            {(activeFilterCount > 0 || keywords.length > 0) && (
+              <button
+                type="button"
                 onClick={clearAllFilters}
-                className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                title="Reset filters"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
+                title="Reset all filters"
               >
-                <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                <span className="hidden sm:inline">Reset</span>
-              </Button>
+                <RotateCcw className="h-3 w-3" />
+                <span>Reset</span>
+              </button>
             )}
+          </div>
+
+          {/* Right: Live Status Indicator & Extension Link */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0 ml-auto">
+            <div className="flex items-center gap-1.5 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-foreground font-semibold">{jobs.length}</span>
+              <span>openings</span>
+            </div>
+
+            <span className="text-border">|</span>
+
+            <Link
+              to="/settings"
+              className="text-primary hover:underline font-medium inline-flex items-center gap-1 text-[11px]"
+            >
+              <span>1-Click Autofill Extension</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Split Pane View */}
-      <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 pt-3 pb-2 overflow-hidden">
-        {/* Results Bar */}
-        <div className="shrink-0 flex items-center justify-between pb-2 mb-2 border-b border-border/60 text-xs text-muted-foreground">
-          <div className="font-medium text-foreground">
-            {isLoadingInitialData ? (
-              'Searching active positions...'
-            ) : error ? (
-              <span className="text-destructive font-medium flex items-center gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                Connection unavailable
-              </span>
-            ) : (
-              <>
-                Showing <span className="font-semibold text-foreground">{jobs.length}</span> {jobs.length === 1 ? 'position' : 'positions'}
-                {activeFilterCount > 0 && <span className="text-muted-foreground ml-1 font-normal">(filtered)</span>}
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Clock className="h-3.5 w-3.5 text-primary" />
-            <span>Updated hourly from 150+ ATS portals</span>
-          </div>
-        </div>
-
-        {/* Content Pane */}
+      {/* Main Split-Pane Workspace */}
+      <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 pt-3 pb-3 overflow-hidden">
         {isEmpty ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-            <Search className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3">
+            <Search className="h-9 w-9 text-muted-foreground/30" />
             <h3 className="text-sm font-semibold text-foreground">No matching openings found</h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-              Try removing some keywords or resetting filters to see more results.
+            <p className="text-xs text-muted-foreground max-w-xs">
+              Try removing some search keywords or clearing active filters to see all available roles.
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={clearAllFilters}
-              className="mt-4 text-xs"
+              className="h-8 text-xs cursor-pointer"
             >
-              Reset All Filters
+              Clear All Filters
             </Button>
           </div>
         ) : (
           <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-4 overflow-hidden">
             {/* Left Job Cards Column */}
-            <div className="md:col-span-5 h-full overflow-y-auto pr-1 space-y-2">
+            <div className="md:col-span-5 h-full overflow-y-auto pr-1 space-y-2.5">
               {jobs.map((job) => (
                 <JobCard
                   key={job.id}
@@ -477,18 +421,18 @@ export function Explore() {
 
               {/* Load More Button */}
               {!isReachingEnd && (
-                <div className="pt-2 pb-4 text-center">
+                <div className="pt-2 pb-6 text-center">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setSize(size + 1)}
                     disabled={isLoadingMore}
-                    className="w-full text-xs font-semibold h-8"
+                    className="w-full text-xs font-semibold h-8 cursor-pointer"
                   >
                     {isLoadingMore ? (
                       <span className="flex items-center gap-1.5">
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        Loading more...
+                        Loading more openings...
                       </span>
                     ) : (
                       'Load More Openings'
@@ -509,7 +453,7 @@ export function Explore() {
                 />
               ) : (
                 <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
-                  Select a job from the list to view full description
+                  Select an opening on the left to inspect details
                 </div>
               )}
             </div>

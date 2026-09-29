@@ -16,7 +16,8 @@ import {
   Kanban,
   Building2,
   LogIn,
-  LogOut
+  LogOut,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../context/AuthContext';
@@ -213,7 +214,7 @@ export function Header() {
     { value: 'month', label: 'Past month' },
   ];
 
-  const isJobsRoute = location.pathname === '/jobs';
+  const isJobsRoute = location.pathname === '/' || location.pathname === '/jobs';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-xs shadow-2xs">
@@ -297,9 +298,9 @@ export function Header() {
           ) : (
             <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium">
               <Link
-                to="/jobs"
+                to="/"
                 className={`transition-colors hover:text-foreground ${
-                  location.pathname === '/jobs' ? 'text-primary font-semibold' : 'text-muted-foreground'
+                  location.pathname === '/' || location.pathname === '/jobs' ? 'text-primary font-semibold' : 'text-muted-foreground'
                 }`}
               >
                 Jobs
@@ -320,18 +321,14 @@ export function Header() {
               >
                 Tracker
               </Link>
-              <a
-                href="/#workflow"
-                className="transition-colors hover:text-foreground text-muted-foreground"
+              <Link
+                to="/settings"
+                className={`transition-colors hover:text-foreground ${
+                  location.pathname === '/settings' ? 'text-primary font-semibold' : 'text-muted-foreground'
+                }`}
               >
-                How it works
-              </a>
-              <a
-                href="/#pricing"
-                className="transition-colors hover:text-foreground text-muted-foreground"
-              >
-                Pricing
-              </a>
+                Settings
+              </Link>
             </nav>
           )}
 
@@ -469,6 +466,19 @@ export function Header() {
                 >
                   <Building2 className="h-3.5 w-3.5 text-primary" />
                   <span className="hidden sm:inline">Portals</span>
+                </Link>
+
+                <Link
+                  to="/settings"
+                  className={`h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer select-none ${
+                    location.pathname === '/settings'
+                      ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                      : 'border-border bg-card text-foreground hover:bg-muted/70'
+                  }`}
+                  title="Settings & Extension Sync"
+                >
+                  <SettingsIcon className="h-3.5 w-3.5 text-primary" />
+                  <span className="hidden sm:inline">Settings</span>
                 </Link>
               </>
             )}

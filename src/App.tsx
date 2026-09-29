@@ -1,6 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
-import { Landing } from './pages/Landing';
 import { Home } from './pages/Home';
 import { Profile } from './pages/Profile';
 import { Tracker } from './pages/Tracker';
@@ -19,8 +18,8 @@ function App() {
             <Header />
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
               <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/jobs" element={<Home />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/jobs" element={<Navigate to="/" replace />} />
                 <Route path="/tracker" element={<Tracker />} />
                 <Route path="/portals" element={<Portals />} />
                 <Route path="/profile" element={<Profile />} />

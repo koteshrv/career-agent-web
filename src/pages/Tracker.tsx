@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
-  Kanban, 
   Plus, 
   Search, 
   Building2, 
@@ -130,15 +129,12 @@ export function Tracker() {
       <div className="shrink-0 border-b border-border bg-card/60 px-4 sm:px-6 py-3">
         <div className="w-full max-w-[1720px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Kanban className="h-5 w-5 text-primary" />
-            <div>
-              <h1 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                Application Tracker
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Track jobs captured from LinkedIn or autofilled via the CareerAgent Extension.
-              </p>
-            </div>
+            <h1 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+              Application Tracker
+            </h1>
+            <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full border border-border/50">
+              {applications.length}
+            </span>
           </div>
 
           <div className="flex items-center gap-2.5">

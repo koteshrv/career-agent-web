@@ -10,7 +10,7 @@ import { Profile } from './pages/Profile';
 import { Portals } from './pages/Portals';
 import { Logs } from './pages/Logs';
 import { ThemeProvider } from './components/ThemeProvider';
-import { OnboardingModal } from './components/OnboardingModal';
+import { ResumeImportDialog } from './components/ResumeImportDialog';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/ui/toast';
 import { hydrateFromExtension } from './lib/profileStorage';
@@ -32,7 +32,7 @@ function App() {
         <Router>
           <div className="h-[100dvh] flex flex-col bg-background text-foreground">
             <Header />
-            <OnboardingModal />
+            <ResumeImportDialog />
             <ErrorBoundary>
               <div className="flex-1 min-h-0 flex flex-col">
                 <Routes>

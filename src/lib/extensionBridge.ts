@@ -13,13 +13,19 @@ export type BridgeRequest =
   | { action: 'save_profile'; payload: CandidateProfile }
   | { action: 'upsert_application'; payload: TrackedApplication }
   | { action: 'delete_application'; payload: { id: string } }
-  | { action: 'parse_resume_for_filters'; payload: { fileName: string; fileData: string } };
+  | { action: 'parse_resume_for_filters'; payload: { fileName: string; fileData: string } }
+  | { action: 'parse_resume'; payload: { fileName: string; fileData: string } };
 
 export interface ResumeFilters {
   roles: string;
   keywords: string;
   excludes: string;
   location: string;
+}
+
+export interface ResumeImport {
+  profile: Partial<CandidateProfile>;
+  filters: ResumeFilters;
 }
 
 export interface ExtensionState {

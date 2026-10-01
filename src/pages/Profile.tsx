@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, X, Sparkles, Upload } from 'lucide-react';
+import { Plus, Trash2, X, Sparkles, Upload, FileUp } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { IconButton } from '../components/ui/icon-button';
 import { Field, Input, Textarea, Select } from '../components/ui/field';
@@ -95,7 +95,16 @@ export function Profile() {
 
   return (
     <Page className="pb-32 md:pb-28">
-      <PageHeader title="Profile" description="The extension fills applications from this. It stays in your browser and syncs only to the extension." />
+      <PageHeader
+        title="Profile"
+        description="The extension fills applications from this. It stays in your browser and syncs only to the extension."
+        actions={
+          <Button onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}>
+            <FileUp />
+            Import from resume
+          </Button>
+        }
+      />
 
       <Section id="contact" title="Contact">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -325,7 +334,7 @@ export function Profile() {
       <Section
         id="search-defaults"
         title="Search defaults"
-        description="Applied to the Jobs feed whenever you have no keywords of your own."
+        description="Applied to the Jobs feed whenever you have no keywords of your own. Importing a resume fills these too."
         actions={
           <Button size="sm" onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}>
             <Sparkles />

@@ -16,7 +16,10 @@ export type BridgeRequest =
   | { action: 'parse_resume_for_filters'; payload: { fileName: string; fileData: string } }
   | { action: 'parse_resume'; payload: { fileName: string; fileData: string } }
   | { action: 'save_resume'; payload: { name: string; type: string; data: string } }
-  | { action: 'get_resume_meta' };
+  | { action: 'get_resume_meta' }
+  | { action: 'generate_material'; payload: { kind: MaterialKind; job: { title: string; company: string; description: string } } };
+
+export type MaterialKind = 'resume' | 'cover_letter' | 'cold_email';
 
 export interface ResumeFilters {
   roles: string;

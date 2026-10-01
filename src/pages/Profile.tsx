@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, X, Sparkles, Upload, FileUp } from 'lucide-react';
+import { Plus, Trash2, X, Upload, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { IconButton } from '../components/ui/icon-button';
 import { Field, Input, Textarea, Select } from '../components/ui/field';
@@ -111,11 +111,11 @@ export function Profile() {
     <Page className="pb-32 md:pb-28">
       <PageHeader
         title="Profile"
-        description="The extension fills applications from this. It stays in your browser and syncs only to the extension."
+        description="The extension fills applications from this. Fill it by hand, or let the extension's AI read your resume. It stays in your browser."
         actions={
-          <Button onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}>
-            <FileUp />
-            Import from resume
+          <Button variant="primary" onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}>
+            <Sparkles />
+            Fill from resume with AI
           </Button>
         }
       />
@@ -348,13 +348,7 @@ export function Profile() {
       <Section
         id="search-defaults"
         title="Search defaults"
-        description="Applied to the Jobs feed whenever you have no keywords of your own. Importing a resume fills these too."
-        actions={
-          <Button size="sm" onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}>
-            <Sparkles />
-            Fill from resume
-          </Button>
-        }
+        description="Applied to the Jobs feed whenever you have no keywords of your own. Filling from your resume sets these too."
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Target roles" hint="Comma-separated.">

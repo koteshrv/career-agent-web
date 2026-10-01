@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { BottomTabs } from './components/BottomTabs';
 import { Home } from './pages/Home';
 import { Pipeline } from './pages/Pipeline';
-import { QuickGenerate } from './pages/QuickGenerate';
+import { Drafts } from './pages/Drafts';
 import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { Portals } from './pages/Portals';
@@ -42,7 +42,8 @@ function App() {
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   <Route path="/home" element={<Navigate to="/" replace />} />
                   <Route path="/portals" element={<Portals />} />
-                  <Route path="/quick-generate" element={<QuickGenerate />} />
+                  <Route path="/drafts" element={<Drafts />} />
+                  <Route path="/quick-generate" element={<Navigate to="/drafts" replace />} />
 
                   <Route path="/pipeline" element={<Pipeline tab="board" />} />
                   <Route path="/pipeline/followups" element={<Pipeline tab="followups" />} />

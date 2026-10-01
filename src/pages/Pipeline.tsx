@@ -7,7 +7,8 @@ import { Dialog } from '../components/ui/dialog';
 import { Field, Input, Select } from '../components/ui/field';
 import { EmptyState } from '../components/ui/empty-state';
 import { SegmentedControl } from '../components/ui/segmented';
-import { StatusBadge, StatusDot } from '../components/ui/status-badge';
+import { StatusBadge } from '../components/ui/status-badge';
+import { StatusMenu } from '../components/ui/status-menu';
 import { useToast } from '../components/ui/toast';
 import { Page, PageHeader } from '../components/ui/page';
 import { useStoredApplications } from '../lib/useStoredApplications';
@@ -269,21 +270,7 @@ function PipelineCard({ app, onStatus, onNudge, onDelete }: {
         </button>
       )}
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5">
-        <div className="flex items-center gap-1.5">
-          <StatusDot status={app.status} />
-          <select
-            value={app.status}
-            onChange={(e) => onStatus(app.id, e.target.value as ApplicationStatus)}
-            aria-label={`Status of ${app.title} at ${app.company}`}
-            className="h-7 cursor-pointer rounded-sm border border-transparent bg-transparent pr-1 text-sm font-medium text-foreground hover:border-border-strong"
-          >
-            {STATUS_ORDER.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_CONFIG[s].label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <StatusMenu value={app.status} onChange={(s) => onStatus(app.id, s)} label={`Stage of ${app.title} at ${app.company}`} className="-ml-1.5" />
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <span className="shrink-0 whitespace-nowrap">{fmtDay(app.appliedDate)}</span>
           <IconButton label={`Remove ${app.title} from pipeline`} size="sm" tone="danger" onClick={() => onDelete(app)}>

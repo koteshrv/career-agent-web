@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
-import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText } from 'lucide-react';
+import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
@@ -27,6 +27,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
   const { isReported, markReported } = useReportedJobs();
 
   // The feed omits long fields; fetch the full posting when they are missing.
@@ -134,7 +135,12 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
     return schema;
   }, [current, meta, destinationUrl, description, location, posted, workplace]);
 
-  const draftHref = `/quick-generate?company=${encodeURIComponent(current.company)}&title=${encodeURIComponent(current.title)}`;
+  const openDrafts = (kind: 'resume' | 'cover_letter') => {
+    try {
+      sessionStorage.setItem('careeragent_draft_context', JSON.stringify({ jobId: current.id, company: current.company, title: current.title, description: description.slice(0, 12_000) }));
+    } catch {}
+    navigate(`/drafts?kind=${kind}`);
+  };
 
   return (
     <>
@@ -186,11 +192,13 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
               {isSaved ? <BookmarkCheck /> : <Bookmark />}
               {isSaved ? 'In pipeline' : 'Save to pipeline'}
             </Button>
-            <Button asChild variant="ghost" size="lg">
-              <Link to={draftHref}>
-                <FileText />
-                Draft cover letter
-              </Link>
+            <Button variant="ghost" size="lg" onClick={() => openDrafts('resume')}>
+              <Sparkles />
+              Tailor resume
+            </Button>
+            <Button variant="ghost" size="lg" onClick={() => openDrafts('cover_letter')}>
+              <FileText />
+              Cover letter
             </Button>
           </div>
 

@@ -1,4 +1,7 @@
-export const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL || 'https://api.careeragent.fyi');
+const defaultApiUrl = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL || 'https://api.careeragent.fyi');
+export const API_BASE_URL = typeof window !== 'undefined' 
+  ? (localStorage.getItem('careeragent_api_url') || defaultApiUrl)
+  : defaultApiUrl;
 
 export interface StructuredMetadata {
   yoe_min?: number | null;

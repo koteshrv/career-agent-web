@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Header } from './components/Header';
 import { Home } from './pages/Home';
 import { Tracker } from './pages/Tracker';
@@ -8,14 +9,34 @@ import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { Portals } from './pages/Portals';
+import { Logs } from './pages/Logs';
 import { ThemeProvider } from './components/ThemeProvider';
+import { OnboardingModal } from './components/OnboardingModal';
+import { setupLogListener } from './lib/logger';
+
+import { debugLog } from './lib/extensionBridge';
 
 function App() {
+  useEffect(() => {
+    const handleErr = (e: ErrorEvent) => debugLog('GLOBAL_ERROR', e.message, { stack: e.error?.stack });
+    const handleRej = (e: PromiseRejectionEvent) => debugLog('UNHANDLED_REJECTION', String(e.reason));
+    window.addEventListener('error', handleErr);
+    window.addEventListener('unhandledrejection', handleRej);
+    
+    const cleanup = setupLogListener();
+    return () => {
+      cleanup?.();
+      window.removeEventListener('error', handleErr);
+      window.removeEventListener('unhandledrejection', handleRej);
+    };
+  }, []);
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
       <Router>
         <div className="h-screen h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-hidden">
           <Header />
+          <OnboardingModal />
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <Routes>
               {/* Canonical Jobs Feed */}
@@ -39,6 +60,7 @@ function App() {
               {/* Account & Preferences */}
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/logs" element={<Logs />} />
 
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,49 @@
+export type ApiLog = {
+  id: string;
+  timestamp: string;
+  endpoint: string;
+  action: string;
+  requestBody: any;
+  responseBody: any;
+  status: number;
+};
+
+const LOG_STORAGE_KEY = 'careeragent_api_logs';
+
+export function getLogs(): ApiLog[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = sessionStorage.getItem(LOG_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function addLog(log: Omit<ApiLog, 'id'>) {
+  if (typeof window === 'undefined') return;
+  const logs = getLogs();
+  const newLog = { ...log, id: crypto.randomUUID() };
+  const nextLogs = [newLog, ...logs].slice(0, 200); // keep last 200 for performance
+  sessionStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(nextLogs));
+  window.dispatchEvent(new Event('careeragent_logs_updated'));
+}
+
+export function clearLogs() {
+  if (typeof window === 'undefined') return;
+  sessionStorage.removeItem(LOG_STORAGE_KEY);
+  window.dispatchEvent(new Event('careeragent_logs_updated'));
+}
+
+export function setupLogListener() {
+  if (typeof window === 'undefined') return;
+  
+  const listener = (event: MessageEvent) => {
+    if (event.data?.type === 'CAREER_AGENT_API_LOG' && event.data?.payload) {
+      addLog(event.data.payload);
+    }
+  };
+  
+  window.addEventListener('message', listener);
+  return () => window.removeEventListener('message', listener);
+}

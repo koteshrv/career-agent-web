@@ -14,12 +14,8 @@ import {
   Check, 
   Flag, 
   Loader2,
-  Sparkles,
   Bookmark,
-  BookmarkCheck,
-  Mail,
-  FileText,
-  AlertTriangle
+  BookmarkCheck
 } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
@@ -29,7 +25,7 @@ import { Badge } from './ui/badge';
 import { ReportModal } from './ReportModal';
 import { formatExactDate, formatRelativeTime, formatFullDate } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
-import { getStoredProfile, addTrackedApplication, getStoredApplications } from '../lib/profileStorage';
+import { addTrackedApplication, getStoredApplications } from '../lib/profileStorage';
 
 interface JobDetailPaneProps {
   job: Job | null;
@@ -41,10 +37,7 @@ interface JobDetailPaneProps {
 export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation }: JobDetailPaneProps) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'tailored_resume' | 'outreach'>('overview');
   const [isSavedToTracker, setIsSavedToTracker] = useState(false);
-  const [copiedMaterials, setCopiedMaterials] = useState(false);
-  const [copiedOutreach, setCopiedOutreach] = useState(false);
 
   const { isReported, markReported } = useReportedJobs();
 
@@ -102,76 +95,6 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
   };
 
   // Profile and Match Analysis (Level 5 Matching from career-agent)
-  const candidateProfile = useMemo(() => getStoredProfile(), []);
-
-  const matchAnalysis = useMemo(() => {
-    const jobSkills = [
-      ...(meta?.tech_stack || []),
-      ...(meta?.required_skills || []),
-    ];
-    const candidateSkills = candidateProfile.skills || [];
-
-    const matched = jobSkills.filter((js) =>
-      candidateSkills.some(
-        (cs) =>
-          cs.toLowerCase().trim() === js.toLowerCase().trim() ||
-          cs.toLowerCase().includes(js.toLowerCase()) ||
-          js.toLowerCase().includes(cs.toLowerCase())
-      )
-    );
-
-    const missing = jobSkills.filter((js) => !matched.includes(js));
-
-    let score = 70;
-    if (jobSkills.length > 0) {
-      score = Math.round(45 + (matched.length / jobSkills.length) * 50);
-    }
-    if (score < 45) score = 50;
-    score = Math.min(score, 98);
-
-    return {
-      score,
-      matched: [...new Set(matched)],
-      missing: [...new Set(missing)],
-    };
-  }, [meta, candidateProfile]);
-
-  // Tailored Bullet Points
-  const tailoredBullets = useMemo(() => {
-    const topStack = (meta?.tech_stack || []).slice(0, 3).join(', ') || 'distributed systems and cloud services';
-    const roleTitle = currentJob.title;
-    const company = currentJob.company;
-
-    return [
-      `Engineered core services for ${roleTitle} features utilizing ${topStack}, boosting processing efficiency by 32% and reducing p99 latency.`,
-      `Partnered across cross-functional engineering teams to implement production-grade APIs, maintaining 99.9% uptime aligned with ${company}'s standards.`,
-      `Automated continuous integration and end-to-end testing pipelines, cutting deployment cycle times by 40% and accelerating release velocity.`,
-    ];
-  }, [meta, currentJob]);
-
-  // Cold Outreach Pitch
-  const coldEmailText = useMemo(() => {
-    const candidateName = candidateProfile.firstName
-      ? `${candidateProfile.firstName} ${candidateProfile.lastName}`.trim()
-      : 'a software engineer';
-    const skillsMention = candidateProfile.skills.slice(0, 3).join(', ') || 'modern full-stack architecture';
-    const highlight = candidateProfile.keyAccomplishments[0] || 'building reliable software applications';
-
-    return `Hi ${currentJob.company} Hiring Team,\n\nI noticed the ${currentJob.title} opening at ${currentJob.company} and wanted to reach out directly. With background in ${skillsMention} and a track record of ${highlight}, I would love to bring these capabilities to your engineering organization.\n\nI have already submitted my full application through your careers portal. Would you be open to a brief 5-minute chat to discuss how my experience aligns with your team's current technical priorities?\n\nBest regards,\n${candidateName}\n${candidateProfile.linkedinUrl || candidateProfile.portfolioUrl || ''}`;
-  }, [candidateProfile, currentJob]);
-
-  const handleCopyBullets = () => {
-    navigator.clipboard.writeText(tailoredBullets.map((b) => `• ${b}`).join('\n\n'));
-    setCopiedMaterials(true);
-    setTimeout(() => setCopiedMaterials(false), 2000);
-  };
-
-  const handleCopyOutreach = () => {
-    navigator.clipboard.writeText(coldEmailText);
-    setCopiedOutreach(true);
-    setTimeout(() => setCopiedOutreach(false), 2000);
-  };
-
   const workplaceDisplay = currentJob.workplace_type || meta?.remote_policy;
 
   // Google for Jobs (Schema.org JobPosting structured data)
@@ -401,110 +324,9 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
             </div>
           </div>
 
-          {/* Level 5 AI Fit Score & Matching Breakdown (From career-agent) */}
-          <div className="p-4 rounded-xl border border-primary/25 bg-gradient-to-br from-primary/5 via-card to-background space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
-                  <Sparkles className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <span>AI Profile Fit Analysis</span>
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    Evaluated against your local candidate profile
-                  </p>
-                </div>
-              </div>
-
-              {/* Match Score Badge */}
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 shadow-2xs">
-                <span>{matchAnalysis.score}% Match</span>
-              </div>
-            </div>
-
-            {/* Matched & Missing Skills Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
-              <div className="p-2.5 rounded-lg bg-background/80 border border-border/80 space-y-1">
-                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Matched Skills ({matchAnalysis.matched.length})
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {matchAnalysis.matched.length > 0 ? (
-                    matchAnalysis.matched.map((s) => (
-                      <span key={s} className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-500/20">
-                        {s}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[11px] text-muted-foreground italic">Add your skills in Profile to see match</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-background/80 border border-border/80 space-y-1">
-                <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" /> Missing from Profile ({matchAnalysis.missing.length})
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {matchAnalysis.missing.length > 0 ? (
-                    matchAnalysis.missing.slice(0, 6).map((s) => (
-                      <span key={s} className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-medium border border-amber-500/20">
-                        {s}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[11px] text-muted-foreground italic">None detected</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tab Switcher: Overview vs Tailored Bullets vs Recruiter Outreach */}
-          <div className="flex items-center gap-1 border-b border-border text-xs font-semibold pt-1">
-            <button
-              type="button"
-              onClick={() => setActiveTab('overview')}
-              className={`px-3 py-2 border-b-2 transition-colors cursor-pointer ${
-                activeTab === 'overview'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Job Overview
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('tailored_resume')}
-              className={`px-3 py-2 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'tailored_resume'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <FileText className="h-3.5 w-3.5" />
-              <span>Tailored Bullets</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('outreach')}
-              className={`px-3 py-2 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'outreach'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Mail className="h-3.5 w-3.5" />
-              <span>Recruiter Outreach</span>
-            </button>
-          </div>
-
-          {/* TAB 1: JOB OVERVIEW */}
-          {activeTab === 'overview' && (
-            <div className="space-y-6 animate-in fade-in duration-150">
-              {/* Structured AI Highlights Card */}
+          {/* JOB OVERVIEW */}
+          <div className="space-y-6 pt-2">
+            {/* Structured AI Highlights Card */}
               {meta && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-muted/40 border border-border/80 rounded-xl text-xs">
                   {/* Experience */}
@@ -636,66 +458,6 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
                 )}
               </div>
             </div>
-          )}
-
-          {/* TAB 2: TAILORED RESUME BULLETS */}
-          {activeTab === 'tailored_resume' && (
-            <div className="space-y-4 animate-in fade-in duration-150 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-border">
-                <div>
-                  <h3 className="font-semibold text-foreground">ATS-Optimized Accomplishment Bullets</h3>
-                  <p className="text-muted-foreground text-[11px]">
-                    Drop these directly into your resume for {currentJob.company}.
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleCopyBullets}
-                  className="h-8 px-3 text-xs font-semibold gap-1.5 cursor-pointer bg-card border border-border text-foreground hover:bg-muted"
-                >
-                  {copiedMaterials ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copiedMaterials ? 'Copied Bullets!' : 'Copy All'}</span>
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {tailoredBullets.map((bullet, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-card border border-border/80 space-y-1 leading-relaxed">
-                    <div className="flex items-center gap-1.5 text-primary font-semibold text-[11px]">
-                      <span>Bullet {idx + 1}</span>
-                    </div>
-                    <p className="text-foreground">{bullet}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: RECRUITER OUTREACH EMAIL */}
-          {activeTab === 'outreach' && (
-            <div className="space-y-4 animate-in fade-in duration-150 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-border">
-                <div>
-                  <h3 className="font-semibold text-foreground">3-Sentence Recruiter InMail / Email</h3>
-                  <p className="text-muted-foreground text-[11px]">
-                    Send this on LinkedIn to the hiring manager or recruiter at {currentJob.company}.
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleCopyOutreach}
-                  className="h-8 px-3 text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {copiedOutreach ? <Check className="h-3.5 w-3.5 text-white" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copiedOutreach ? 'Copied Pitch!' : 'Copy Outreach'}</span>
-                </Button>
-              </div>
-
-              <div className="p-4 rounded-xl bg-card border border-border/80 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-foreground selection:bg-primary/20">
-                {coldEmailText}
-              </div>
-            </div>
-          )}
         </div>
       </aside>
 

@@ -59,7 +59,29 @@ export function Home() {
       offset: offset.toString(),
     });
 
-    if (queryParam) params.set('q', queryParam);
+    let finalQuery = queryParam;
+    
+    // Inject global filters if they exist
+    try {
+      const globalStr = localStorage.getItem('careeragent_global_filters');
+      if (globalStr) {
+        const globals = JSON.parse(globalStr);
+        if (globals.roles && !queryParam) {
+          finalQuery += ` ${globals.roles}`;
+        }
+        if (globals.keywords && !queryParam) {
+          finalQuery += ` ${globals.keywords}`;
+        }
+        if (globals.excludes) {
+          const excludeTerms = globals.excludes.split(',').map((t: string) => `-${t.trim()}`).join(' ');
+          finalQuery += ` ${excludeTerms}`;
+        }
+      }
+    } catch(e) {}
+    
+    finalQuery = finalQuery.trim();
+    if (finalQuery) params.set('q', finalQuery);
+
     if (countryParam) params.set('country', countryParam);
     if (workplaceParam) params.set('workplace_type', workplaceParam);
 

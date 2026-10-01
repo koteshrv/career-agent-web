@@ -13,7 +13,8 @@ import {
   Trash2, 
   Upload, 
   ShieldCheck, 
-  ArrowRight
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { getStoredProfile, saveStoredProfile } from '../lib/profileStorage';
@@ -24,9 +25,21 @@ export function Profile() {
   const [isSaved, setIsSaved] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [newAccomplishment, setNewAccomplishment] = useState('');
+  const [globalFilters, setGlobalFilters] = useState({
+    roles: '',
+    keywords: '',
+    excludes: '',
+    location: ''
+  });
 
   useEffect(() => {
     setProfile(getStoredProfile());
+    try {
+      const raw = localStorage.getItem('careeragent_global_filters');
+      if (raw) {
+        setGlobalFilters(JSON.parse(raw));
+      }
+    } catch {}
   }, []);
 
   const handleChange = (field: keyof CandidateProfile, value: unknown) => {
@@ -34,8 +47,18 @@ export function Profile() {
     setIsSaved(false);
   };
 
+  const handleFilterChange = (field: keyof typeof globalFilters, value: string) => {
+    setGlobalFilters((prev) => {
+      const updated = { ...prev, [field]: value };
+      localStorage.setItem('careeragent_global_filters', JSON.stringify(updated));
+      return updated;
+    });
+    setIsSaved(false);
+  };
+
   const handleSave = () => {
     saveStoredProfile(profile);
+    localStorage.setItem('careeragent_global_filters', JSON.stringify(globalFilters));
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -171,7 +194,15 @@ export function Profile() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}
+              className="h-9 px-3.5 text-xs font-semibold rounded-lg gap-1.5 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Onboarding
+            </Button>
             <Button
               onClick={handleSave}
               className={`h-9 px-4 text-xs font-semibold rounded-lg shadow-sm cursor-pointer transition-all ${
@@ -192,32 +223,151 @@ export function Profile() {
 
         {/* Banner: Extension Requirement & 100% Local Privacy Notice */}
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground tracking-wider uppercase">
-              Important Info
-            </span>
-            <h2 className="text-xs sm:text-sm font-bold text-foreground">
-              Requires Extension &bull; 100% Stored Locally (No Server)
-            </h2>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground tracking-wider uppercase">
+                FOSS Architecture
+              </span>
+              <h2 className="text-xs sm:text-sm font-bold text-foreground">
+                Requires Companion Extension &bull; 100% Stored Locally in Browser
+              </h2>
+            </div>
+            <a
+              href="https://github.com/koteshrv/career-agent-extension"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline bg-primary/10 px-3 py-1 rounded-lg border border-primary/20 transition-colors"
+            >
+              <span>career-agent-extension on GitHub</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
-              <p className="font-semibold text-foreground flex items-center gap-1.5">
-                <span>1. Install the Companion Extension</span>
+            <div className="p-3.5 rounded-lg bg-card border border-border/80 space-y-2">
+              <p className="font-semibold text-foreground flex items-center justify-between">
+                <span>1. Install Companion Extension</span>
+                <span className="text-[10px] text-muted-foreground font-mono">Open Source</span>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                To use 1-click autofill on Greenhouse, Lever, and Workday, you need to install the companion browser extension. The extension reads the profile you fill here.
+                CareerAgent has zero central databases. All 1-click autofilling on Greenhouse, Lever, Ashby, and Workday runs securely inside your own browser through our companion extension.
               </p>
+              <a
+                href="https://github.com/koteshrv/career-agent-extension"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline pt-0.5"
+              >
+                <span>Get extension from github.com/koteshrv/career-agent-extension</span>
+                <ArrowRight className="h-3 w-3" />
+              </a>
             </div>
 
-            <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
-              <p className="font-semibold text-foreground flex items-center gap-1.5">
+            <div className="p-3.5 rounded-lg bg-card border border-border/80 space-y-2">
+              <p className="font-semibold text-foreground flex items-center justify-between">
                 <span>2. Zero Server Storage & Zero Tracking</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">100% Private</span>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                We do not have a server or database storing your personal information. Everything is saved strictly on your own computer in browser local storage and stays 100% private to you.
+                Your resume, contact info, and job history are never sent to our servers. Everything stays encrypted in your browser's local storage and syncs directly to the extension.
               </p>
+              <p className="text-[11px] text-muted-foreground italic">
+                Telemetry to the community registry is strictly anonymous and opt-in via Settings.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Agent Onboarding & Target Job Preferences */}
+        <div className="bg-card border border-primary/30 rounded-xl p-5 shadow-2xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-foreground">
+                    Target Job Preferences & ATS Exclusions
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                    Auto-Applied
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 max-w-xl leading-relaxed">
+                  These global criteria automatically filter your job feeds and configure your AI match scoring. Seed them automatically from your resume PDF, or edit manually anytime below.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-xs font-semibold gap-1.5 shrink-0 shadow-sm cursor-pointer whitespace-nowrap"
+            >
+              <Sparkles className="h-4 w-4" />
+              Seed with AI (PDF)
+            </Button>
+          </div>
+
+          {/* Manual Preferences Configuration */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="block font-semibold text-foreground text-xs">
+                  Target Roles to Find
+                </label>
+                <input
+                  type="text"
+                  value={globalFilters.roles}
+                  onChange={(e) => handleFilterChange('roles', e.target.value)}
+                  placeholder="e.g. Software Engineer, Frontend Developer, Full Stack..."
+                  className="w-full h-9 px-3 rounded-lg bg-background border border-border text-foreground text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-hidden"
+                />
+                <p className="text-[10px] text-muted-foreground">Comma-separated target titles.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block font-semibold text-foreground text-xs">
+                  Exact Search Keywords
+                </label>
+                <input
+                  type="text"
+                  value={globalFilters.keywords}
+                  onChange={(e) => handleFilterChange('keywords', e.target.value)}
+                  placeholder="e.g. TypeScript, React, Next.js, Node.js..."
+                  className="w-full h-9 px-3 rounded-lg bg-background border border-border text-foreground text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-hidden"
+                />
+                <p className="text-[10px] text-muted-foreground">Core tech stack terms to prioritize in matching.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block font-semibold text-foreground text-xs">
+                  Exclusions & Negative Filters
+                </label>
+                <input
+                  type="text"
+                  value={globalFilters.excludes}
+                  onChange={(e) => handleFilterChange('excludes', e.target.value)}
+                  placeholder="e.g. Senior, Lead, Manager, Clearance, Java, .NET..."
+                  className="w-full h-9 px-3 rounded-lg bg-background border border-border text-foreground text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-hidden"
+                />
+                <p className="text-[10px] text-muted-foreground">Jobs containing these keywords are automatically excluded from your feed.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block font-semibold text-foreground text-xs flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  Default Location / Scope
+                </label>
+                <input
+                  type="text"
+                  value={globalFilters.location}
+                  onChange={(e) => handleFilterChange('location', e.target.value)}
+                  placeholder="e.g. Remote, San Francisco, London..."
+                  className="w-full h-9 px-3 rounded-lg bg-background border border-border text-foreground text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-hidden"
+                />
+                <p className="text-[10px] text-muted-foreground">Preferred work location or remote preference.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -637,33 +787,6 @@ export function Profile() {
               onChange={handleFileUpload}
               className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-3 file:rounded-md file:border file:border-border file:text-xs file:font-semibold file:bg-secondary file:text-foreground cursor-pointer"
             />
-          </div>
-        </div>
-
-        {/* Bottom Floating Save Action Bar */}
-        <div className="sticky bottom-4 z-20 flex justify-end">
-          <div className="bg-card/95 backdrop-blur-xs border border-border rounded-2xl p-2.5 shadow-xl flex items-center gap-3">
-            <span className="text-xs text-muted-foreground hidden sm:inline pl-2">
-              Ready to autofill on employer ATS portals?
-            </span>
-            <Button
-              onClick={handleSave}
-              className={`h-9 px-5 text-xs font-semibold rounded-xl shadow-xs cursor-pointer gap-2 ${
-                isSaved ? 'bg-emerald-600 text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'
-              }`}
-            >
-              {isSaved ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  Synced to Extension!
-                </>
-              ) : (
-                <>
-                  Save & Sync to Extension
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
           </div>
         </div>
       </div>

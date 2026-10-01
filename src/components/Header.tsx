@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { 
-  Moon, 
-  Sun, 
   Orbit, 
   User as UserIcon,
   Search,
@@ -12,33 +10,29 @@ import {
   RotateCcw,
   Globe,
   Briefcase,
-  Calendar
+  Calendar,
+  Settings,
+  Sparkles,
+  Bell,
+  Clock,
+  Activity
 } from 'lucide-react';
-import { useTheme } from './ThemeProvider';
 import { Button } from './ui/button';
 import { DropdownSelect } from './DropdownSelect';
 import { fetcher, type CountriesResponse } from '../lib/api';
+import { getStoredApplications } from '../lib/profileStorage';
+import type { TrackedApplication } from '../types/tracker';
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const isDark =
-    theme === 'dark' ||
-    (theme === 'system' &&
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-  const toggleTheme = () => {
-    setTheme(isDark ? 'light' : 'dark');
-  };
 
   const isJobsActive = location.pathname === '/' || location.pathname === '/jobs' || location.pathname === '/explore';
   const isTrackerActive = location.pathname === '/tracker' || location.pathname === '/pipeline' || location.pathname === '/applications';
   const isSettingsActive = location.pathname === '/settings';
   const isProfileActive = location.pathname === '/profile';
+  const isLogsActive = location.pathname === '/logs';
 
   // Common Search & Filter state
   const queryParam = searchParams.get('q') || '';
@@ -77,12 +71,44 @@ export function Header() {
       if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
         setIsFilterOpen(false);
       }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Notifications & Follow-up Nudges
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const [trackedApps, setTrackedApps] = useState<TrackedApplication[]>([]);
+
+  useEffect(() => {
+    setTrackedApps(getStoredApplications());
+    const handleSync = () => setTrackedApps(getStoredApplications());
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('careeragent_sync', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('careeragent_sync', handleSync);
+    };
+  }, [location.pathname]);
+
+  const pendingNudges = useMemo(() => {
+    const now = Date.now();
+    return trackedApps.filter((app) => {
+      if (app.status !== 'APPLIED' && app.status !== 'INTERVIEWING') return false;
+      if (app.followedUp) return false;
+      const targetTime = app.followUpDate
+        ? new Date(app.followUpDate).getTime()
+        : new Date(app.appliedDate).getTime() + 5 * 24 * 60 * 60 * 1000;
+      const diffDays = Math.round((targetTime - now) / (1000 * 60 * 60 * 24));
+      return diffDays <= 2;
+    });
+  }, [trackedApps]);
 
   const activeFilterCount = [
     Boolean(countryParam),
@@ -288,16 +314,6 @@ export function Header() {
               >
                 Tracker
               </Link>
-              <Link
-                to="/settings"
-                className={`h-8 px-3 rounded-lg text-xs font-medium inline-flex items-center transition-all cursor-pointer select-none ${
-                  isSettingsActive
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                Settings
-              </Link>
             </nav>
           </div>
 
@@ -360,7 +376,7 @@ export function Header() {
               <Button
                 type="submit"
                 size="sm"
-                className="h-7 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer shrink-0"
+                className="h-7 px-3 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border/80 shadow-2xs cursor-pointer shrink-0"
               >
                 Search
               </Button>
@@ -457,15 +473,37 @@ export function Header() {
                       />
                     </div>
 
-                    <div className="pt-2 border-t border-border/60 flex justify-end">
-                      <Button
-                        size="sm"
-                        onClick={() => setIsFilterOpen(false)}
-                        className="h-7 px-3 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
-                      >
-                        Done
-                      </Button>
-                    </div>
+                    {(() => {
+                      const isOnboardingDone = typeof window !== 'undefined' && Boolean(
+                        localStorage.getItem('careeragent_onboarded') || 
+                        localStorage.getItem('careeragent_global_filters')
+                      );
+
+                      return (
+                        <div className={`pt-2 border-t border-border/60 flex items-center ${isOnboardingDone ? 'justify-end' : 'justify-between'}`}>
+                          {!isOnboardingDone && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsFilterOpen(false);
+                                window.dispatchEvent(new CustomEvent('open_onboarding_modal'));
+                              }}
+                              className="text-[11px] text-primary hover:underline font-medium flex items-center gap-1 cursor-pointer"
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              AI Onboarding Setup
+                            </button>
+                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => setIsFilterOpen(false)}
+                            className="h-7 px-3 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                          >
+                            Done
+                          </Button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -495,6 +533,91 @@ export function Header() {
               <span className="hidden md:inline">Star</span>
             </a>
 
+            {/* Notifications & Nudges */}
+            <div className="relative shrink-0" ref={notificationsRef}>
+              <button
+                type="button"
+                onClick={() => setIsNotificationsOpen((prev) => !prev)}
+                className={`h-8.5 w-8.5 rounded-lg border text-xs font-medium flex items-center justify-center transition-all cursor-pointer select-none relative ${
+                  isNotificationsOpen || pendingNudges.length > 0
+                    ? 'border-border/80 bg-card text-foreground hover:bg-muted/50'
+                    : 'border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                title={pendingNudges.length > 0 ? `${pendingNudges.length} Follow-up Nudges Due` : "Notifications & Nudges"}
+                aria-label="Notifications"
+              >
+                <Bell className="h-3.5 w-3.5" />
+                {pendingNudges.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-xs animate-in zoom-in-50">
+                    {pendingNudges.length}
+                  </span>
+                )}
+              </button>
+
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-88 rounded-xl bg-card border border-border shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 text-xs space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/80">
+                    <div className="flex items-center gap-1.5 font-bold text-foreground">
+                      <Bell className="h-3.5 w-3.5 text-primary" />
+                      <span>Follow-up Nudges</span>
+                    </div>
+                    {pendingNudges.length > 0 ? (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {pendingNudges.length} Due
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">Up to date</span>
+                    )}
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+                    {pendingNudges.length === 0 ? (
+                      <div className="py-6 text-center text-muted-foreground space-y-1">
+                        <Clock className="h-6 w-6 mx-auto text-muted-foreground/60" />
+                        <p className="font-semibold text-xs text-foreground">All caught up!</p>
+                        <p className="text-[11px] text-muted-foreground">No follow-up emails due for your tracked applications.</p>
+                      </div>
+                    ) : (
+                      pendingNudges.map((app) => (
+                        <Link
+                          key={app.id}
+                          to="/tracker"
+                          onClick={() => setIsNotificationsOpen(false)}
+                          className="block p-2.5 rounded-lg bg-background hover:bg-muted/50 border border-border/70 space-y-1 transition-colors group cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-foreground group-hover:text-primary transition-colors truncate max-w-[190px]">
+                              {app.company}
+                            </span>
+                            <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1 shrink-0 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                              <Clock className="h-3 w-3" /> Due
+                            </span>
+                          </div>
+                          <p className="text-muted-foreground text-[11px] truncate">
+                            {app.title}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground/80">
+                            Applied {new Date(app.appliedDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} &bull; Click to draft nudge
+                          </p>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-border/80 flex justify-between items-center text-[11px]">
+                    <Link
+                      to="/tracker"
+                      onClick={() => setIsNotificationsOpen(false)}
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Open Pipeline Tracker &rarr;
+                    </Link>
+                    <span className="text-[10px] text-muted-foreground">3-day nudge reminder</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Candidate Profile (100% Local) */}
             <Link
               to="/profile"
@@ -509,22 +632,29 @@ export function Header() {
               <span className="hidden sm:inline">Profile</span>
             </Link>
 
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground h-8.5 w-8.5 transition-colors cursor-pointer"
-              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              aria-label="Toggle theme"
+            <Link
+              to="/logs"
+              className={`h-8.5 w-8.5 rounded-lg border text-xs font-medium flex items-center justify-center transition-all cursor-pointer select-none ${
+                isLogsActive
+                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                  : 'border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+              title="API Transparency Logs"
             >
-              {isDark ? (
-                <Sun className="h-4 w-4 text-amber-500 transition-all rotate-0 scale-100" />
-              ) : (
-                <Moon className="h-4 w-4 text-foreground transition-all rotate-0 scale-100" />
-              )}
-              <span className="sr-only">Toggle theme</span>
-            </Button>
+              <Activity className="h-3.5 w-3.5" />
+            </Link>
+
+            <Link
+              to="/settings"
+              className={`h-8.5 w-8.5 rounded-lg border text-xs font-medium flex items-center justify-center transition-all cursor-pointer select-none ${
+                isSettingsActive
+                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold'
+                  : 'border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+              title="Platform Settings"
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </div>
       </div>

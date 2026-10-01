@@ -1,10 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700&display=swap');
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Google Sans'), local('Product Sans'), url('https://fonts.cdnfonts.com/s/14955/ProductSans-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Google Sans Medium'), local('Product Sans Medium'), url('https://fonts.cdnfonts.com/s/14955/ProductSans-Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Google Sans Bold'), local('Product Sans Bold'), url('https://fonts.cdnfonts.com/s/14955/ProductSans-Bold.woff') format('woff');
+}
+
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Google Sans', sans-serif;
+  --font-sans: 'Google Sans', 'Product Sans', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   
   --color-background: hsl(var(--background));
@@ -75,36 +98,49 @@
 
   .dark {
     color-scheme: dark;
-    --background: 30 8% 7%;
-    --foreground: 40 15% 92%;
-    --card: 30 8% 9.5%;
-    --card-foreground: 40 15% 92%;
-    --popover: 30 8% 9%;
-    --popover-foreground: 40 15% 92%;
-    --primary: 26 73% 51%;
-    --primary-foreground: 30 20% 8%;
-    --secondary: 30 6% 15%;
-    --secondary-foreground: 40 15% 92%;
-    --muted: 30 6% 14%;
-    --muted-foreground: 30 8% 60%;
-    --accent: 30 6% 17%;
-    --accent-foreground: 40 15% 92%;
-    --destructive: 6 70% 45%;
-    --destructive-foreground: 40 15% 96%;
-    --border: 30 8% 17%;
-    --input: 30 8% 17%;
+    /* Linear-style Deep Cool Dark Mode */
+    --background: 220 10% 8%;      /* #121316 */
+    --foreground: 220 10% 92%;     /* #F2F3F5 */
+    
+    --card: 220 10% 10%;           /* #16181D */
+    --card-foreground: 220 10% 92%;
+    
+    --popover: 220 10% 11%;        
+    --popover-foreground: 220 10% 92%;
+    
+    --primary: 26 73% 51%;         /* Keeping the vibrant CareerAgent orange */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 10% 14%;      /* #202228 */
+    --secondary-foreground: 220 10% 92%;
+    
+    --muted: 220 10% 14%;
+    --muted-foreground: 220 10% 55%; /* #8A8F98 */
+    
+    --accent: 220 10% 16%;
+    --accent-foreground: 220 10% 92%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* High contrast, hairline borders */
+    --border: 220 10% 16%;         /* #25272D */
+    --input: 220 10% 16%;
     --ring: 26 73% 51%;
 
     --status-new: 217 91% 55%;
     --status-applied: 32 85% 50%;
     --status-interviewing: 142 71% 40%;
-    --status-rejected: 6 70% 45%;
+    --status-rejected: 0 84% 60%;
   }
 }
 
 @layer base {
-  * {
+  *, ::before, ::after {
     @apply border-border;
+  }
+  html, body, #root, input, button, select, textarea {
+    font-family: 'Google Sans', 'Product Sans', sans-serif !important;
   }
   body {
     @apply bg-background text-foreground;
@@ -121,3 +157,4 @@
     background-size: 24px 24px;
   }
 }
+/* Force Vite HMR reload */

@@ -1,4 +1,4 @@
-@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -8,7 +8,7 @@
  * a 14px type base, and one accent that only ever means "selected" or "you can act here".
  */
 @theme {
-  --font-sans: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --text-xs: 11px;
@@ -118,6 +118,7 @@
 
   html {
     font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01', 'tnum' 0;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;

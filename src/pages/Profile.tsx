@@ -6,7 +6,7 @@ import { Field, Input, Textarea, Select } from '../components/ui/field';
 import { Page, PageHeader, Section } from '../components/ui/page';
 import { useToast } from '../components/ui/toast';
 import { getStoredProfile, saveStoredProfile, SYNC_EVENT } from '../lib/profileStorage';
-import { pingExtension } from '../lib/extensionBridge';
+import { pingExtension, sendExtensionMessage, fileToBase64 } from '../lib/extensionBridge';
 import type { CandidateProfile, WorkExperience, Education } from '../types/profile';
 import { cn } from '../lib/utils';
 
@@ -79,16 +79,30 @@ export function Profile() {
   const addEducation = () => change('education', [{ id: `edu_${Date.now()}`, institution: '', degree: '', fieldOfStudy: '', graduationYear: '' }, ...profile.education]);
   const updateEducation = (id: string, updates: Partial<Education>) => change('education', profile.education.map((e) => (e.id === id ? { ...e, ...updates } : e)));
 
-  const handleResume = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [resumeNote, setResumeNote] = useState<string | null>(null);
+  const handleResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     change('resumeFileName', file.name);
     if (file.type === 'text/plain') {
       const reader = new FileReader();
       reader.onload = (ev) => change('resumeText', String(ev.target?.result ?? ''));
       reader.readAsText(file);
+      return;
     }
-    e.target.value = '';
+    if (file.type === 'application/pdf' && file.size <= 5 * 1024 * 1024) {
+      try {
+        const data = await fileToBase64(file);
+        await sendExtensionMessage({ action: 'save_resume', payload: { name: file.name, type: file.type, data } }, 10_000);
+        setResumeNote('Sent to the extension. It will be attached when a form asks for a resume.');
+        toast('Resume sent to the extension', 'success');
+      } catch {
+        setResumeNote('The extension is not connected, so only the file name was kept. Attach the PDF in the extension to use it for uploads.');
+      }
+    } else if (file.type === 'application/pdf') {
+      setResumeNote('Keep the PDF under 5 MB to let the extension attach it to applications.');
+    }
   };
 
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
@@ -321,7 +335,7 @@ export function Profile() {
         <div className="flex flex-col gap-3 rounded-md border border-dashed border-border-strong bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-base font-medium text-foreground">{profile.resumeFileName || 'No resume attached'}</p>
-            <p className="text-sm text-muted-foreground">PDF or plain text. Stays in this browser.</p>
+            <p className="text-sm text-muted-foreground">{resumeNote || 'A PDF is handed to the extension, which attaches it when a form asks for a resume. Nothing leaves your browser.'}</p>
           </div>
           <label className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-sm border border-border-strong bg-card px-3.5 text-base font-medium text-foreground hover:bg-muted">
             <Upload className="size-4" />

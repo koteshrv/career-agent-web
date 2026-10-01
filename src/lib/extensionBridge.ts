@@ -14,7 +14,9 @@ export type BridgeRequest =
   | { action: 'upsert_application'; payload: TrackedApplication }
   | { action: 'delete_application'; payload: { id: string } }
   | { action: 'parse_resume_for_filters'; payload: { fileName: string; fileData: string } }
-  | { action: 'parse_resume'; payload: { fileName: string; fileData: string } };
+  | { action: 'parse_resume'; payload: { fileName: string; fileData: string } }
+  | { action: 'save_resume'; payload: { name: string; type: string; data: string } }
+  | { action: 'get_resume_meta' };
 
 export interface ResumeFilters {
   roles: string;

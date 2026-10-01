@@ -1,84 +1,90 @@
-export const EXTENSION_SOURCE = 'CAREERAGENT_WEB';
-
-export function debugLog(source: string, msg: string, data: any = {}) {
-  try {
-    fetch('http://localhost:9999/log', {
-      method: 'POST',
-      body: JSON.stringify({ source, msg, data, time: new Date().toISOString() })
-    }).catch(() => {});
-  } catch (e) {}
-}
-export interface ExtensionRequest {
-  action: string;
-  payload?: any;
-}
+import type { CandidateProfile } from '../types/profile';
+import type { TrackedApplication } from '../types/tracker';
 
 /**
- * Checks if the extension is injected and listening.
- * The extension's content script should listen to this ping and respond with a pong.
+ * Bridge to the companion extension over chrome.runtime.sendMessage(extensionId, ...).
+ * Chrome exposes chrome.runtime on this page only because the extension lists careeragent.fyi
+ * in externally_connectable; no content script and no window.postMessage are involved, so
+ * other scripts and other sites cannot observe or forge these messages.
  */
-export async function pingExtension(): Promise<boolean> {
+export type BridgeRequest =
+  | { action: 'ping' }
+  | { action: 'get_state' }
+  | { action: 'save_profile'; payload: CandidateProfile }
+  | { action: 'upsert_application'; payload: TrackedApplication }
+  | { action: 'delete_application'; payload: { id: string } }
+  | { action: 'parse_resume_for_filters'; payload: { fileName: string; fileData: string } };
+
+export interface ResumeFilters {
+  roles: string;
+  keywords: string;
+  excludes: string;
+  location: string;
+}
+
+export interface ExtensionState {
+  profile: CandidateProfile;
+  applications: TrackedApplication[];
+}
+
+const EXTENSION_ID_KEY = 'careeragent_extension_id';
+
+/** Web Store id from the build env; a localStorage override lets developers point at an unpacked build. */
+export function getExtensionId(): string {
   try {
-    const response = await sendExtensionMessage({ action: 'ping' }, 500);
-    return response?.status === 'ok';
+    return localStorage.getItem(EXTENSION_ID_KEY) || import.meta.env.VITE_EXTENSION_ID || '';
   } catch {
-    return false;
+    return import.meta.env.VITE_EXTENSION_ID || '';
   }
 }
 
-/**
- * Sends a message to the companion Chrome extension via window.postMessage.
- * The extension's content script must be injected on this domain to bridge the message to the background service worker.
- */
-export function sendExtensionMessage(request: ExtensionRequest, timeoutMs = 15000): Promise<any> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') {
-      return reject(new Error('Window not available'));
-    }
+export function setExtensionIdOverride(id: string): void {
+  if (id.trim()) localStorage.setItem(EXTENSION_ID_KEY, id.trim());
+  else localStorage.removeItem(EXTENSION_ID_KEY);
+}
 
-    const messageId = crypto.randomUUID();
+type ChromeRuntime = {
+  sendMessage: (extensionId: string, message: unknown, callback: (response: unknown) => void) => void;
+  lastError?: { message?: string };
+};
 
-    const listener = (event: MessageEvent) => {
-      // Ensure the message is from our window and is an extension response
-      if (
-        event.source === window &&
-        event.data &&
-        event.data.type === 'CAREER_AGENT_EXT_RESPONSE' &&
-        event.data.messageId === messageId
-      ) {
-        window.removeEventListener('message', listener);
-        debugLog('WEB_APP', 'Received response from extension', { messageId, error: event.data.error });
-        if (event.data.error) {
-          reject(new Error(event.data.error));
-        } else {
-          resolve(event.data.payload);
+export function isExtensionApiAvailable(): boolean {
+  return Boolean((globalThis as { chrome?: { runtime?: ChromeRuntime } }).chrome?.runtime?.sendMessage);
+}
+
+export function sendExtensionMessage<T = unknown>(request: BridgeRequest, timeoutMs = 15_000): Promise<T> {
+  const runtime = (globalThis as { chrome?: { runtime?: ChromeRuntime } }).chrome?.runtime;
+  const extensionId = getExtensionId();
+  if (!runtime?.sendMessage || !extensionId) {
+    return Promise.reject(new Error('EXTENSION_NOT_INSTALLED'));
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('EXTENSION_TIMEOUT')), timeoutMs);
+    try {
+      runtime.sendMessage(extensionId, request, (response: unknown) => {
+        clearTimeout(timer);
+        if (runtime.lastError || response === undefined) {
+          return reject(new Error('EXTENSION_NOT_INSTALLED'));
         }
-      }
-    };
-
-    window.addEventListener('message', listener);
-
-    debugLog('WEB_APP', 'Sending postMessage to extension', { action: request.action, messageId });
-
-    // Send the message to the content script
-    window.postMessage(
-      {
-        source: EXTENSION_SOURCE,
-        type: 'CAREER_AGENT_EXT_REQUEST',
-        messageId,
-        action: request.action,
-        payload: request.payload,
-      },
-      '*'
-    );
-
-    // Timeout if the extension doesn't respond (e.g. not installed or taking too long)
-    setTimeout(() => {
-      debugLog('WEB_APP', 'Timeout reached waiting for extension response', { action: request.action, messageId, timeoutMs });
-      window.removeEventListener('message', listener);
-      reject(new Error('EXTENSION_TIMEOUT'));
-    }, timeoutMs);
+        const res = response as { data?: T; error?: string };
+        if (res.error) return reject(new Error(res.error));
+        resolve(res.data as T);
+      });
+    } catch {
+      clearTimeout(timer);
+      reject(new Error('EXTENSION_NOT_INSTALLED'));
+    }
   });
+}
+
+export async function pingExtension(): Promise<boolean> {
+  try {
+    const res = await sendExtensionMessage<{ status: string }>({ action: 'ping' }, 1500);
+    return res?.status === 'ok';
+  } catch {
+    return false;
+  }
 }
 
 /**

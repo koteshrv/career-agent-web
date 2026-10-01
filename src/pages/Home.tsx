@@ -77,7 +77,7 @@ export function Home() {
           finalQuery += ` ${excludeTerms}`;
         }
       }
-    } catch(e) {}
+    } catch {}
     
     finalQuery = finalQuery.trim();
     if (finalQuery) params.set('q', finalQuery);

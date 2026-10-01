@@ -63,6 +63,8 @@ export function Tracker() {
 
   useEffect(() => {
     refreshApplications();
+    window.addEventListener('careeragent_sync', refreshApplications);
+    return () => window.removeEventListener('careeragent_sync', refreshApplications);
   }, []);
 
   // Filter applications by search query

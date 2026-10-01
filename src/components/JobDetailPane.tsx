@@ -34,7 +34,13 @@ interface JobDetailPaneProps {
   onSelectLocation?: (location: string) => void;
 }
 
-export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation }: JobDetailPaneProps) {
+export function JobDetailPane(props: JobDetailPaneProps) {
+  // Hooks in the content component must run unconditionally, so the null case is decided here.
+  if (!props.job) return null;
+  return <JobDetailPaneContent {...props} job={props.job} />;
+}
+
+function JobDetailPaneContent({ job, onClose, onSelectCompany, onSelectLocation }: JobDetailPaneProps & { job: Job }) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSavedToTracker, setIsSavedToTracker] = useState(false);
@@ -47,8 +53,6 @@ export function JobDetailPane({ job, onClose, onSelectCompany, onSelectLocation 
     needsFullFetch && job?.id ? `/v1/jobs/${job.id}` : null,
     fetcher
   );
-
-  if (!job) return null;
 
   const currentJob: Job = detailData?.job || job;
   const isCurrentJobReported = isReported(currentJob.id);

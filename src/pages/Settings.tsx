@@ -12,57 +12,42 @@ import {
   Monitor
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { getStoredProfile, getStoredApplications, broadcastSync } from '../lib/profileStorage';
+import { getStoredProfile, getStoredApplications, hydrateFromExtension } from '../lib/profileStorage';
+import { pingExtension, getExtensionId, setExtensionIdOverride } from '../lib/extensionBridge';
 import { useTheme } from '../components/ThemeProvider';
 
 export function Settings() {
   const { theme, setTheme } = useTheme();
   const [extensionDetected, setExtensionDetected] = useState<boolean | null>(null);
+  const [extensionId, setExtensionId] = useState(getExtensionId);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
   const profile = getStoredProfile();
   const applications = getStoredApplications();
 
-  // Test extension connection via window.postMessage
+  // Detect the extension through the externally_connectable bridge
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.source === 'CAREERAGENT_EXTENSION') {
-        setExtensionDetected(true);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    // Broadcast a ping
-    window.postMessage({ source: 'CAREERAGENT_WEB', type: 'PING' }, '*');
-
-    // If no response after 1.5s, mark as not detected
-    timeout = setTimeout(() => {
-      if (extensionDetected === null) {
-        setExtensionDetected(false);
-      }
-    }, 1500);
-
+    let cancelled = false;
+    setExtensionDetected(null);
+    pingExtension().then((ok) => {
+      if (!cancelled) setExtensionDetected(ok);
+    });
     return () => {
-      window.removeEventListener('message', handleMessage);
-      clearTimeout(timeout);
+      cancelled = true;
     };
-  }, [extensionDetected]);
+  }, [extensionId]);
 
-  const handleTestSync = () => {
+  const handleTestSync = async () => {
     setIsSyncing(true);
     setSyncStatus(null);
-    broadcastSync('SYNC_PROFILE', profile);
-    broadcastSync('SYNC_APPLICATIONS', applications);
-
-    setTimeout(() => {
-      setIsSyncing(false);
-      setSyncStatus('Sync broadcast dispatched successfully!');
-      setTimeout(() => setSyncStatus(null), 3000);
-    }, 600);
+    const ok = await hydrateFromExtension();
+    setIsSyncing(false);
+    setTick((t) => t + 1);
+    setSyncStatus(ok ? 'Profile and tracker synced with the extension.' : 'Extension not reachable. Is it installed and is the Extension ID correct?');
+    setTimeout(() => setSyncStatus(null), 4000);
   };
+  void tick;
 
   const handleClearData = () => {
     if (confirm('Are you sure you want to clear your local profile and tracked applications? This cannot be undone.')) {
@@ -180,8 +165,8 @@ export function Settings() {
           <div className="pt-2 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="text-muted-foreground">
               {extensionDetected
-                ? 'Your web app syncs in real-time with the extension via postMessage.'
-                : 'Install the open-source extension to unlock automated job captures.'}
+                ? 'Profile and tracker sync with the extension through a private, origin-checked channel.'
+                : 'Install the open-source extension to unlock resume parsing, autofill and automatic tracking.'}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -192,11 +177,28 @@ export function Settings() {
                 className="h-8 px-3 text-xs gap-1.5 cursor-pointer"
               >
                 <RotateCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                Test Sync
+                Sync Now
               </Button>
             </div>
           </div>
           {syncStatus && <p className="text-xs text-emerald-600 font-medium">{syncStatus}</p>}
+          <div className="flex flex-col gap-1.5 pt-2 border-t border-border/60">
+            <label className="text-xs font-medium text-foreground">Extension ID</label>
+            <input
+              type="text"
+              value={extensionId}
+              onChange={(e) => {
+                setExtensionIdOverride(e.target.value);
+                setExtensionId(e.target.value.trim());
+              }}
+              spellCheck={false}
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="32-character id from chrome://extensions"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Pre-filled for the Web Store build. Only change this when running an unpacked development build.
+            </p>
+          </div>
         </div>
 
         {/* Global Agent Intelligence & Filters (Seeded by AI Onboarding) */}

@@ -3,8 +3,8 @@ export type ApiLog = {
   timestamp: string;
   endpoint: string;
   action: string;
-  requestBody: any;
-  responseBody: any;
+  requestBody: unknown;
+  responseBody: unknown;
   status: number;
 };
 
@@ -15,7 +15,7 @@ export function getLogs(): ApiLog[] {
   try {
     const raw = sessionStorage.getItem(LOG_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -33,17 +33,4 @@ export function clearLogs() {
   if (typeof window === 'undefined') return;
   sessionStorage.removeItem(LOG_STORAGE_KEY);
   window.dispatchEvent(new Event('careeragent_logs_updated'));
-}
-
-export function setupLogListener() {
-  if (typeof window === 'undefined') return;
-  
-  const listener = (event: MessageEvent) => {
-    if (event.data?.type === 'CAREER_AGENT_API_LOG' && event.data?.payload) {
-      addLog(event.data.payload);
-    }
-  };
-  
-  window.addEventListener('message', listener);
-  return () => window.removeEventListener('message', listener);
 }

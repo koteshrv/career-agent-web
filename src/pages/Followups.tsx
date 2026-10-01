@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarClock, CheckCircle2, Clock, AlarmClock, ArrowRight } from 'lucide-react';
 import { getStoredApplications, saveStoredApplications } from '../lib/profileStorage';
@@ -7,6 +7,12 @@ import { Button } from '../components/ui/button';
 export function Followups() {
   const [tab, setTab] = useState<'overdue' | 'due' | 'upcoming'>('due');
   const [updatedTick, setUpdatedTick] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setUpdatedTick((t) => t + 1);
+    window.addEventListener('careeragent_sync', bump);
+    return () => window.removeEventListener('careeragent_sync', bump);
+  }, []);
 
   const applications = useMemo(() => getStoredApplications(), [updatedTick]);
 

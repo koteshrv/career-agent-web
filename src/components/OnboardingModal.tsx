@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Upload, Sparkles, X, FileText, CheckCircle2 } from 'lucide-react';
+import { Upload, Sparkles, X, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { fileToBase64, sendExtensionMessage, type ResumeFilters } from '../lib/extensionBridge';
+import { addLog } from '../lib/logger';
 
 export function OnboardingModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleOpen = () => {
       setSuccess(false);
+      setError(null);
       setIsOpen(true);
     };
     window.addEventListener('open_onboarding_modal', handleOpen);
@@ -23,98 +27,63 @@ export function OnboardingModal() {
 
     setFileName(file.name);
     setIsProcessing(true);
-    
+    setError(null);
+
     try {
-      // 1. Convert File to Base64 to safely pass via postMessage
-      const { fileToBase64, sendExtensionMessage } = await import('../lib/extensionBridge');
       const base64File = await fileToBase64(file);
+      const response = await sendExtensionMessage<{ filters: ResumeFilters }>(
+        { action: 'parse_resume_for_filters', payload: { fileName: file.name, fileData: base64File } },
+        90_000
+      );
 
-      // 2. Request the extension to parse it
-      const response = await sendExtensionMessage({
-        action: 'parse_resume_for_filters',
-        payload: { fileName: file.name, fileData: base64File }
-      }, 60000);
-
-      // 3. Save real extracted data
       localStorage.setItem('careeragent_global_filters', JSON.stringify(response.filters));
       localStorage.setItem('careeragent_onboarded', 'true');
 
-      // 4. Broadcast real API log for transparency UI
-      window.postMessage({
-        type: 'CAREER_AGENT_API_LOG',
-        payload: {
-          endpoint: 'Extension Background Worker (AI Provider)',
-          action: 'Resume Parsing & Preference Extraction',
-          timestamp: new Date().toISOString(),
-          status: 200,
-          requestBody: {
-            fileName: file.name,
-            operation: 'Extract Job Preferences'
-          },
-          responseBody: response.filters
+      addLog({
+        endpoint: 'Extension background worker → your AI provider',
+        action: 'Resume Parsing & Preference Extraction',
+        timestamp: new Date().toISOString(),
+        status: 200,
+        requestBody: { fileName: file.name, operation: 'Extract job search filters from PDF' },
+        responseBody: response.filters,
+      });
+
+      // Attach resume file name to candidate master profile
+      try {
+        const rawProfile = localStorage.getItem('careeragent_candidate_profile');
+        if (rawProfile) {
+          const profile = JSON.parse(rawProfile);
+          profile.resumeFileName = file.name;
+          localStorage.setItem('careeragent_candidate_profile', JSON.stringify(profile));
         }
-      }, '*');
+      } catch {}
 
-    } catch (err: any) {
-      // 5. Fallback if extension is not installed (dev simulation)
-      console.warn("Extension not detected or timed out. Running dev simulation.", err);
-      alert(`Extension Error: ${err.message}\nFalling back to mock simulation.`);
-      
-      // Broadcast mock API log for transparency UI testing
-      window.postMessage({
-        type: 'CAREER_AGENT_API_LOG',
-        payload: {
-          endpoint: 'https://api.openai.com/v1/chat/completions',
-          action: 'Resume Parsing & Preference Extraction',
-          timestamp: new Date().toISOString(),
-          status: 200,
-          requestBody: {
-            model: 'gpt-4o',
-            messages: [
-              { role: 'system', content: 'You are an AI assistant. Extract target roles, keywords, negative exclusions, and primary location from the provided resume text. Output as JSON.' },
-              { role: 'user', content: `[Attached PDF: ${file.name}]\n\nResume Content: <binary_pdf_data>...` }
-            ]
-          },
-          responseBody: {
-            id: 'chatcmpl-mock-resume',
-            choices: [{
-              message: {
-                role: 'assistant',
-                content: '{"roles": "Frontend Engineer, Full Stack Developer, Software Engineer", "keywords": "React, TypeScript, Next.js, Node.js", "excludes": "Senior, Lead, Manager, Director, Clearance", "location": "Remote"}'
-              }
-            }]
-          }
-        }
-      }, '*');
-
-      const extractedFilters = {
-        roles: 'Frontend Engineer, Full Stack Developer, Software Engineer',
-        keywords: 'React, TypeScript, Next.js, Node.js',
-        excludes: 'Senior, Lead, Manager, Director, Clearance',
-        location: 'Remote'
-      };
-
-      localStorage.setItem('careeragent_global_filters', JSON.stringify(extractedFilters));
-      localStorage.setItem('careeragent_onboarded', 'true');
+      setSuccess(true);
+      setTimeout(() => {
+        setIsOpen(false);
+        window.location.reload();
+      }, 1000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        message === 'EXTENSION_NOT_INSTALLED'
+          ? 'The CareerAgent extension was not detected. Install it, then try again.'
+          : message === 'EXTENSION_TIMEOUT'
+          ? 'The extension did not answer in time. Check your AI key in the extension settings and retry.'
+          : message
+      );
+      addLog({
+        endpoint: 'Extension background worker',
+        action: 'Resume Parsing & Preference Extraction',
+        timestamp: new Date().toISOString(),
+        status: 500,
+        requestBody: { fileName: file.name },
+        responseBody: { error: message },
+      });
+    } finally {
+      setIsProcessing(false);
+      e.target.value = '';
     }
-
-    // Attach resume file name to candidate master profile
-    try {
-      const rawProfile = localStorage.getItem('careeragent_candidate_profile');
-      if (rawProfile) {
-        const profile = JSON.parse(rawProfile);
-        profile.resumeFileName = file.name;
-        localStorage.setItem('careeragent_candidate_profile', JSON.stringify(profile));
-      }
-    } catch {}
-
-    setIsProcessing(false);
-    setSuccess(true);
-
-    setTimeout(() => {
-      setIsOpen(false);
-      window.location.reload();
-    }, 1000);
   };
 
   const handleClose = () => {
@@ -174,7 +143,7 @@ export function OnboardingModal() {
                   ? 'Applying your target roles and exclusions...' 
                   : isProcessing 
                   ? 'Extracting tech stack, accomplishments, and keywords locally' 
-                  : 'Processed 100% locally on your machine via extension'}
+                  : 'Sent only to the AI provider you configured in the extension. Never to CareerAgent servers.'}
               </p>
             </div>
 
@@ -209,6 +178,13 @@ export function OnboardingModal() {
               </Button>
             </div>
           </div>
+
+          {error && (
+            <div className="flex items-start gap-2 p-3 rounded-lg text-xs border bg-destructive/10 border-destructive/20 text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{error}</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between pt-5 mt-2 border-t border-border/60 text-xs">

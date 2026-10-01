@@ -33,13 +33,16 @@ export function Profile() {
   });
 
   useEffect(() => {
-    setProfile(getStoredProfile());
+    const load = () => setProfile(getStoredProfile());
+    load();
     try {
       const raw = localStorage.getItem('careeragent_global_filters');
       if (raw) {
         setGlobalFilters(JSON.parse(raw));
       }
     } catch {}
+    window.addEventListener('careeragent_sync', load);
+    return () => window.removeEventListener('careeragent_sync', load);
   }, []);
 
   const handleChange = (field: keyof CandidateProfile, value: unknown) => {

@@ -12,23 +12,17 @@ import { Portals } from './pages/Portals';
 import { Logs } from './pages/Logs';
 import { ThemeProvider } from './components/ThemeProvider';
 import { OnboardingModal } from './components/OnboardingModal';
-import { setupLogListener } from './lib/logger';
-
-import { debugLog } from './lib/extensionBridge';
+import { hydrateFromExtension } from './lib/profileStorage';
 
 function App() {
+  // Pull the extension's copy of profile + tracker on load and whenever the tab regains focus.
   useEffect(() => {
-    const handleErr = (e: ErrorEvent) => debugLog('GLOBAL_ERROR', e.message, { stack: e.error?.stack });
-    const handleRej = (e: PromiseRejectionEvent) => debugLog('UNHANDLED_REJECTION', String(e.reason));
-    window.addEventListener('error', handleErr);
-    window.addEventListener('unhandledrejection', handleRej);
-    
-    const cleanup = setupLogListener();
-    return () => {
-      cleanup?.();
-      window.removeEventListener('error', handleErr);
-      window.removeEventListener('unhandledrejection', handleRej);
+    hydrateFromExtension();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') hydrateFromExtension();
     };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
   return (

@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export interface DropdownOption {
   value: string;
@@ -12,148 +13,117 @@ interface DropdownSelectProps {
   onChange: (value: string) => void;
   options: DropdownOption[];
   placeholder?: string;
-  ariaLabel?: string;
+  ariaLabel: string;
   searchable?: boolean;
   fullWidth?: boolean;
+  /** Prefix shown before the value, e.g. "Country". */
+  prefix?: string;
 }
 
-export function DropdownSelect({
-  icon,
-  value,
-  onChange,
-  options,
-  placeholder = 'Select',
-  ariaLabel,
-  searchable = false,
-  fullWidth = false,
-}: DropdownSelectProps) {
+export function DropdownSelect({ icon, value, onChange, options, placeholder = 'Any', ariaLabel, searchable = false, fullWidth = false, prefix }: DropdownSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
 
-  // Close when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
-
-  // Focus search input when opening
-  useEffect(() => {
-    if (isOpen && searchable && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 50);
-    }
     if (!isOpen) {
       setSearchQuery('');
+      return;
     }
+    const onDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    if (searchable) setTimeout(() => searchInputRef.current?.focus(), 30);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
   }, [isOpen, searchable]);
 
   const selectedOption = options.find((opt) => opt.value === value);
+  const isSet = Boolean(selectedOption && selectedOption.value);
   const displayLabel = selectedOption ? selectedOption.label : placeholder;
-
-  const filteredOptions = searchable && searchQuery.trim()
-    ? options.filter((opt) =>
-        opt.label.toLowerCase().includes(searchQuery.toLowerCase().trim())
-      )
-    : options;
+  const filtered = searchable && searchQuery.trim() ? options.filter((o) => o.label.toLowerCase().includes(searchQuery.toLowerCase().trim())) : options;
 
   return (
-    <div className={`relative text-left ${fullWidth ? 'w-full' : 'inline-block'}`} ref={containerRef}>
-      {/* Trigger Button - Rounded matching the buttons */}
+    <div className={cn('relative text-left', fullWidth ? 'w-full' : 'inline-block')} ref={containerRef}>
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => setIsOpen((p) => !p)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-label={ariaLabel || displayLabel}
-        className={`h-8 px-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 hover:border-border text-foreground text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer select-none focus:outline-hidden focus:ring-1 focus:ring-primary/40 ${
-          fullWidth ? 'w-full justify-between' : ''
-        } ${
-          isOpen ? 'border-primary/50 ring-1 ring-primary/30' : ''
-        }`}
+        aria-controls={listId}
+        aria-label={ariaLabel}
+        className={cn(
+          'h-9 rounded-sm border px-3 text-sm font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer select-none',
+          isSet ? 'border-primary/50 bg-primary-soft text-primary-text' : 'border-border-strong bg-card text-foreground hover:bg-muted',
+          fullWidth && 'w-full justify-between'
+        )}
       >
-        <div className="flex items-center gap-1.5 min-w-0">
-          {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
+        <span className="flex items-center gap-1.5 min-w-0">
+          {icon && <span className={cn('shrink-0 [&_svg]:size-3.5', isSet ? 'text-primary-text' : 'text-muted-foreground')}>{icon}</span>}
+          {prefix && !isSet && <span className="text-muted-foreground">{prefix}</span>}
           <span className="truncate">{displayLabel}</span>
-        </div>
-        <ChevronDown
-          className={`h-3 w-3 text-muted-foreground shrink-0 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-foreground' : ''
-          }`}
-        />
+        </span>
+        <ChevronDown className={cn('size-3.5 shrink-0 transition-transform', isOpen && 'rotate-180')} />
       </button>
 
-      {/* Dropdown Menu - Rounded matching the buttons/cards */}
       {isOpen && (
-        <div className={`absolute top-full left-0 mt-1.5 ${fullWidth ? 'w-full' : 'min-w-[170px] max-w-xs'} max-h-64 overflow-hidden rounded-xl border border-border bg-card shadow-lg p-1 z-50 flex flex-col animate-in fade-in-50 zoom-in-95`}>
-          {/* Optional Search Filter */}
+        <div className={cn('absolute top-full left-0 mt-1.5 z-40 flex flex-col overflow-hidden rounded-md border border-border bg-popover p-1 shadow-lg', fullWidth ? 'w-full' : 'min-w-[200px] max-w-xs')}>
           {searchable && options.length > 5 && (
-            <div className="p-1 border-b border-border/60 mb-1">
-              <div className="flex items-center bg-muted/50 rounded-lg px-2 py-1">
-                <Search className="h-3 w-3 text-muted-foreground mr-1.5 shrink-0" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Filter..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-hidden"
-                />
-              </div>
+            <div className="mb-1 flex items-center gap-1.5 rounded-sm bg-muted px-2">
+              <Search className="size-3.5 text-muted-foreground" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Filter"
+                aria-label={`Filter ${ariaLabel}`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              />
             </div>
           )}
-
-          {/* Options List */}
-          <div className="overflow-y-auto max-h-52 space-y-0.5 overscroll-contain">
-            {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-muted-foreground text-center">
-                No matches found
-              </div>
+          <ul id={listId} role="listbox" aria-label={ariaLabel} className="max-h-60 overflow-y-auto overscroll-contain">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-muted-foreground">No matches</li>
             ) : (
-              filteredOptions.map((opt) => {
-                const isSelected = opt.value === value;
+              filtered.map((opt) => {
+                const selected = opt.value === value;
                 return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => {
-                      onChange(opt.value);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between cursor-pointer transition-colors ${
-                      isSelected
-                        ? 'bg-primary/10 text-primary font-semibold'
-                        : 'text-foreground hover:bg-muted'
-                    }`}
-                  >
-                    <span className="truncate mr-2">{opt.label}</span>
-                    {isSelected && (
-                      <Check className="h-3.5 w-3.5 text-primary shrink-0" />
-                    )}
-                  </button>
+                  <li key={opt.value} role="option" aria-selected={selected}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(opt.value);
+                        setIsOpen(false);
+                        triggerRef.current?.focus();
+                      }}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-sm px-2.5 py-1.5 text-left text-sm cursor-pointer',
+                        selected ? 'bg-primary-soft text-primary-text font-medium' : 'text-foreground hover:bg-muted'
+                      )}
+                    >
+                      <span className="truncate">{opt.label}</span>
+                      {selected && <Check className="size-3.5 shrink-0" />}
+                    </button>
+                  </li>
                 );
               })
             )}
-          </div>
+          </ul>
         </div>
       )}
     </div>

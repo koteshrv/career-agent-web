@@ -18,10 +18,16 @@ export interface TrackedApplication {
   updatedAt: string;
 }
 
-export const STATUS_CONFIG: Record<ApplicationStatus, { label: string; dot: string; color: string }> = {
-  SAVED: { label: 'Saved', dot: 'bg-amber-500', color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
-  APPLIED: { label: 'Applied', dot: 'bg-blue-500', color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
-  INTERVIEWING: { label: 'Interviewing', dot: 'bg-purple-500', color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
-  OFFER: { label: 'Offer', dot: 'bg-emerald-500', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-  ARCHIVED: { label: 'Archived', dot: 'bg-muted-foreground', color: 'text-muted-foreground bg-muted border-border' },
+export const STATUS_ORDER: ApplicationStatus[] = ['SAVED', 'APPLIED', 'INTERVIEWING', 'OFFER', 'ARCHIVED'];
+
+/**
+ * The single source of status presentation. Semantic, not a rainbow:
+ * saved is quiet, applied is in play (accent), interviewing and offer are good, archived is dim.
+ */
+export const STATUS_CONFIG: Record<ApplicationStatus, { label: string; dot: string; text: string; bar: string }> = {
+  SAVED: { label: 'Saved', dot: 'bg-muted-foreground', text: 'text-muted-foreground', bar: 'bg-muted-foreground' },
+  APPLIED: { label: 'Applied', dot: 'bg-primary', text: 'text-primary-text', bar: 'bg-primary' },
+  INTERVIEWING: { label: 'Interviewing', dot: 'bg-success', text: 'text-success', bar: 'bg-success' },
+  OFFER: { label: 'Offer', dot: 'bg-success ring-2 ring-success/30', text: 'text-success', bar: 'bg-success' },
+  ARCHIVED: { label: 'Archived', dot: 'bg-border-strong', text: 'text-muted-foreground', bar: 'bg-border-strong' },
 };

@@ -1,17 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Header } from './components/Header';
+import { BottomTabs } from './components/BottomTabs';
 import { Home } from './pages/Home';
-import { Tracker } from './pages/Tracker';
-import { Followups } from './pages/Followups';
+import { Pipeline } from './pages/Pipeline';
 import { QuickGenerate } from './pages/QuickGenerate';
-import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { Portals } from './pages/Portals';
 import { Logs } from './pages/Logs';
 import { ThemeProvider } from './components/ThemeProvider';
 import { OnboardingModal } from './components/OnboardingModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastProvider } from './components/ui/toast';
 import { hydrateFromExtension } from './lib/profileStorage';
 
 function App() {
@@ -27,44 +28,45 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
-      <Router>
-        <div className="h-screen h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-hidden">
-          <Header />
-          <OnboardingModal />
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <Routes>
-              {/* Canonical Jobs Feed */}
-              <Route path="/" element={<Home />} />
-              <Route path="/jobs" element={<Navigate to="/" replace />} />
-              <Route path="/explore" element={<Navigate to="/" replace />} />
-              <Route path="/dashboard" element={<Navigate to="/" replace />} />
-              <Route path="/home" element={<Navigate to="/" replace />} />
+      <ToastProvider>
+        <Router>
+          <div className="h-[100dvh] flex flex-col bg-background text-foreground">
+            <Header />
+            <OnboardingModal />
+            <ErrorBoundary>
+              <div className="flex-1 min-h-0 flex flex-col">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/jobs" element={<Navigate to="/" replace />} />
+                  <Route path="/explore" element={<Navigate to="/" replace />} />
+                  <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                  <Route path="/home" element={<Navigate to="/" replace />} />
+                  <Route path="/portals" element={<Portals />} />
+                  <Route path="/quick-generate" element={<QuickGenerate />} />
 
-              {/* Pipeline & Tracking */}
-              <Route path="/tracker" element={<Tracker />} />
-              <Route path="/pipeline" element={<Navigate to="/tracker" replace />} />
-              <Route path="/applications" element={<Navigate to="/tracker" replace />} />
-              <Route path="/followups" element={<Followups />} />
+                  <Route path="/pipeline" element={<Pipeline tab="board" />} />
+                  <Route path="/pipeline/followups" element={<Pipeline tab="followups" />} />
+                  <Route path="/pipeline/stats" element={<Pipeline tab="stats" />} />
+                  <Route path="/tracker" element={<Navigate to="/pipeline" replace />} />
+                  <Route path="/applications" element={<Navigate to="/pipeline" replace />} />
+                  <Route path="/followups" element={<Navigate to="/pipeline/followups" replace />} />
+                  <Route path="/analytics" element={<Navigate to="/pipeline/stats" replace />} />
 
-              {/* Tools & Utilities */}
-              <Route path="/quick-generate" element={<QuickGenerate />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/portals" element={<Portals />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/settings/activity" element={<Logs />} />
+                  <Route path="/logs" element={<Navigate to="/settings/activity" replace />} />
 
-              {/* Account & Preferences */}
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/logs" element={<Logs />} />
-
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </div>
+            </ErrorBoundary>
+            <BottomTabs />
           </div>
-        </div>
-      </Router>
+        </Router>
+      </ToastProvider>
     </ThemeProvider>
   );
 }
 
 export default App;
-

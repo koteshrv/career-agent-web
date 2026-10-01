@@ -1,160 +1,207 @@
-@font-face {
-  font-family: 'Google Sans';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Google Sans'), local('Product Sans'), url('https://fonts.cdnfonts.com/s/14955/ProductSans-Regular.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Google Sans';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: local('Google Sans Medium'), local('Product Sans Medium'), url('https://fonts.cdnfonts.com/s/14955/ProductSans-Medium.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Google Sans';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Google Sans Bold'), local('Product Sans Bold'), url('https://fonts.cdnfonts.com/s/14955/ProductSans-Bold.woff') format('woff');
-}
-
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-serif/400.css";
+@import "@fontsource/ibm-plex-serif/400-italic.css";
+@import "@fontsource/ibm-plex-serif/500.css";
+@import "@fontsource/ibm-plex-mono/400.css";
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Design tokens. Three radii with meaning (controls 4, panels 8, dialogs 12), two shadows,
+ * a 14px type base, and one accent that only ever means "selected" or "you can act here".
+ */
 @theme {
-  --font-sans: 'Google Sans', 'Product Sans', sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  --text-xs: 11px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 18px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-lg: 16px;
+  --text-lg--line-height: 22px;
+  --text-xl: 20px;
+  --text-xl--line-height: 26px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 30px;
+  --text-3xl: 32px;
+  --text-3xl--line-height: 36px;
 
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
+  --radius-xs: 4px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
 
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+  --shadow-2xs: 0 1px 2px rgb(21 23 27 / 0.06);
+  --shadow-xs: 0 1px 2px rgb(21 23 27 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(21 23 27 / 0.06);
+  --shadow-md: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
+  --shadow-lg: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
+  --shadow-xl: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
+  --shadow-2xl: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
 
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-
-  --color-status-new: hsl(var(--status-new));
-  --color-status-applied: hsl(var(--status-applied));
-  --color-status-interviewing: hsl(var(--status-interviewing));
-  --color-status-rejected: hsl(var(--status-rejected));
-
-  --radius: var(--radius);
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-ink);
+  --color-primary-text: var(--accent-text);
+  --color-primary-soft: var(--accent-soft);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--ink-muted);
+  --color-accent: var(--surface-2);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #ffffff;
+  --color-success: var(--good);
+  --color-success-soft: var(--good-soft);
+  --color-warning: var(--warn);
+  --color-warning-soft: var(--warn-soft);
+  --color-border: var(--line);
+  --color-border-strong: var(--line-strong);
+  --color-input: var(--line);
+  --color-ring: var(--accent);
 }
 
 @layer base {
   :root {
     color-scheme: light;
-    --background: 240 5% 96%;
-    --foreground: 30 20% 12%;
-    --card: 40 20% 100%;
-    --card-foreground: 30 20% 12%;
-    --popover: 40 20% 100%;
-    --popover-foreground: 30 20% 12%;
-    --primary: 26 73% 51%;
-    --primary-foreground: 40 20% 98%;
-    --secondary: 240 5% 92%;
-    --secondary-foreground: 30 20% 18%;
-    --muted: 40 10% 92%;
-    --muted-foreground: 30 10% 45%;
-    --accent: 40 10% 89%;
-    --accent-foreground: 30 20% 18%;
-    --destructive: 6 70% 45%;
-    --destructive-foreground: 40 20% 98%;
-    --border: 40 10% 93%;
-    --input: 40 10% 93%;
-    --ring: 26 73% 51%;
-    --radius: 0.5rem;
-
-    --status-new: 217 91% 55%;
-    --status-applied: 32 85% 50%;
-    --status-interviewing: 142 71% 40%;
-    --status-rejected: 6 70% 45%;
+    --canvas: #f2f3f5;
+    --surface: #ffffff;
+    --surface-2: #f6f7f8;
+    --line: #e3e5e9;
+    --line-strong: #c9ced6;
+    --ink: #15171b;
+    --ink-muted: #5c6370;
+    --accent: #dd7627;
+    --accent-ink: #15171b;
+    --accent-text: #a5520f;
+    --accent-soft: #fbeee2;
+    --danger: #b42318;
+    --good: #1a7a50;
+    --good-soft: #e3f3ea;
+    --warn: #8a5a00;
+    --warn-soft: #fbf1d8;
   }
 
   .dark {
     color-scheme: dark;
-    /* Linear-style Deep Cool Dark Mode */
-    --background: 220 10% 8%;      /* #121316 */
-    --foreground: 220 10% 92%;     /* #F2F3F5 */
-    
-    --card: 220 10% 10%;           /* #16181D */
-    --card-foreground: 220 10% 92%;
-    
-    --popover: 220 10% 11%;        
-    --popover-foreground: 220 10% 92%;
-    
-    --primary: 26 73% 51%;         /* Keeping the vibrant CareerAgent orange */
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 220 10% 14%;      /* #202228 */
-    --secondary-foreground: 220 10% 92%;
-    
-    --muted: 220 10% 14%;
-    --muted-foreground: 220 10% 55%; /* #8A8F98 */
-    
-    --accent: 220 10% 16%;
-    --accent-foreground: 220 10% 92%;
-    
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    
-    /* High contrast, hairline borders */
-    --border: 220 10% 16%;         /* #25272D */
-    --input: 220 10% 16%;
-    --ring: 26 73% 51%;
-
-    --status-new: 217 91% 55%;
-    --status-applied: 32 85% 50%;
-    --status-interviewing: 142 71% 40%;
-    --status-rejected: 0 84% 60%;
+    --canvas: #121316;
+    --surface: #191b1f;
+    --surface-2: #1f2227;
+    --line: #2a2d33;
+    --line-strong: #3a3e46;
+    --ink: #ecedef;
+    --ink-muted: #8b919c;
+    --accent: #e8842f;
+    --accent-ink: #15171b;
+    --accent-text: #e8842f;
+    --accent-soft: #2e2219;
+    --danger: #f97066;
+    --good: #4cc38a;
+    --good-soft: #15291f;
+    --warn: #e2b250;
+    --warn-soft: #2d2512;
   }
-}
 
-@layer base {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     @apply border-border;
   }
-  html, body, #root, input, button, select, textarea {
-    font-family: 'Google Sans', 'Product Sans', sans-serif !important;
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+  }
+
+  input,
+  button,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-@layer utilities {
-  .bg-dot-grid {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 24px 24px;
+@layer components {
+  /* Long-form job description: serif, comfortable measure, quiet headings. */
+  .reading {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 68ch;
+    color: var(--ink);
   }
-  :root:not(.dark) .bg-dot-grid {
-    background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-    background-size: 24px 24px;
+  .reading h1,
+  .reading h2,
+  .reading h3 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+  }
+  .reading h1 { font-size: var(--text-lg); }
+  .reading h2 { font-size: var(--text-lg); }
+  .reading h3 { font-size: var(--text-base); }
+  .reading p { margin: 0 0 0.9em; }
+  .reading ul,
+  .reading ol { padding-left: 1.4em; margin: 0 0 0.9em; }
+  .reading ul { list-style: disc; }
+  .reading ol { list-style: decimal; }
+  .reading li { margin: 0.25em 0; }
+  .reading a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+  .reading strong { font-weight: 500; }
+  .reading > :first-child { margin-top: 0; }
+  /* Most postings open with their own title; the pane already shows it. */
+  .reading > h1:first-child { display: none; }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
-/* Force Vite HMR reload */

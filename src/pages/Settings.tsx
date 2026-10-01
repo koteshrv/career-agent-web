@@ -1,345 +1,218 @@
-import { useState, useEffect } from 'react';
-import { 
-  Settings as SettingsIcon, 
-  Puzzle, 
-  CheckCircle2, 
-  RotateCw, 
-  Trash2, 
-  ShieldCheck,
-  Sparkles,
-  Sun,
-  Moon,
-  Monitor
-} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ExternalLink, Trash2, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { Field, Input } from '../components/ui/field';
+import { Dialog } from '../components/ui/dialog';
+import { SegmentedControl } from '../components/ui/segmented';
+import { Page, PageHeader, Section } from '../components/ui/page';
+import { useToast } from '../components/ui/toast';
 import { getStoredProfile, getStoredApplications, hydrateFromExtension } from '../lib/profileStorage';
 import { pingExtension, getExtensionId, setExtensionIdOverride } from '../lib/extensionBridge';
 import { useTheme } from '../components/ThemeProvider';
+import { cn } from '../lib/utils';
 
 export function Settings() {
   const { theme, setTheme } = useTheme();
-  const [extensionDetected, setExtensionDetected] = useState<boolean | null>(null);
+  const toast = useToast();
+  const [detected, setDetected] = useState<boolean | null>(null);
   const [extensionId, setExtensionId] = useState(getExtensionId);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
+  const [checking, setChecking] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('careeragent_api_url') || '');
+  const [telemetry, setTelemetry] = useState(() => localStorage.getItem('careeragent_telemetry') !== 'false');
   const profile = getStoredProfile();
   const applications = getStoredApplications();
 
-  // Detect the extension through the externally_connectable bridge
+  const check = async () => {
+    setChecking(true);
+    const ok = await pingExtension();
+    setDetected(ok);
+    if (ok) await hydrateFromExtension();
+    setChecking(false);
+    return ok;
+  };
+
   useEffect(() => {
     let cancelled = false;
-    setExtensionDetected(null);
     pingExtension().then((ok) => {
-      if (!cancelled) setExtensionDetected(ok);
+      if (!cancelled) setDetected(ok);
     });
     return () => {
       cancelled = true;
     };
   }, [extensionId]);
 
-  const handleTestSync = async () => {
-    setIsSyncing(true);
-    setSyncStatus(null);
-    const ok = await hydrateFromExtension();
-    setIsSyncing(false);
-    setTick((t) => t + 1);
-    setSyncStatus(ok ? 'Profile and tracker synced with the extension.' : 'Extension not reachable. Is it installed and is the Extension ID correct?');
-    setTimeout(() => setSyncStatus(null), 4000);
-  };
-  void tick;
-
-  const handleClearData = () => {
-    if (confirm('Are you sure you want to clear your local profile and tracked applications? This cannot be undone.')) {
-      localStorage.removeItem('careeragent_candidate_profile');
-      localStorage.removeItem('careeragent_tracked_applications');
-      window.location.reload();
-    }
-  };
-
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-background px-4 sm:px-6 py-6 pb-20">
-      <div className="container mx-auto max-w-3xl space-y-6">
-        {/* Header */}
-        <div className="pb-4 border-b border-border">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <SettingsIcon className="h-6 w-6 text-primary" />
-            Platform Settings
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Manage your CareerAgent connection, backend architecture, and community telemetry.
-          </p>
-        </div>
+    <Page>
+      <PageHeader title="Settings" />
 
-        {/* Appearance & Interface Theme */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Interface Appearance
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Switch between Dark Mode (Linear cool palette), Light Mode, or follow System preferences.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-border/60 flex flex-wrap gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              className={`h-9 px-4 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                theme === 'dark'
-                  ? 'border-primary bg-primary/10 text-primary shadow-2xs'
-                  : 'border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              <Moon className="h-4 w-4" />
-              <span>Dark Mode (Linear)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              className={`h-9 px-4 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                theme === 'light'
-                  ? 'border-primary bg-primary/10 text-primary shadow-2xs'
-                  : 'border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              <Sun className="h-4 w-4 text-amber-500" />
-              <span>Light Mode</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setTheme('system')}
-              className={`h-9 px-4 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                theme === 'system'
-                  ? 'border-primary bg-primary/10 text-primary shadow-2xs'
-                  : 'border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              <Monitor className="h-4 w-4" />
-              <span>System Default</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Extension Status Card */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Puzzle className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Browser Extension Engine
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  The local execution engine that handles DOM scraping and ATS autofill.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              {extensionDetected ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Connected
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground border border-border">
-                  Not Detected
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="text-muted-foreground">
-              {extensionDetected
-                ? 'Profile and tracker sync with the extension through a private, origin-checked channel.'
-                : 'Install the open-source extension to unlock resume parsing, autofill and automatic tracking.'}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleTestSync}
-                disabled={isSyncing}
-                className="h-8 px-3 text-xs gap-1.5 cursor-pointer"
-              >
-                <RotateCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                Sync Now
-              </Button>
-            </div>
-          </div>
-          {syncStatus && <p className="text-xs text-emerald-600 font-medium">{syncStatus}</p>}
-          <div className="flex flex-col gap-1.5 pt-2 border-t border-border/60">
-            <label className="text-xs font-medium text-foreground">Extension ID</label>
-            <input
-              type="text"
+      <Section
+        id="extension"
+        title="Browser extension"
+        description="The extension parses your resume, fills applications and tracks them. This dashboard talks to it over a private channel."
+        panel
+        actions={
+          <span
+            className={cn(
+              'inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-sm px-2.5 text-sm font-medium',
+              detected ? 'bg-success-soft text-success' : 'bg-muted text-muted-foreground'
+            )}
+          >
+            <span aria-hidden="true" className={cn('size-2 rounded-full', detected ? 'bg-success' : 'bg-muted-foreground')} />
+            {detected === null ? 'Checking' : detected ? 'Connected' : 'Not connected'}
+          </span>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Extension ID" hint="Pre-filled for the Web Store build. Change it only for an unpacked development build; the id is on chrome://extensions.">
+            <Input
               value={extensionId}
+              spellCheck={false}
               onChange={(e) => {
                 setExtensionIdOverride(e.target.value);
                 setExtensionId(e.target.value.trim());
               }}
-              spellCheck={false}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="32-character id from chrome://extensions"
+              placeholder="32 lowercase letters"
+              className="font-mono"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Pre-filled for the Web Store build. Only change this when running an unpacked development build.
-            </p>
-          </div>
-        </div>
-
-        {/* Global Agent Intelligence & Filters (Seeded by AI Onboarding) */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Global Search Profile (AI Seeded)
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Default roles, keywords, and exclusions applied to your search feeds.
-                </p>
-              </div>
-            </div>
-
+          </Field>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
-              size="sm"
-              onClick={() => window.dispatchEvent(new CustomEvent('open_onboarding_modal'))}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs gap-1.5 font-semibold cursor-pointer"
+              onClick={async () => {
+                const ok = await check();
+                toast(ok ? 'Extension connected. Profile and pipeline synced.' : 'Extension not reachable. Is it installed, and is the id right?', ok ? 'success' : 'error');
+              }}
+              disabled={checking}
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              Run Onboarding Setup
+              <RefreshCw className={checking ? 'animate-spin' : ''} />
+              {detected ? 'Sync now' : 'Check connection'}
             </Button>
-          </div>
-
-          <div className="pt-2 border-t border-border/60 text-xs space-y-2">
-            {(() => {
-              const raw = localStorage.getItem('careeragent_global_filters');
-              if (!raw) {
-                return (
-                  <p className="text-muted-foreground italic">
-                    No default filters configured yet. Click "Run Onboarding Setup" to seed from your resume or set them manually.
-                  </p>
-                );
-              }
-              try {
-                const filters = JSON.parse(raw);
-                return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <div className="p-2.5 rounded-lg bg-background border border-border/80 space-y-1">
-                      <span className="font-semibold text-foreground text-[11px]">Target Roles:</span>
-                      <p className="text-muted-foreground">{filters.roles || 'None specified'}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-background border border-border/80 space-y-1">
-                      <span className="font-semibold text-foreground text-[11px]">Keywords:</span>
-                      <p className="text-muted-foreground">{filters.keywords || 'None specified'}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-background border border-border/80 space-y-1">
-                      <span className="font-semibold text-foreground text-[11px]">Exclusions:</span>
-                      <p className="text-muted-foreground">{filters.excludes || 'None specified'}</p>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-background border border-border/80 space-y-1">
-                      <span className="font-semibold text-foreground text-[11px]">Default Location:</span>
-                      <p className="text-muted-foreground">{filters.location || 'Anywhere'}</p>
-                    </div>
-                  </div>
-                );
-              } catch {
-                return null;
-              }
-            })()}
+            {!detected && (
+              <Button asChild variant="link">
+                <a href="https://github.com/koteshrv/career-agent-extension" target="_blank" rel="noreferrer">
+                  Get the extension
+                  <ExternalLink />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
+      </Section>
 
-        {/* Bring Your Own Backend (BYOB) */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
-            Advanced: API Configuration (BYOB)
+      <Section id="appearance" title="Appearance">
+        <SegmentedControl
+          ariaLabel="Theme"
+          value={theme}
+          onChange={(v) => setTheme(v)}
+          options={[
+            { value: 'system', label: <span className="inline-flex items-center gap-1.5"><Monitor className="size-4" />System</span> },
+            { value: 'light', label: <span className="inline-flex items-center gap-1.5"><Sun className="size-4" />Light</span> },
+            { value: 'dark', label: <span className="inline-flex items-center gap-1.5"><Moon className="size-4" />Dark</span> },
+          ]}
+        />
+      </Section>
+
+      <Section id="data" title="Your data" description="Everything lives in this browser and in the extension. Nothing identifying is sent to our servers.">
+        <dl className="grid grid-cols-2 gap-4 rounded-md border border-border bg-card p-4 text-sm">
+          <div>
+            <dt className="text-muted-foreground">Profile</dt>
+            <dd className="font-medium text-foreground">{profile.firstName ? `${profile.firstName} ${profile.lastName}`.trim() : 'Empty'}</dd>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            By default, public users connect to the central CareerAgent API. Self-hosted users running the Python backend container can override this to route heavy compute tasks locally.
-          </p>
-          <div className="flex flex-col gap-2 pt-1">
-            <label className="text-xs font-medium text-foreground">Backend API URL</label>
-            <input 
-              type="text" 
-              defaultValue={localStorage.getItem('careeragent_api_url') || 'https://api.careeragent.fyi'}
-              onChange={(e) => localStorage.setItem('careeragent_api_url', e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="http://localhost:8000"
-            />
+          <div>
+            <dt className="text-muted-foreground">Pipeline</dt>
+            <dd className="font-medium text-foreground">
+              {applications.length} {applications.length === 1 ? 'job' : 'jobs'}
+            </dd>
           </div>
+        </dl>
+        <label className="mt-4 flex items-start gap-3 rounded-md border border-border bg-card p-3.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={telemetry}
+            onChange={(e) => {
+              setTelemetry(e.target.checked);
+              localStorage.setItem('careeragent_telemetry', e.target.checked.toString());
+            }}
+            className="mt-0.5 size-4 accent-primary"
+          />
+          <span>
+            <span className="block text-base font-medium text-foreground">Share anonymous application outcomes</span>
+            <span className="block text-sm text-muted-foreground">Response times and ghosting rates by company, with no names, resumes or notes. Helps everyone spot dead postings.</span>
+          </span>
+        </label>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button asChild>
+            <Link to="/settings/activity">View AI activity log</Link>
+          </Button>
+          <Button variant="danger" onClick={() => setConfirmClear(true)}>
+            <Trash2 />
+            Clear local data
+          </Button>
         </div>
+      </Section>
 
-        {/* Community Intelligence Network */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            Community Intelligence Network
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Help us build the ultimate decentralized job market database. Opt-in to anonymously share salary bands, ghosting rates, and interview timelines from your applications.
-          </p>
-          <div className="pt-1 flex items-center justify-between bg-secondary/50 p-3 rounded-lg border border-border">
-            <span className="text-sm font-medium text-foreground">Share anonymous insights</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                defaultChecked={localStorage.getItem('careeragent_telemetry') !== 'false'}
-                onChange={(e) => localStorage.setItem('careeragent_telemetry', e.target.checked.toString())}
-                className="sr-only peer" 
-              />
-              <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-            </label>
-          </div>
-        </div>
+      <Section id="advanced" title="Advanced" description="Self-hosting the backend? Point the dashboard at it.">
+        <Field label="API base URL" hint="Leave empty to use api.careeragent.fyi. Takes effect after reload.">
+          <Input
+            value={apiUrl}
+            onChange={(e) => {
+              setApiUrl(e.target.value);
+              if (e.target.value.trim()) localStorage.setItem('careeragent_api_url', e.target.value.trim());
+              else localStorage.removeItem('careeragent_api_url');
+            }}
+            placeholder="http://localhost:8000"
+            className="font-mono"
+          />
+        </Field>
+      </Section>
 
-        {/* Local Storage & Privacy */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            Local-First Privacy Architecture
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Your candidate profile and job tracker applications are saved directly in your browser's local storage. Zero personal resume data is ever sent to our servers.
-          </p>
-          <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
-            <div className="p-3 bg-background rounded-lg border border-border">
-              <span className="text-muted-foreground block mb-0.5">Profile Status</span>
-              <span className="font-semibold text-foreground">
-                {profile.firstName ? `${profile.firstName} ${profile.lastName}` : 'Empty'}
-              </span>
-            </div>
-            <div className="p-3 bg-background rounded-lg border border-border">
-              <span className="text-muted-foreground block mb-0.5">Tracked Applications</span>
-              <span className="font-semibold text-foreground">{applications.length} jobs</span>
-            </div>
-          </div>
-          <div className="pt-3 border-t border-border flex justify-end">
-            <Button variant="destructive" size="sm" onClick={handleClearData} className="h-8 px-3 text-xs gap-1.5 cursor-pointer">
-              <Trash2 className="h-3.5 w-3.5" />
-              Clear Local Data
+      <Section id="about" title="About">
+        <ul className="space-y-1.5 text-sm">
+          <li>
+            <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent" target="_blank" rel="noreferrer">
+              CareerAgent on GitHub
+            </a>
+          </li>
+          <li>
+            <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent-extension" target="_blank" rel="noreferrer">
+              Extension source
+            </a>
+          </li>
+          <li>
+            <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent-web" target="_blank" rel="noreferrer">
+              Dashboard source
+            </a>
+          </li>
+        </ul>
+      </Section>
+
+      <Dialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        title="Clear local data?"
+        description="Your profile and pipeline will be removed from this browser. The extension keeps its own copy until you clear it there."
+        size="sm"
+        footer={
+          <>
+            <Button onClick={() => setConfirmClear(false)}>Keep</Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                localStorage.removeItem('careeragent_candidate_profile');
+                localStorage.removeItem('careeragent_tracked_applications');
+                localStorage.removeItem('careeragent_global_filters');
+                localStorage.removeItem('careeragent_onboarded');
+                window.location.reload();
+              }}
+            >
+              Clear
             </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </>
+        }
+      >
+        <span className="sr-only">Confirm</span>
+      </Dialog>
+    </Page>
   );
 }

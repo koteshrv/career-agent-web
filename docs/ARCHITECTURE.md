@@ -6,7 +6,7 @@ Three repositories, one product. This page is the map; each repository's README 
 |---|---|---|
 | `career-agent-web` (this) | The dashboard: Jobs, For you, Pipeline, Drafts, Profile, Settings | Browser, static site on Cloudflare Pages at careeragent.fyi |
 | `career-agent-extension` | Chrome extension (WXT, Manifest V3): autofill, tracking, all AI calls, LaTeX | Browser |
-| `career-agent-api` | Job index: postings pulled from Greenhouse, Lever, Ashby and Workday boards | api.careeragent.fyi |
+| Job index API (private for now) | Postings pulled from Greenhouse, Lever, Ashby and Workday boards | api.careeragent.fyi |
 
 Design rule: the API holds no user data and has no accounts. Everything about the user lives in their browser, split between the dashboard's `localStorage` and the extension's `chrome.storage.local`. AI calls go from the extension to the provider the user configured with their own key. Nothing is proxied through CareerAgent servers.
 

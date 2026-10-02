@@ -23,7 +23,8 @@ export type BridgeRequest =
   | { action: 'add_resume'; payload: { name: string; kind: ResumeKind; data?: string; text?: string } }
   | { action: 'get_resume'; payload: { id: string } }
   | { action: 'delete_resume'; payload: { id: string } }
-  | { action: 'set_upload_resume'; payload: { id: string } };
+  | { action: 'set_upload_resume'; payload: { id: string } }
+  | { action: 'evaluate_jobs'; payload: { jobs: Array<{ id: string; title: string; company: string; location?: string; description: string }> } };
 
 export type ResumeKind = 'pdf' | 'tex' | 'md' | 'txt';
 export interface ResumeMeta {

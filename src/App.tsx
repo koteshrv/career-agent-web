@@ -36,11 +36,12 @@ function App() {
             <ErrorBoundary>
               <div className="flex-1 min-h-0 flex flex-col">
                 <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/jobs" element={<Navigate to="/" replace />} />
-                  <Route path="/explore" element={<Navigate to="/" replace />} />
-                  <Route path="/dashboard" element={<Navigate to="/" replace />} />
-                  <Route path="/home" element={<Navigate to="/" replace />} />
+                  <Route path="/" element={<Navigate to="/jobs" replace />} />
+                  <Route path="/jobs" element={<Home mode="all" />} />
+                  <Route path="/matches" element={<Home mode="matches" />} />
+                  <Route path="/explore" element={<Navigate to="/jobs" replace />} />
+                  <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />
+                  <Route path="/home" element={<Navigate to="/jobs" replace />} />
                   <Route path="/portals" element={<Portals />} />
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/quick-generate" element={<Navigate to="/drafts" replace />} />
@@ -58,7 +59,7 @@ function App() {
                   <Route path="/settings/activity" element={<Logs />} />
                   <Route path="/logs" element={<Navigate to="/settings/activity" replace />} />
 
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/jobs" replace />} />
                 </Routes>
               </div>
             </ErrorBoundary>

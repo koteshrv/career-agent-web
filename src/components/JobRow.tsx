@@ -2,6 +2,7 @@ import type { Job } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
 import { formatRelativeTime, formatFullDate } from '../lib/utils';
 import { cn } from '../lib/utils';
+import { VERDICT_LABEL, VERDICT_PILL, type JobEvaluation } from '../lib/evaluations';
 
 export function primaryLocation(job: Job): string | null {
   if (!job.location || job.location.toLowerCase() === 'unknown') return null;
@@ -12,10 +13,11 @@ interface JobRowProps {
   job: Job;
   selected: boolean;
   onSelect: (job: Job) => void;
+  evaluation?: JobEvaluation;
 }
 
 /** One posting as a scannable row: logo, title in the accent, company, location, age. The whole row selects; applying lives in the pane. */
-export function JobRow({ job, selected, onSelect }: JobRowProps) {
+export function JobRow({ job, selected, onSelect, evaluation }: JobRowProps) {
   const meta = job.structured_metadata;
   const location = primaryLocation(job);
   const workplace = (job.workplace_type || meta?.remote_policy || '').toLowerCase();
@@ -38,7 +40,13 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
           <h3 className="text-[15px] font-medium leading-snug text-primary-text line-clamp-2">{job.title}</h3>
           <p className="mt-0.5 truncate text-sm text-foreground">{job.company}</p>
           {where && <p className="truncate text-xs text-muted-foreground">{where}</p>}
-          <p className="mt-1.5 text-xs text-muted-foreground" title={formatFullDate(posted)}>
+          <p className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground" title={formatFullDate(posted)}>
+            {evaluation && (
+              <span className={cn('inline-flex h-5 items-center gap-1 rounded-full px-2 font-medium text-foreground', VERDICT_PILL[evaluation.verdict])} title={evaluation.reason}>
+                <span className="tabular-nums">{evaluation.score.toFixed(1)}</span>
+                {VERDICT_LABEL[evaluation.verdict]}
+              </span>
+            )}
             {formatRelativeTime(posted)}
           </p>
         </div>

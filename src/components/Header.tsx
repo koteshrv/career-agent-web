@@ -6,7 +6,8 @@ import { groupFollowUps } from '../lib/followups';
 import { cn } from '../lib/utils';
 
 export const NAV = [
-  { to: '/', label: 'Jobs', end: true },
+  { to: '/jobs', label: 'Jobs', end: false },
+  { to: '/matches', label: 'For you', end: false },
   { to: '/pipeline', label: 'Pipeline', end: false },
   { to: '/drafts', label: 'Drafts', end: false },
   { to: '/profile', label: 'Profile', end: false },
@@ -22,7 +23,7 @@ export function Header() {
     <header className="shrink-0 z-30 w-full border-b border-border bg-background">
       <div className="mx-auto flex h-16 w-full max-w-[1360px] items-center justify-between gap-6 px-4 sm:px-8">
         <div className="flex items-center gap-10">
-          <Link to="/" className="flex items-center" aria-label="CareerAgent home">
+          <Link to="/jobs" className="flex items-center" aria-label="CareerAgent home">
             <Logo />
           </Link>
           <nav aria-label="Primary" className="hidden md:flex items-center gap-1">

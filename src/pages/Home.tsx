@@ -1,4 +1,11 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
+import { sendExtensionMessage } from '../lib/extensionBridge';
+import { useExtensionStatus } from '../lib/useExtensionStatus';
+import { useEvaluations, saveEvaluations, type JobEvaluation } from '../lib/evaluations';
+import { useToast } from '../components/ui/toast';
+import type { Job, JobDetailResponse } from '../lib/api';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
 import { Search, AlertCircle, RefreshCw } from 'lucide-react';
@@ -14,8 +21,25 @@ import { cn } from '../lib/utils';
 const PAGE_SIZE = 20;
 const MAX_SEARCH_DEPTH = 100; // API ceiling: offset + limit <= 100
 
-export function Home() {
+type Defaults = { roles: string; keywords: string; excludes: string; location: string };
+function readDefaults(): Defaults {
+  try {
+    return { roles: '', keywords: '', excludes: '', location: '', ...JSON.parse(localStorage.getItem('careeragent_global_filters') || '{}') };
+  } catch {
+    return { roles: '', keywords: '', excludes: '', location: '' };
+  }
+}
+
+/** Jobs (`all`) is the whole feed, untouched. For you (`matches`) applies the profile's search defaults and can triage with AI. */
+export function Home({ mode }: { mode: 'all' | 'matches' }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const matches = mode === 'matches';
+  const defaults = useMemo(readDefaults, []);
+  const hasDefaults = Boolean(defaults.roles || defaults.keywords);
+  const evaluations = useEvaluations();
+  const extension = useExtensionStatus();
+  const toast = useToast();
+  const [evaluating, setEvaluating] = useState<{ done: number; total: number } | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
 
   const queryParam = searchParams.get('q') || '';
@@ -40,14 +64,7 @@ export function Home() {
 
     const params = new URLSearchParams({ limit: PAGE_SIZE.toString(), offset: offset.toString() });
     let finalQuery = queryParam;
-    try {
-      const globalStr = localStorage.getItem('careeragent_global_filters');
-      if (globalStr) {
-        const globals = JSON.parse(globalStr);
-        if (globals.roles && !queryParam) finalQuery += ` ${globals.roles}`;
-        if (globals.keywords && !queryParam) finalQuery += ` ${globals.keywords}`;
-      }
-    } catch {}
+    if (matches && !queryParam) finalQuery = `${defaults.roles} ${defaults.keywords}`;
     finalQuery = finalQuery.trim();
     if (finalQuery) params.set('q', finalQuery);
     if (countryParam) params.set('country', countryParam);
@@ -73,20 +90,13 @@ export function Home() {
 
   const rawJobs = useMemo(() => (data ? data.flatMap((page) => (page && Array.isArray(page.jobs) ? page.jobs : [])) : []), [data]);
 
-  // Excluded terms from Search defaults are applied here: the feed's search has no negation, so sending "-Junior" matched "Junior".
-  const excludes = useMemo(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem('careeragent_global_filters') || '{}').excludes as string | undefined;
-      return (raw || '').split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
-    } catch {
-      return [];
-    }
-  }, []);
+  // Excluded terms apply only on For you: the feed's search has no negation, so they are filtered here.
+  const excludes = useMemo(() => (matches ? defaults.excludes.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean) : []), [matches, defaults.excludes]);
 
   const jobs = useMemo(() => {
     const now = Date.now();
     const maxAgeMs = dateParam === '24h' ? 86_400_000 : dateParam === 'week' ? 7 * 86_400_000 : dateParam === 'month' ? 30 * 86_400_000 : null;
-    return rawJobs.filter((job) => {
+    const list = rawJobs.filter((job) => {
       if (excludes.length > 0) {
         const title = job.title.toLowerCase();
         if (excludes.some((term) => title.includes(term))) return false;
@@ -95,7 +105,46 @@ export function Home() {
       const t = job.posted_at || job.created_at;
       return !t || now - new Date(t).getTime() <= maxAgeMs;
     });
-  }, [rawJobs, dateParam, excludes]);
+    // Evaluated postings float to the top by score; the rest keep feed order.
+    if (!matches) return list;
+    return [...list].sort((a, b) => (evaluations[b.id]?.score ?? -1) - (evaluations[a.id]?.score ?? -1));
+  }, [rawJobs, dateParam, excludes, matches, evaluations]);
+
+  // Batch triage: 10 postings per request, descriptions fetched where the list lacks them.
+  const pending = useMemo(() => (matches ? jobs.filter((j) => !evaluations[j.id]) : []), [matches, jobs, evaluations]);
+  const evaluateAll = async () => {
+    if (pending.length === 0 || evaluating) return;
+    const targets = pending.slice(0, 50);
+    setEvaluating({ done: 0, total: targets.length });
+    try {
+      for (let i = 0; i < targets.length; i += 10) {
+        const batch = targets.slice(i, i + 10);
+        const withText = await Promise.all(
+          batch.map(async (job: Job) => {
+            let description = job.description || job.cleaned_description || job.raw_description || '';
+            if (!description) {
+              try {
+                const d = (await fetcher(`/v1/jobs/${job.id}`)) as JobDetailResponse;
+                description = d.job.description || d.job.cleaned_description || d.job.raw_description || '';
+              } catch {}
+            }
+            return { id: job.id, title: job.title, company: job.company, location: job.location || undefined, description: description.slice(0, 6000) };
+          })
+        );
+        const usable = withText.filter((j) => j.description);
+        if (usable.length === 0) continue;
+        const res = await sendExtensionMessage<{ results: Omit<JobEvaluation, 'evaluatedAt'>[]; meta?: { model?: string } }>({ action: 'evaluate_jobs', payload: { jobs: usable } }, 180_000);
+        const now = new Date().toISOString();
+        saveEvaluations(res.results.map((r) => ({ ...r, evaluatedAt: now, model: res.meta?.model })));
+        setEvaluating({ done: Math.min(i + 10, targets.length), total: targets.length });
+      }
+      toast('Evaluated', 'success');
+    } catch (e: unknown) {
+      toast(e instanceof Error ? e.message : String(e), 'error');
+    } finally {
+      setEvaluating(null);
+    }
+  };
 
   // Desktop keeps a posting open at all times; phones open one only on tap.
   const selectedJob = useMemo(() => (selectedJobId ? jobs.find((j) => j.id === selectedJobId) || null : jobs[0] ?? null), [jobs, selectedJobId]);
@@ -113,7 +162,31 @@ export function Home() {
     <main className="flex-1 min-h-0 flex flex-col">
       <div className="mx-auto flex w-full max-w-[1360px] flex-1 min-h-0 flex-col gap-4 px-4 pt-5 pb-16 sm:px-8 md:pb-6">
         <div className={cn(detailOpen && 'hidden lg:block')}>
-          <JobsToolbar resultSummary={summary} />
+          <JobsToolbar
+            resultSummary={summary}
+            action={
+              matches && jobs.length > 0 ? (
+                <Button size="sm" variant="primary" onClick={evaluateAll} disabled={!extension || pending.length === 0 || Boolean(evaluating)} title={extension ? undefined : 'Connect the extension to evaluate with your AI key'}>
+                  <Sparkles className={evaluating ? 'animate-pulse' : ''} />
+                  {evaluating ? `Evaluating ${evaluating.done} of ${evaluating.total}` : pending.length === 0 ? 'All evaluated' : `Evaluate ${Math.min(pending.length, 50)} with AI`}
+                </Button>
+              ) : null
+            }
+            note={
+              matches ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {hasDefaults ? (
+                    <>
+                      Matching your search defaults{defaults.roles && <>: <span className="text-foreground">{defaults.roles}</span></>}{defaults.keywords && <>, <span className="text-foreground">{defaults.keywords}</span></>}{defaults.excludes && <>, excluding <span className="text-foreground">{defaults.excludes}</span></>}.{' '}
+                    </>
+                  ) : (
+                    <>No search defaults yet, so this is the whole feed. </>
+                  )}
+                  <Link to="/profile#search-defaults" className="text-primary-text underline-offset-2 hover:underline">Edit in Profile</Link>. Evaluate scores each posting 1–5 against your profile with your own AI key; nothing leaves your browser except the posting text sent to your provider.
+                </p>
+              ) : null
+            }
+          />
         </div>
 
         <div className="flex flex-1 min-h-0 gap-4">
@@ -159,7 +232,7 @@ export function Home() {
               {jobs.length > 0 && (
                 <ul>
                   {jobs.map((job) => (
-                    <JobRow key={job.id} job={job} selected={selectedJob?.id === job.id} onSelect={(j) => setJob(j.id)} />
+                    <JobRow key={job.id} evaluation={evaluations[job.id]} job={job} selected={selectedJob?.id === job.id} onSelect={(j) => setJob(j.id)} />
                   ))}
                 </ul>
               )}
@@ -182,7 +255,7 @@ export function Home() {
           {/* Reading pane */}
           {selectedJob && (
             <section aria-label="Job details" className={cn('min-h-0 min-w-0 flex-1', detailOpen ? 'block' : 'hidden lg:block')}>
-              <ReadingPane job={selectedJob} onBack={() => setJob(null)} />
+              <ReadingPane evaluation={selectedJob ? evaluations[selectedJob.id] : undefined} job={selectedJob} onBack={() => setJob(null)} />
             </section>
           )}
         </div>

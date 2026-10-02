@@ -21,10 +21,14 @@ const DATES = [
 
 interface JobsToolbarProps {
   resultSummary: React.ReactNode;
+  /** Rendered beside the summary, e.g. a batch action. */
+  action?: React.ReactNode;
+  /** Rendered under the filters, e.g. which search defaults are in play. */
+  note?: React.ReactNode;
 }
 
 /** Search with keyword chips plus three filters, owned by the Jobs page. */
-export function JobsToolbar({ resultSummary }: JobsToolbarProps) {
+export function JobsToolbar({ resultSummary, action, note }: JobsToolbarProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -142,12 +146,14 @@ export function JobsToolbar({ resultSummary }: JobsToolbarProps) {
         </div>
         <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground">
           <span aria-live="polite">{resultSummary}</span>
+          {action}
           <Link to="/portals" className="font-medium text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground">
             <span className="sm:hidden">Companies</span>
             <span className="hidden sm:inline">Companies we index</span>
           </Link>
         </div>
       </div>
+      {note}
     </div>
   );
 }

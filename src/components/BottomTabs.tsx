@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Briefcase, KanbanSquare, User, Settings } from 'lucide-react';
+import { Sparkles, Briefcase, KanbanSquare, User, Settings } from 'lucide-react';
 import { useStoredApplications } from '../lib/useStoredApplications';
 import { groupFollowUps } from '../lib/followups';
 import { cn } from '../lib/utils';
 
 const TABS = [
-  { to: '/', label: 'Jobs', icon: Briefcase, end: true },
+  { to: '/jobs', label: 'Jobs', icon: Briefcase, end: false },
+  { to: '/matches', label: 'For you', icon: Sparkles, end: false },
   { to: '/pipeline', label: 'Pipeline', icon: KanbanSquare, end: false },
   { to: '/profile', label: 'Profile', icon: User, end: false },
   { to: '/settings', label: 'Settings', icon: Settings, end: false },
@@ -17,7 +18,7 @@ export function BottomTabs() {
   const dueCount = groupFollowUps(apps).actionable;
   return (
     <nav aria-label="Primary" className="md:hidden fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]">
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {TABS.map((t) => (
           <li key={t.to}>
             <NavLink

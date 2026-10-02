@@ -7,7 +7,8 @@ import { Dialog } from '../components/ui/dialog';
 import { Field, Input, Select } from '../components/ui/field';
 import { EmptyState } from '../components/ui/empty-state';
 import { SegmentedControl } from '../components/ui/segmented';
-import { StatusBadge } from '../components/ui/status-badge';
+import { StatusBadge, StatusDot } from '../components/ui/status-badge';
+import { CompanyLogo } from '../components/CompanyLogo';
 import { StatusMenu } from '../components/ui/status-menu';
 import { useToast } from '../components/ui/toast';
 import { Page, PageHeader } from '../components/ui/page';
@@ -196,16 +197,17 @@ function Board({ apps, total, query, onStatus, onNudge, onDelete, onAdd }: {
   return (
     <>
       {/* Board on wide screens */}
-      <div className="hidden lg:flex flex-1 min-h-0 gap-3 overflow-x-auto pb-2">
+      <div className="hidden lg:flex flex-1 min-h-0 gap-4 overflow-x-auto pb-2">
         {STATUS_ORDER.map((status) => {
           const col = apps.filter((a) => a.status === status);
           return (
-            <section key={status} aria-labelledby={`col-${status}`} className="flex min-w-[184px] flex-1 flex-col rounded-md bg-muted/70">
-              <h2 id={`col-${status}`} className="flex items-center justify-between px-3 pt-3 pb-2 text-sm font-medium text-foreground">
-                <StatusBadge status={status} className="text-foreground" />
+            <section key={status} aria-labelledby={`col-${status}`} className="flex min-w-[240px] flex-1 flex-col rounded-md bg-muted/50">
+              <h2 id={`col-${status}`} className="flex items-center gap-2 px-4 pt-3.5 pb-2 text-sm font-medium text-foreground">
+                <StatusDot status={status} />
+                {STATUS_CONFIG[status].label}
                 <span className="tabular-nums text-muted-foreground">{col.length}</span>
               </h2>
-              <ul className="flex-1 space-y-2 overflow-y-auto px-2 pb-2">
+              <ul className="flex-1 space-y-2.5 overflow-y-auto px-2.5 pb-2.5">
                 {col.map((app) => (
                   <PipelineCard key={app.id} app={app} onStatus={onStatus} onNudge={onNudge} onDelete={onDelete} />
                 ))}
@@ -247,33 +249,34 @@ function PipelineCard({ app, onStatus, onNudge, onDelete }: {
 }) {
   const needsNudge = (app.status === 'APPLIED' || app.status === 'INTERVIEWING') && !app.followedUp && daysUntilFollowUp(app) <= 2;
   return (
-    <li className="rounded-md border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="text-base font-semibold leading-snug text-foreground">{app.title}</h3>
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+    <li className="group rounded-md border border-border bg-card p-3.5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <CompanyLogo name={app.company} size={32} className="mt-0.5 shrink-0 rounded-xs" />
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-medium leading-snug text-foreground">{app.title}</h3>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {app.company}
             {app.location && <> · {app.location}</>}
           </p>
+          {app.salary && <p className="mt-1 text-xs font-medium text-foreground">{app.salary}</p>}
         </div>
         {app.url && (
-          <IconButton label={`Open ${app.company} posting`} size="sm" className="-mr-1.5 -mt-1.5" onClick={() => window.open(app.url, '_blank', 'noopener')}>
+          <IconButton label={`Open ${app.company} posting`} size="sm" className="-mr-1.5 -mt-1.5 opacity-0 group-hover:opacity-100 focus-visible:opacity-100" onClick={() => window.open(app.url, '_blank', 'noopener')}>
             <ExternalLink />
           </IconButton>
         )}
       </div>
-      {app.salary && <p className="mt-1 text-sm font-medium text-foreground">{app.salary}</p>}
       {needsNudge && (
-        <button type="button" onClick={() => onNudge(app)} className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-tint-yellow px-3 py-1 text-sm font-medium text-foreground hover:underline underline-offset-2 cursor-pointer">
+        <button type="button" onClick={() => onNudge(app)} className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-tint-yellow px-2.5 py-1 text-xs font-medium text-foreground hover:underline underline-offset-2 cursor-pointer">
           <Mail className="size-3.5" />
           Follow-up due
         </button>
       )}
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5">
-        <StatusMenu value={app.status} onChange={(s) => onStatus(app.id, s)} label={`Stage of ${app.title} at ${app.company}`} className="-ml-1.5" />
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <StatusMenu value={app.status} onChange={(s) => onStatus(app.id, s)} label={`Stage of ${app.title} at ${app.company}`} className="-ml-1" />
+        <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
           <span className="shrink-0 whitespace-nowrap">{fmtDay(app.appliedDate)}</span>
-          <IconButton label={`Remove ${app.title} from pipeline`} size="sm" tone="danger" onClick={() => onDelete(app)}>
+          <IconButton label={`Remove ${app.title} from pipeline`} size="sm" tone="danger" className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100" onClick={() => onDelete(app)}>
             <Trash2 />
           </IconButton>
         </div>

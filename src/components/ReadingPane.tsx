@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
-import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles } from 'lucide-react';
+import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles, PenLine } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
@@ -193,17 +193,41 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
               {isSaved ? 'In pipeline' : 'Save to pipeline'}
             </Button>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-            <span className="mr-1">Draft with AI:</span>
-            <Button variant="ghost" size="sm" onClick={() => openDrafts('resume')}>
-              <Sparkles />
-              Tailored resume
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => openDrafts('cover_letter')}>
-              <FileText />
-              Cover letter
-            </Button>
-          </div>
+          <section aria-labelledby="draft-title" className="mt-5 rounded-md border border-border bg-muted/50 p-3.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-foreground" />
+              <h3 id="draft-title" className="text-sm font-medium text-foreground">Draft with AI</h3>
+              <span className="text-xs text-muted-foreground">Uses your profile and this posting</span>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => openDrafts('resume')}
+                className="group flex items-start gap-3 rounded-xs border border-border bg-card p-3 text-left transition-colors hover:border-border-strong cursor-pointer"
+              >
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xs bg-muted text-foreground [&_svg]:size-4">
+                  <FileText />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-foreground">Tailored resume</span>
+                  <span className="block text-xs text-muted-foreground">Reorders and rewords your bullets for this role.</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openDrafts('cover_letter')}
+                className="group flex items-start gap-3 rounded-xs border border-border bg-card p-3 text-left transition-colors hover:border-border-strong cursor-pointer"
+              >
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xs bg-muted text-foreground [&_svg]:size-4">
+                  <PenLine />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-foreground">Cover letter</span>
+                  <span className="block text-xs text-muted-foreground">Three short paragraphs in your voice, ready to edit.</span>
+                </span>
+              </button>
+            </div>
+          </section>
 
           {facts.length > 0 && (
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-border py-4 sm:grid-cols-3">

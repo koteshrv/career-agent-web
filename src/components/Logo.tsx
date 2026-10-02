@@ -1,12 +1,12 @@
 import { cn } from '../lib/utils';
 
-/** The mark: a line from where you are to a higher point. Two dots and a stroke, nothing else. */
+/** The mark: an open C with the agent at its centre, cut from an ink tile. Reads at 16px, needs no colour. */
 export function Mark({ size = 22, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" className={cn('shrink-0', className)}>
-      <path d="M5.5 18.5 16 8" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="5.5" cy="18.5" r="2.4" fill="var(--ink)" />
-      <circle cx="17.5" cy="6.5" r="4" fill="var(--accent)" />
+      <rect width="24" height="24" rx="6.5" fill="var(--ink)" />
+      <path d="M15.6 7.4A6 6 0 1 0 15.6 16.6" fill="none" stroke="var(--canvas)" strokeWidth="2.4" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="2" fill="var(--canvas)" />
     </svg>
   );
 }

@@ -30,7 +30,7 @@ export function StatusMenu({ value, onChange, label, size = 'sm', className }: S
         className={cn(
           'inline-flex items-center gap-1.5 rounded-full font-medium text-foreground hover:opacity-80 cursor-pointer',
           STATUS_CONFIG[value].pill,
-          size === 'sm' ? 'h-7 pl-2.5 pr-2 text-sm' : 'h-9 px-3 text-base'
+          size === 'sm' ? 'h-6 pl-2 pr-1.5 text-xs' : 'h-9 px-3 text-base'
         )}
       >
         <StatusDot status={value} />

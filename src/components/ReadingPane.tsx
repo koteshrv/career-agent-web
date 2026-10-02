@@ -172,7 +172,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
           <header className="flex items-start gap-3.5">
             <CompanyLogo name={current.company} className="size-12 shrink-0 rounded-md border border-border" />
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-medium leading-snug tracking-tight text-foreground">{current.title}</h2>
+              <h2 className="text-[19px] font-medium leading-snug tracking-tight text-foreground">{current.title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{current.company}</span>
                 {location && <> · {location}</>}
@@ -220,7 +220,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
             <div className="mt-5 space-y-3">
               {meta?.tech_stack && meta.tech_stack.length > 0 && (
                 <div>
-                  <h3 className="mb-1.5 text-sm font-medium text-muted-foreground">Stack</h3>
+                  <h3 className="mb-1.5 text-xs text-muted-foreground">Stack</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {meta.tech_stack.map((item) => (
                       <Chip key={item} size="sm">{item}</Chip>
@@ -230,7 +230,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
               )}
               {meta?.required_skills && meta.required_skills.length > 0 && (
                 <div>
-                  <h3 className="mb-1.5 text-sm font-medium text-muted-foreground">Skills they ask for</h3>
+                  <h3 className="mb-1.5 text-xs text-muted-foreground">Skills they ask for</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {meta.required_skills.map((s) => (
                       <Chip key={s} size="sm">{s}</Chip>

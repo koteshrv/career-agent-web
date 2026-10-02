@@ -201,7 +201,7 @@
     font-size: 14px;
     line-height: 1.5;
     max-width: 70ch;
-    color: var(--ink);
+    color: color-mix(in srgb, var(--ink) 88%, var(--ink-muted));
   }
   .reading h1,
   .reading h2,
@@ -212,8 +212,8 @@
     margin-bottom: 0.4em;
     letter-spacing: -0.01em;
   }
-  .reading h1 { font-size: 15px; }
-  .reading h2 { font-size: 15px; }
+  .reading h1 { font-size: 16px; }
+  .reading h2 { font-size: 16px; }
   .reading h3 { font-size: 14px; }
   .reading p { margin: 0 0 0.7em; }
   .reading ul,

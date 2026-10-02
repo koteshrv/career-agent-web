@@ -34,9 +34,9 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
         aria-label={`${job.title} at ${job.company}${location ? `, ${location}` : ''}`}
         className="absolute inset-0 w-full cursor-pointer focus-visible:outline-offset-[-2px]"
       />
-      <div className="pointer-events-none relative px-4 py-4 sm:px-5">
+      <div className="pointer-events-none relative px-4 py-3.5 sm:px-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className={cn('text-base font-medium leading-snug line-clamp-2', selected ? 'text-foreground' : 'text-foreground')}>{job.title}</h3>
+          <h3 className={cn('text-sm font-medium leading-snug line-clamp-2', selected ? 'text-foreground' : 'text-foreground')}>{job.title}</h3>
           <a
             href={job.apply_url || job.url}
             target="_blank"
@@ -49,7 +49,7 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
           </a>
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+          <span className="inline-flex items-center gap-1.5 text-foreground">
             <CompanyLogo name={job.company} size={16} className="rounded-xs" />
             {job.company}
           </span>

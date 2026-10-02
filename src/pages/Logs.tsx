@@ -42,6 +42,12 @@ function LogDetail({ log }: { log: ApiLog }) {
           <pre className={pre}>{JSON.stringify(res.json, null, 2)}</pre>
         </div>
       </div>
+      {log.meta?.systemPrompt && (
+        <div>
+          <h3 className="mb-1.5 text-sm font-medium text-foreground">System prompt sent to the model</h3>
+          <pre className={cn(pre, 'whitespace-pre-wrap font-sans text-sm')}>{log.meta.systemPrompt}</pre>
+        </div>
+      )}
       {Object.entries({ ...req.text, ...res.text }).map(([k, v]) => (
         <div key={k}>
           <h3 className="mb-1.5 text-sm font-medium text-foreground">{k === 'description' ? 'Posting sent' : k === 'text' ? 'Draft returned' : k}</h3>

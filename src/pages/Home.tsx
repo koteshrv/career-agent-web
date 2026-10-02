@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { sendExtensionMessage } from '../lib/extensionBridge';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
 import { useEvaluations, saveEvaluations, type JobEvaluation } from '../lib/evaluations';
 import { useToast } from '../components/ui/toast';
+import { usePins } from '../lib/foryou';
+import { addLog } from '../lib/logger';
+import { UserRound } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import useSWRInfinite from 'swr/infinite';
 import { useSearchParams } from 'react-router-dom';
@@ -40,6 +43,20 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
   const extension = useExtensionStatus();
   const toast = useToast();
   const [evaluating, setEvaluating] = useState<{ done: number; total: number } | null>(null);
+  const [lastRun, setLastRun] = useState<string | null>(null);
+  const pins = usePins();
+  // Pinned postings that the search did not bring in are fetched by id.
+  const [pinnedJobs, setPinnedJobs] = useState<Job[]>([]);
+  useEffect(() => {
+    if (!matches || pins.length === 0) { setPinnedJobs([]); return; }
+    let alive = true;
+    Promise.all(pins.map((id) => fetcher(`/v1/jobs/${id}`).then((d) => (d as JobDetailResponse).job).catch(() => null))).then((list) => {
+      if (alive) setPinnedJobs(list.filter((j): j is Job => Boolean(j)));
+    });
+    return () => { alive = false; };
+  }, [matches, pins]);
+  // For you without search defaults has nothing to search for; only hand-picked postings show.
+  const nothingToMatch = matches && !hasDefaults;
   const [isRetrying, setIsRetrying] = useState(false);
 
   const queryParam = searchParams.get('q') || '';
@@ -58,6 +75,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
   const hasActiveFilters = Boolean(queryParam || countryParam || workplaceParam || dateParam);
 
   const getKey = (pageIndex: number, previousPageData: JobsResponse | null) => {
+    if (nothingToMatch) return null;
     if (previousPageData && !previousPageData.has_more) return null;
     const offset = pageIndex * PAGE_SIZE;
     if (offset + PAGE_SIZE > MAX_SEARCH_DEPTH) return null;
@@ -105,10 +123,12 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
       const t = job.posted_at || job.created_at;
       return !t || now - new Date(t).getTime() <= maxAgeMs;
     });
-    // Evaluated postings float to the top by score; the rest keep feed order.
     if (!matches) return list;
-    return [...list].sort((a, b) => (evaluations[b.id]?.score ?? -1) - (evaluations[a.id]?.score ?? -1));
-  }, [rawJobs, dateParam, excludes, matches, evaluations]);
+    // Hand-picked postings join the search results; evaluated postings float to the top by score.
+    const seen = new Set(list.map((j) => j.id));
+    const merged = [...pinnedJobs.filter((j) => !seen.has(j.id)), ...list];
+    return merged.sort((a, b) => (evaluations[b.id]?.score ?? -1) - (evaluations[a.id]?.score ?? -1));
+  }, [rawJobs, dateParam, excludes, matches, evaluations, pinnedJobs]);
 
   // Batch triage: 10 postings per request, descriptions fetched where the list lacks them.
   const pending = useMemo(() => (matches ? jobs.filter((j) => !evaluations[j.id]) : []), [matches, jobs, evaluations]);
@@ -116,6 +136,10 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
     if (pending.length === 0 || evaluating) return;
     const targets = pending.slice(0, 50);
     setEvaluating({ done: 0, total: targets.length });
+    setLastRun(null);
+    let scored = 0;
+    let noText = 0;
+    let failure: string | null = null;
     try {
       for (let i = 0; i < targets.length; i += 10) {
         const batch = targets.slice(i, i + 10);
@@ -132,19 +156,32 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
           })
         );
         const usable = withText.filter((j) => j.description);
-        if (usable.length === 0) continue;
-        const res = await sendExtensionMessage<{ results: Omit<JobEvaluation, 'evaluatedAt'>[]; meta?: { model?: string } }>({ action: 'evaluate_jobs', payload: { jobs: usable } }, 180_000);
-        const now = new Date().toISOString();
-        saveEvaluations(res.results.map((r) => ({ ...r, evaluatedAt: now, model: res.meta?.model })));
+        noText += withText.length - usable.length;
+        if (usable.length > 0) {
+          try {
+            const res = await sendExtensionMessage<{ results: Omit<JobEvaluation, 'evaluatedAt'>[]; meta?: { model?: string; provider?: string; durationMs?: number; systemPrompt?: string } }>({ action: 'evaluate_jobs', payload: { jobs: usable } }, 180_000);
+            const now = new Date().toISOString();
+            saveEvaluations(res.results.map((r) => ({ ...r, evaluatedAt: now, model: res.meta?.model })));
+            scored += res.results.length;
+            addLog({ endpoint: 'Extension background worker → your AI provider', action: `Evaluate ${usable.length} postings`, timestamp: now, status: 200, meta: res.meta, requestBody: { postings: usable.map((j) => `${j.title} · ${j.company}`), postingText: usable.map((j) => `## ${j.title} · ${j.company}\n${j.description}`).join('\n\n') }, responseBody: { results: res.results } });
+          } catch (e: unknown) {
+            failure = e instanceof Error ? e.message : String(e);
+            addLog({ endpoint: 'Extension background worker', action: `Evaluate ${usable.length} postings`, timestamp: new Date().toISOString(), status: 500, requestBody: { postings: usable.map((j) => `${j.title} · ${j.company}`) }, responseBody: { error: failure } });
+            break;
+          }
+        }
         setEvaluating({ done: Math.min(i + 10, targets.length), total: targets.length });
       }
-      toast('Evaluated', 'success');
-    } catch (e: unknown) {
-      toast(e instanceof Error ? e.message : String(e), 'error');
     } finally {
       setEvaluating(null);
+      const parts = [`${scored} scored`];
+      if (noText > 0) parts.push(`${noText} skipped (no description in the feed)`);
+      if (failure) parts.push(`stopped: ${failure}`);
+      setLastRun(parts.join(' · '));
+      if (failure) toast(failure, 'error');
     }
   };
+
 
   // Desktop keeps a posting open at all times; phones open one only on tap.
   const selectedJob = useMemo(() => (selectedJobId ? jobs.find((j) => j.id === selectedJobId) || null : jobs[0] ?? null), [jobs, selectedJobId]);
@@ -163,32 +200,41 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
       <div className="mx-auto flex w-full max-w-[1360px] flex-1 min-h-0 flex-col gap-4 px-4 pt-5 pb-16 sm:px-8 md:pb-6">
         <div className={cn(detailOpen && 'hidden lg:block')}>
           <JobsToolbar
+            compact={matches}
             resultSummary={summary}
             action={
               matches && jobs.length > 0 ? (
                 <Button size="sm" variant="primary" onClick={evaluateAll} disabled={!extension || pending.length === 0 || Boolean(evaluating)} title={extension ? undefined : 'Connect the extension to evaluate with your AI key'}>
                   <Sparkles className={evaluating ? 'animate-pulse' : ''} />
-                  {evaluating ? `Evaluating ${evaluating.done} of ${evaluating.total}` : pending.length === 0 ? 'All evaluated' : `Evaluate ${Math.min(pending.length, 50)} with AI`}
+                  {evaluating ? `Evaluating ${evaluating.done} of ${evaluating.total}` : pending.length === 0 ? 'All evaluated' : `Evaluate ${Math.min(pending.length, 50)} with AI (${Math.ceil(Math.min(pending.length, 50) / 10)} ${Math.min(pending.length, 50) > 10 ? 'requests' : 'request'})`}
                 </Button>
               ) : null
             }
             note={
               matches ? (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {hasDefaults ? (
-                    <>
-                      Matching your search defaults{defaults.roles && <>: <span className="text-foreground">{defaults.roles}</span></>}{defaults.keywords && <>, <span className="text-foreground">{defaults.keywords}</span></>}{defaults.excludes && <>, excluding <span className="text-foreground">{defaults.excludes}</span></>}.{' '}
-                    </>
-                  ) : (
-                    <>No search defaults yet, so this is the whole feed. </>
-                  )}
-                  <Link to="/profile#search-defaults" className="text-primary-text underline-offset-2 hover:underline">Edit in Profile</Link>. Evaluate scores each posting 1–5 against your profile with your own AI key; nothing leaves your browser except the posting text sent to your provider.
+                  Filtered automatically from your search defaults{defaults.roles && <>: <span className="text-foreground">{defaults.roles}</span></>}{defaults.keywords && <>, <span className="text-foreground">{defaults.keywords}</span></>}{defaults.excludes && <>, excluding <span className="text-foreground">{defaults.excludes}</span></>}
+                  {' '}(<Link to="/profile#search-defaults" className="text-primary-text underline-offset-2 hover:underline">edit</Link>), plus anything you add from Jobs with “Add to For you”. Evaluate sends postings to your own AI key, ten per request, and scores each 1–5 against your profile.
+                  {lastRun && <span className="block text-foreground">{lastRun}</span>}
                 </p>
               ) : null
             }
           />
         </div>
 
+        {nothingToMatch && pinnedJobs.length === 0 ? (
+          <EmptyState
+            icon={<UserRound />}
+            title="Tell us what you are looking for"
+            body="For you fills itself from the search defaults in your profile: target roles, keywords and terms to exclude. Add them, or pick postings from Jobs with “Add to For you”."
+            action={
+              <>
+                <Button asChild variant="primary"><Link to="/profile#search-defaults">Set search defaults</Link></Button>
+                <Button asChild><Link to="/jobs">Browse jobs</Link></Button>
+              </>
+            }
+          />
+        ) : (
         <div className="flex flex-1 min-h-0 gap-4">
           {/* List */}
           <section aria-label="Job postings" className={cn('min-h-0 w-full flex-col lg:flex lg:w-[420px] xl:w-[460px] lg:shrink-0', detailOpen ? 'hidden' : 'flex')}>
@@ -259,6 +305,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
             </section>
           )}
         </div>
+        )}
       </div>
     </main>
   );

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
-import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles, PenLine } from 'lucide-react';
+import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
@@ -15,6 +15,7 @@ import { formatFullDate, formatRelativeTime, cn } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
 import { addTrackedApplication, getStoredApplications, SYNC_EVENT } from '../lib/profileStorage';
 import { VERDICT_LABEL, type JobEvaluation } from '../lib/evaluations';
+import { usePins, togglePin } from '../lib/foryou';
 import { primaryLocation } from './JobRow';
 
 interface ReadingPaneProps {
@@ -36,6 +37,8 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
   const { data: detailData, isLoading: isFetchingDetail } = useSWR<JobDetailResponse>(needsFullFetch && job?.id ? `/v1/jobs/${job.id}` : null, fetcher);
 
   const current: Job = detailData?.job || job;
+  const pins = usePins();
+  const pinned = pins.includes(current.id);
   const meta = current.structured_metadata;
   const destinationUrl = current.apply_url || current.url;
   const reported = isReported(current.id);
@@ -192,6 +195,20 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
             <Button variant="secondary" size="lg" onClick={handleSave} aria-pressed={isSaved} className={isSaved ? 'border-transparent bg-tint-green' : ''}>
               {isSaved ? <BookmarkCheck /> : <Bookmark />}
               {isSaved ? 'In pipeline' : 'Save to pipeline'}
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              aria-pressed={pinned}
+              className={pinned ? 'border-transparent bg-tint-yellow' : ''}
+              onClick={() => {
+                const now = togglePin(current.id);
+                toast(now ? 'Added to For you' : 'Removed from For you', 'success');
+              }}
+              title={pinned ? 'Remove from For you' : 'Keep this posting on For you and include it when you evaluate'}
+            >
+              <Star className={pinned ? 'fill-current' : ''} />
+              {pinned ? 'In For you' : 'Add to For you'}
             </Button>
           </div>
           <section aria-labelledby="draft-title" className="mt-5 rounded-md border border-border bg-muted/50 p-3.5">

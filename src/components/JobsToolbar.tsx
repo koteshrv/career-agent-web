@@ -25,10 +25,12 @@ interface JobsToolbarProps {
   action?: React.ReactNode;
   /** Rendered under the filters, e.g. which search defaults are in play. */
   note?: React.ReactNode;
+  /** For you: the list is already a search, so no free-text box and no companies link. */
+  compact?: boolean;
 }
 
 /** Search with keyword chips plus three filters, owned by the Jobs page. */
-export function JobsToolbar({ resultSummary, action, note }: JobsToolbarProps) {
+export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolbarProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParam = searchParams.get('q') || '';
   const countryParam = searchParams.get('country') || '';
@@ -63,6 +65,7 @@ export function JobsToolbar({ resultSummary, action, note }: JobsToolbarProps) {
 
   return (
     <div className="shrink-0 space-y-3">
+      {!compact && (
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -131,6 +134,7 @@ export function JobsToolbar({ resultSummary, action, note }: JobsToolbarProps) {
           </button>
         )}
       </form>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -147,10 +151,12 @@ export function JobsToolbar({ resultSummary, action, note }: JobsToolbarProps) {
         <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground">
           <span aria-live="polite">{resultSummary}</span>
           {action}
-          <Link to="/portals" className="font-medium text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground">
-            <span className="sm:hidden">Companies</span>
-            <span className="hidden sm:inline">Companies we index</span>
-          </Link>
+          {!compact && (
+            <Link to="/portals" className="font-medium text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground">
+              <span className="sm:hidden">Companies</span>
+              <span className="hidden sm:inline">Companies we index</span>
+            </Link>
+          )}
         </div>
       </div>
       {note}

@@ -29,7 +29,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
       <ToastProvider>
-        <Router>
+        <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <div className="h-[100dvh] flex flex-col bg-background text-foreground">
             <Header />
             <ResumeImportDialog />

@@ -25,3 +25,13 @@ dist-ssr
 
 # Playwright MCP output (screenshots, snapshots)
 .playwright-mcp
+
+# Local env overrides (the tracked .env holds only empty defaults)
+.env.local
+.env.*.local
+
+# Build and tool output
+coverage
+.cache
+.claude
+*.tsbuildinfo

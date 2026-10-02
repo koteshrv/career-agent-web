@@ -139,6 +139,15 @@ export function Drafts() {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
 
+  /** Turns pdfTeX's "File `x.sty' not found" into one plain sentence; the raw log stays underneath. */
+  const explainLog = (log: string | null) => {
+    const m = log?.match(/File `([^']+)' not found/);
+    if (m) return `This resume needs ${m[1]}, which the extension's built-in TeX Live does not include. Use a template built on the bundled packages, or ask for it to be added.`;
+    const u = log?.match(/Undefined control sequence\.\s*\n\s*l\.(\d+)\s+(\\\S+)/);
+    if (u) return `Line ${u[1]}: ${u[2]} is not defined. Fix it in the LaTeX tab and recompile.`;
+    return null;
+  };
+
   const recompile = async () => {
     setCompiling(true);
     try {
@@ -317,7 +326,7 @@ export function Drafts() {
             ) : (
               <div className="p-5 text-sm">
                 <p className="font-medium text-destructive">LaTeX did not compile.</p>
-                <p className="mt-1 text-muted-foreground">Fix the source and recompile, or regenerate the draft.</p>
+                <p className="mt-1 text-muted-foreground">{explainLog(compileLog) ?? 'Fix the source and recompile, or regenerate the draft.'}</p>
                 {compileLog && (
                   <Button size="sm" className="mt-3" onClick={() => navigator.clipboard.writeText(compileLog).then(() => toast('Log copied', 'success'))}>
                     <Copy />
@@ -333,7 +342,7 @@ export function Drafts() {
               {isResume && compileLog && (
                 <div className="border-t border-border bg-muted">
                   <div className="flex items-center justify-between px-3 pt-2">
-                    <span className="text-xs font-medium text-destructive">pdfTeX log</span>
+                    <span className="text-xs font-medium text-destructive">{explainLog(compileLog) ?? 'pdfTeX log'}</span>
                     <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText(compileLog).then(() => toast('Log copied', 'success'))}>
                       <Copy />
                       Copy log

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Copy, Check, Sparkles, FileText, Mail, Download } from 'lucide-react';
+import { Copy, Check, Sparkles, FileText, Mail, Download, Printer } from 'lucide-react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '../components/ui/button';
 import { Field, Input, Textarea } from '../components/ui/field';
 import { SegmentedControl } from '../components/ui/segmented';
@@ -36,8 +38,9 @@ function templateDraft(kind: MaterialKind, company: string, jobTitle: string) {
     return `Dear Hiring Team at ${company || 'your organization'},\n\nI am writing to express my interest in the ${jobTitle || 'open position'}. With my background in ${skills}, I have built reliable, high-throughput systems and delivered measurable product impact.\n\nReading the requirements, I was drawn to the team's focus on scalable architecture and engineering craft. In previous roles I have led system improvements, automated complex workflows and shipped on time with product and design partners.\n\nI would welcome the chance to discuss how my experience fits your goals. Thank you for your time.\n\nSincerely,\n${name}`;
   }
   if (kind === 'resume') {
-    const exp = profile.experiences.map((e) => `${e.role} · ${e.company} (${e.startDate || ''}${e.current ? ' – present' : e.endDate ? ` – ${e.endDate}` : ''})\n${e.description || ''}`).join('\n\n');
-    return `${name}\n${profile.headline || ''}\n${[profile.email, profile.phone, profile.location].filter(Boolean).join(' · ')}\n\nSummary\n${profile.summary || ''}\n\nSkills\n${skills}\n\nExperience\n${exp}\n\nEducation\n${profile.education.map((e) => `${e.degree} ${e.fieldOfStudy}, ${e.institution} ${e.graduationYear}`).join('\n')}`;
+    const exp = profile.experiences.map((e) => `### ${e.role} · ${e.company}\n${e.startDate || ''}${e.current ? ' – present' : e.endDate ? ` – ${e.endDate}` : ''}\n\n${e.description || ''}`).join('\n\n');
+    const edu = profile.education.map((e) => `- ${e.degree} ${e.fieldOfStudy}, ${e.institution} ${e.graduationYear}`).join('\n');
+    return `# ${name}\n${profile.headline || ''}\n${[profile.email, profile.phone, profile.location].filter(Boolean).join(' · ')}\n\n## Summary\n${profile.summary || ''}\n\n## Skills\n${skills}\n\n## Experience\n${exp}\n\n## Education\n${edu}`;
   }
   return `Hi [Name],\n\nI noticed you are hiring for a ${jobTitle || 'role'} at ${company || 'your team'} and wanted to reach out directly.\n\nI have deep experience with ${top3} and have followed ${company || 'your company'}'s recent engineering work with interest.\n\nWould you be open to a short call this week to see whether my background is a fit? Happy to share my resume and portfolio.\n\nBest regards,\n${name}`;
 }
@@ -105,6 +108,49 @@ export function Drafts() {
   };
 
   const current = KINDS.find((k) => k.value === kind)!;
+
+  /** Markdown passes through; plain text gets headings for short bare lines and keeps its line breaks. */
+  const toPrintableMarkdown = (text: string) => {
+    if (/^#{1,3} /m.test(text)) return text;
+    const lines = text.split('\n');
+    return lines
+      .map((line, i) => {
+        const prevBlank = i === 0 || lines[i - 1].trim() === '';
+        const nextFull = i + 1 < lines.length && lines[i + 1].trim() !== '';
+        const bare = line.trim();
+        if (i === 0 && bare) return `# ${bare}`;
+        if (prevBlank && nextFull && bare.length > 0 && bare.length <= 40 && !/[.:,;]$/.test(bare) && !/^[-*•]/.test(bare)) return `## ${bare}`;
+        return bare === '' || /^[-*•] /.test(bare) ? line : `${line}  `;
+      })
+      .join('\n');
+  };
+
+  // PDF through the browser's own print engine: a clean A4 sheet in a hidden frame, then "Save as PDF".
+  // ponytail: no pdf library; fonts and layout come from the print stylesheet below.
+  const downloadPdf = () => {
+    const title = `${company || 'Draft'} – ${current.label}`;
+    const body = renderToStaticMarkup(<ReactMarkdown>{toPrintableMarkdown(output)}</ReactMarkdown>);
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title.replace(/</g, '&lt;')}</title><style>
+      @page { size: A4; margin: 18mm 16mm; }
+      body { margin: 0; color: #111; font: 10.5pt/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+      h1 { font-size: 17pt; margin: 0 0 2pt; letter-spacing: -0.01em; }
+      h2 { font-size: 11pt; margin: 14pt 0 4pt; padding-bottom: 2pt; border-bottom: 1px solid #ccc; text-transform: uppercase; letter-spacing: 0.04em; }
+      h3 { font-size: 10.5pt; margin: 8pt 0 2pt; }
+      p { margin: 0 0 5pt; } ul, ol { margin: 0 0 5pt; padding-left: 14pt; } li { margin: 1.5pt 0; }
+      a { color: inherit; text-decoration: none; } strong { font-weight: 600; } hr { border: 0; border-top: 1px solid #ccc; margin: 8pt 0; }
+    </style></head><body>${body}</body></html>`;
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(frame);
+    const doc = frame.contentDocument!;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    const win = frame.contentWindow!;
+    win.onafterprint = () => frame.remove();
+    setTimeout(() => { win.focus(); win.print(); }, 150);
+  };
 
   return (
     <Page width="wide">
@@ -175,7 +221,11 @@ export function Drafts() {
             </h2>
             {output && (
               <div className="flex items-center gap-1.5">
-                <Button size="sm" onClick={download}>
+                <Button size="sm" variant="primary" onClick={downloadPdf}>
+                  <Printer />
+                  PDF
+                </Button>
+                <Button size="sm" onClick={download} title="Markdown source">
                   <Download />
                   .md
                 </Button>

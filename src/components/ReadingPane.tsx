@@ -16,6 +16,7 @@ import { useReportedJobs } from '../lib/useReportedJobs';
 import { addTrackedApplication, getStoredApplications, SYNC_EVENT } from '../lib/profileStorage';
 import { VERDICT_LABEL, type JobEvaluation } from '../lib/evaluations';
 import { usePins, togglePin } from '../lib/foryou';
+import { useDrafts, draftKey } from '../lib/drafts';
 import { primaryLocation } from './JobRow';
 
 interface ReadingPaneProps {
@@ -24,7 +25,7 @@ interface ReadingPaneProps {
   onBack?: () => void;
 }
 
-export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { evaluation?: JobEvaluation }) {
+export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPaneProps & { evaluation?: JobEvaluation; forYou?: boolean }) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -39,6 +40,9 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
   const current: Job = detailData?.job || job;
   const pins = usePins();
   const pinned = pins.includes(current.id);
+  const drafts = useDrafts();
+  const hasResume = Boolean(drafts[draftKey('resume', current.id, current.company, current.title)]);
+  const hasLetter = Boolean(drafts[draftKey('cover_letter', current.id, current.company, current.title)]);
   const meta = current.structured_metadata;
   const destinationUrl = current.apply_url || current.url;
   const reported = isReported(current.id);
@@ -196,6 +200,7 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
               {isSaved ? <BookmarkCheck /> : <Bookmark />}
               {isSaved ? 'In pipeline' : 'Save to pipeline'}
             </Button>
+            {(!forYou || pinned) && (
             <Button
               variant="secondary"
               size="lg"
@@ -208,8 +213,9 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
               title={pinned ? 'Remove from For you' : 'Keep this posting on For you and include it when you evaluate'}
             >
               <Star className={pinned ? 'fill-current' : ''} />
-              {pinned ? 'In For you' : 'Add to For you'}
+              {pinned ? (forYou ? 'Remove from For you' : 'In For you') : 'Add to For you'}
             </Button>
+            )}
           </div>
           <section aria-labelledby="draft-title" className="mt-5 rounded-md border border-border bg-muted/50 p-3.5">
             <div className="flex items-center gap-2">
@@ -227,8 +233,8 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
                   <FileText />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-foreground">Tailored resume</span>
-                  <span className="block text-xs text-muted-foreground">Reorders and rewords your bullets for this role.</span>
+                  <span className="block text-sm font-medium text-foreground">Tailored resume{hasResume && <span className="ml-2 rounded-full bg-tint-green px-2 py-0.5 text-xs font-medium">Ready</span>}</span>
+                  <span className="block text-xs text-muted-foreground">{hasResume ? 'Open the PDF you made for this posting.' : 'Reorders and rewords your bullets for this role.'}</span>
                 </span>
               </button>
               <button
@@ -240,8 +246,8 @@ export function ReadingPane({ job, onBack , evaluation }: ReadingPaneProps & { e
                   <PenLine />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-foreground">Cover letter</span>
-                  <span className="block text-xs text-muted-foreground">Three short paragraphs in your voice, ready to edit.</span>
+                  <span className="block text-sm font-medium text-foreground">Cover letter{hasLetter && <span className="ml-2 rounded-full bg-tint-green px-2 py-0.5 text-xs font-medium">Ready</span>}</span>
+                  <span className="block text-xs text-muted-foreground">{hasLetter ? 'Open the letter you made for this posting.' : 'Three short paragraphs in your voice, ready to edit.'}</span>
                 </span>
               </button>
             </div>

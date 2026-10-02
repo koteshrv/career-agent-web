@@ -204,7 +204,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
             resultSummary={summary}
             action={
               matches && jobs.length > 0 ? (
-                <Button size="sm" variant="primary" onClick={evaluateAll} disabled={!extension || pending.length === 0 || Boolean(evaluating)} title={extension ? undefined : 'Connect the extension to evaluate with your AI key'}>
+                <Button size="sm" variant="primary" onClick={evaluateAll} disabled={!extension || pending.length === 0 || Boolean(evaluating)} title={extension ? 'Sends these postings to your own AI key, ten per request, and scores each 1–5 against your profile' : 'Connect the extension to evaluate with your AI key'}>
                   <Sparkles className={evaluating ? 'animate-pulse' : ''} />
                   {evaluating ? `Evaluating ${evaluating.done} of ${evaluating.total}` : pending.length === 0 ? 'All evaluated' : `Evaluate ${Math.min(pending.length, 50)} with AI (${Math.ceil(Math.min(pending.length, 50) / 10)} ${Math.min(pending.length, 50) > 10 ? 'requests' : 'request'})`}
                 </Button>
@@ -212,10 +212,9 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
             }
             note={
               matches ? (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Filtered automatically from your search defaults{defaults.roles && <>: <span className="text-foreground">{defaults.roles}</span></>}{defaults.keywords && <>, <span className="text-foreground">{defaults.keywords}</span></>}{defaults.excludes && <>, excluding <span className="text-foreground">{defaults.excludes}</span></>}
-                  {' '}(<Link to="/profile#search-defaults" className="text-primary-text underline-offset-2 hover:underline">edit</Link>), plus anything you add from Jobs with “Add to For you”. Evaluate sends postings to your own AI key, ten per request, and scores each 1–5 against your profile.
-                  {lastRun && <span className="block text-foreground">{lastRun}</span>}
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  From your search defaults (<Link to="/profile#search-defaults" className="text-primary-text underline-offset-2 hover:underline">edit</Link>) and postings you pin from Jobs.
+                  {lastRun && <span className="ml-2 text-foreground">{lastRun}</span>}
                 </p>
               ) : null
             }
@@ -301,7 +300,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
           {/* Reading pane */}
           {selectedJob && (
             <section aria-label="Job details" className={cn('min-h-0 min-w-0 flex-1', detailOpen ? 'block' : 'hidden lg:block')}>
-              <ReadingPane evaluation={selectedJob ? evaluations[selectedJob.id] : undefined} job={selectedJob} onBack={() => setJob(null)} />
+              <ReadingPane forYou={matches} evaluation={selectedJob ? evaluations[selectedJob.id] : undefined} job={selectedJob} onBack={() => setJob(null)} />
             </section>
           )}
         </div>

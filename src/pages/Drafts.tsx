@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Copy, Check, Sparkles, FileText, Mail, Download, RefreshCw, Upload, Columns2 } from 'lucide-react';
 import { diffResumes } from '../lib/resumeDiff';
+import { draftKey, getDraft, saveDraft } from '../lib/drafts';
 import { Button } from '../components/ui/button';
 import { Field, Input, Textarea, Select } from '../components/ui/field';
 import { SegmentedControl } from '../components/ui/segmented';
@@ -66,6 +67,23 @@ export function Drafts() {
   const [basePdf, setBasePdf] = useState<string | null>(null);
   const [sideBySide, setSideBySide] = useState(false);
   const [changes, setChanges] = useState<string[]>([]);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const key = draftKey(kind, ctx?.jobId, company, jobTitle);
+  useEffect(() => {
+    const d = getDraft(key);
+    setOutput(d?.text ?? '');
+    setPdf(d?.pdf ?? null);
+    setChanges(d?.changes ?? []);
+    setCompileLog(null);
+    setSavedAt(d?.savedAt ?? null);
+    setView(d?.pdf ? 'preview' : d ? 'source' : 'preview');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  const persist = (text: string, pdfData: string | null, changeList: string[]) => {
+    const now = new Date().toISOString();
+    saveDraft({ key, jobId: ctx?.jobId, company, title: jobTitle, kind, text, pdf: pdfData, changes: changeList, savedAt: now });
+    setSavedAt(now);
+  };
   const [baseCompiling, setBaseCompiling] = useState(false);
   // Text resumes stored in the extension can be the base: a .tex one becomes the template, .md/.txt add facts.
   const [bases, setBases] = useState<ResumeMeta[]>([]);
@@ -131,6 +149,7 @@ export function Drafts() {
         setPdf(res.pdf ?? null);
         setChanges(res.changes ?? []);
         setCompileLog(res.pdf ? null : res.log ?? null);
+        persist(res.text, res.pdf ?? null, res.changes ?? []);
         setView(res.pdf ? 'preview' : 'source');
         addLog({
           endpoint: 'Extension background worker → your AI provider',
@@ -149,7 +168,7 @@ export function Drafts() {
         setBusy(false);
       }
     } else {
-      setOutput(templateDraft(kind, company, jobTitle));
+      { const t = templateDraft(kind, company, jobTitle); setOutput(t); persist(t, null, []); }
     }
   };
 
@@ -190,6 +209,7 @@ export function Drafts() {
       setPdf(res.pdf);
       setCompileLog(res.pdf ? null : res.log ?? 'LaTeX failed with no log.');
       if (res.pdf) setView('preview');
+      persist(output, res.pdf, changes);
     } catch (e: unknown) {
       setCompileLog(e instanceof Error ? e.message : String(e));
     } finally {
@@ -292,6 +312,7 @@ export function Drafts() {
             <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
               {kind === 'cold_email' ? <Mail className="size-4 text-muted-foreground" /> : <FileText className="size-4 text-muted-foreground" />}
               {current.title}
+              {savedAt && <span className="text-xs font-normal text-muted-foreground">saved {new Date(savedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>}
             </h2>
             {output && (
               <div className="flex items-center gap-1.5">

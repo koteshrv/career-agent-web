@@ -308,14 +308,14 @@ export function Drafts() {
         </form>
 
         <div className="flex min-h-[420px] min-w-0 flex-col rounded-md border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-            <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-border px-4 py-2.5">
+            <h2 className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-base font-semibold text-foreground">
               {kind === 'cold_email' ? <Mail className="size-4 text-muted-foreground" /> : <FileText className="size-4 text-muted-foreground" />}
               {current.title}
-              {savedAt && <span className="text-xs font-normal text-muted-foreground">saved {new Date(savedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>}
+              {savedAt && <span className="whitespace-nowrap text-xs font-normal text-muted-foreground">saved {new Date(savedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>}
             </h2>
             {output && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                 {isResume ? (
                   <>
                     {pdfUrl && (

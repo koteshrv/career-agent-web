@@ -14,6 +14,10 @@ Live at [careeragent.fyi](https://careeragent.fyi). Extension: [career-agent-ext
 
 The extension is optional for browsing and tracking. It is required for anything that uses AI or touches application forms, and it talks to this app only over Chrome's `externally_connectable` channel from `careeragent.fyi`.
 
+## How it fits together
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the three-repository map, the extension bridge, the sync model, storage keys, the drafting and LaTeX pipeline, and the security notes.
+
 ## Stack
 
 React 19, TypeScript, Vite, Tailwind CSS v4, react-router, SWR. Fonts self-hosted. No analytics.

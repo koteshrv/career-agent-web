@@ -17,7 +17,16 @@ export type BridgeRequest =
   | { action: 'parse_resume'; payload: { fileName: string; fileData: string } }
   | { action: 'save_resume'; payload: { name: string; type: string; data: string } }
   | { action: 'get_resume_meta' }
-  | { action: 'generate_material'; payload: { kind: MaterialKind; job: { title: string; company: string; description: string } } };
+  | { action: 'generate_material'; payload: { kind: MaterialKind; job: { title: string; company: string; description: string } } }
+  | { action: 'compile_latex'; payload: { tex: string } };
+
+/** A draft from the extension. For a resume, `text` is the full LaTeX source and `pdf` the compiled file (base64), or null with `log` when pdfTeX failed. */
+export interface MaterialResult {
+  text: string;
+  pdf?: string | null;
+  log?: string;
+  meta?: { provider?: string; model?: string; durationMs?: number };
+}
 
 export type MaterialKind = 'resume' | 'cover_letter' | 'cold_email';
 

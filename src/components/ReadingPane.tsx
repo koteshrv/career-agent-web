@@ -13,7 +13,7 @@ import { ReportModal } from './ReportModal';
 import { useToast } from './ui/toast';
 import { formatFullDate, formatRelativeTime } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
-import { addTrackedApplication, getStoredApplications, SYNC_EVENT } from '../lib/profileStorage';
+import { addTrackedApplication, getStoredApplications, getStoredProfile, SYNC_EVENT } from '../lib/profileStorage';
 import { primaryLocation } from './JobRow';
 
 interface ReadingPaneProps {
@@ -142,6 +142,16 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
     navigate(`/drafts?kind=${kind}`);
   };
 
+  // Same rule as the popup: a profile skill counts when the posting names it (stack, skills or description).
+  const match = useMemo(() => {
+    const profileSkills = getStoredProfile().skills.map((x) => x.trim()).filter(Boolean);
+    const wanted = [...(meta?.tech_stack ?? []), ...(meta?.required_skills ?? [])].map((x) => x.toLowerCase());
+    const haystack = `${wanted.join(' ')} ${description}`.toLowerCase();
+    const matched = profileSkills.filter((x) => haystack.includes(x.toLowerCase()));
+    const missing = wanted.filter((w) => !profileSkills.some((x) => x.toLowerCase() === w)).map((w) => [...(meta?.tech_stack ?? []), ...(meta?.required_skills ?? [])].find((o) => o.toLowerCase() === w) || w);
+    return { matched, missing: [...new Set(missing)], total: profileSkills.length };
+  }, [meta, description]);
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jobSchema) }} />
@@ -238,6 +248,22 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
                 </div>
               ))}
             </dl>
+          )}
+
+          {match.total > 0 && (
+            <div className="mt-5">
+              <p className="text-sm text-foreground">
+                <span className="font-medium">{match.matched.length} of {match.total}</span> <span className="text-muted-foreground">of your skills appear in this posting</span>
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {match.matched.map((s) => (
+                  <Chip key={s} size="sm" tone="good">{s}</Chip>
+                ))}
+                {match.missing.slice(0, 6).map((s) => (
+                  <Chip key={s} size="sm" className="text-muted-foreground">{s}</Chip>
+                ))}
+              </div>
+            </div>
           )}
 
           {(meta?.tech_stack?.length || meta?.required_skills?.length) ? (

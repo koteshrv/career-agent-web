@@ -1,17 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Copy, Check, Sparkles, FileText, Mail, Download, Printer } from 'lucide-react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import ReactMarkdown from 'react-markdown';
+import { Copy, Check, Sparkles, FileText, Mail, Download, RefreshCw, Upload } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Field, Input, Textarea } from '../components/ui/field';
 import { SegmentedControl } from '../components/ui/segmented';
 import { Page, PageHeader } from '../components/ui/page';
 import { useToast } from '../components/ui/toast';
 import { getStoredProfile } from '../lib/profileStorage';
-import { sendExtensionMessage, type MaterialKind } from '../lib/extensionBridge';
+import { sendExtensionMessage, type MaterialKind, type MaterialResult } from '../lib/extensionBridge';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
-import { addLog, type ApiLog } from '../lib/logger';
+import { addLog } from '../lib/logger';
+import { cn } from '../lib/utils';
 
 const KINDS: Array<{ value: MaterialKind; label: string; title: string }> = [
   { value: 'resume', label: 'Tailored resume', title: 'Resume for this job' },
@@ -58,8 +57,17 @@ export function Drafts() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [pdf, setPdf] = useState<string | null>(null);
+  const [compileLog, setCompileLog] = useState<string | null>(null);
+  const [compiling, setCompiling] = useState(false);
+  const [view, setView] = useState<'preview' | 'source'>('preview');
   const profile = getStoredProfile();
   const current = KINDS.find((k) => k.value === kind)!;
+  const isResume = kind === 'resume';
+
+  // One object URL per compiled PDF; revoked when it changes or the page unmounts.
+  const pdfUrl = useMemo(() => (pdf ? URL.createObjectURL(new Blob([Uint8Array.from(atob(pdf), (c) => c.charCodeAt(0))], { type: 'application/pdf' })) : null), [pdf]);
+  useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
   const profileThin = !profile.firstName && profile.experiences.length === 0 && profile.skills.length === 0;
 
   useEffect(() => {
@@ -70,11 +78,16 @@ export function Drafts() {
   const generate = async () => {
     setError(null);
     setCopied(false);
+    setPdf(null);
+    setCompileLog(null);
     if (extension) {
       setBusy(true);
       try {
-        const res = await sendExtensionMessage<{ text: string; meta?: ApiLog['meta'] }>({ action: 'generate_material', payload: { kind, job: { title: jobTitle, company, description } } }, 120_000);
+        const res = await sendExtensionMessage<MaterialResult>({ action: 'generate_material', payload: { kind, job: { title: jobTitle, company, description } } }, 300_000);
         setOutput(res.text);
+        setPdf(res.pdf ?? null);
+        setCompileLog(res.pdf ? null : res.log ?? null);
+        setView(res.pdf ? 'preview' : 'source');
         addLog({
           endpoint: 'Extension background worker → your AI provider',
           action: `Draft: ${current.label}`,
@@ -82,7 +95,7 @@ export function Drafts() {
           status: 200,
           meta: res.meta,
           requestBody: { kind, company, title: jobTitle, description, profile: { name: `${profile.firstName} ${profile.lastName}`.trim(), skills: profile.skills.length, experiences: profile.experiences.length } },
-          responseBody: { chars: res.text.length, text: res.text },
+          responseBody: { chars: res.text.length, pdfBytes: res.pdf ? Math.round((res.pdf.length * 3) / 4) : 0, compileLog: res.log, text: res.text },
         });
       } catch (e: unknown) {
         const m = e instanceof Error ? e.message : String(e);
@@ -117,47 +130,37 @@ export function Drafts() {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
 
-  /** Markdown passes through; plain text gets headings for short bare lines and keeps its line breaks. */
-  const toPrintableMarkdown = (text: string) => {
-    if (/^#{1,3} /m.test(text)) return text;
-    const lines = text.split('\n');
-    return lines
-      .map((line, i) => {
-        const prevBlank = i === 0 || lines[i - 1].trim() === '';
-        const nextFull = i + 1 < lines.length && lines[i + 1].trim() !== '';
-        const bare = line.trim();
-        if (i === 0 && bare) return `# ${bare}`;
-        if (prevBlank && nextFull && bare.length > 0 && bare.length <= 40 && !/[.:,;]$/.test(bare) && !/^[-*•]/.test(bare)) return `## ${bare}`;
-        return bare === '' || /^[-*•] /.test(bare) ? line : `${line}  `;
-      })
-      .join('\n');
+  const recompile = async () => {
+    setCompiling(true);
+    try {
+      const res = await sendExtensionMessage<{ pdf: string | null; log?: string }>({ action: 'compile_latex', payload: { tex: output } }, 300_000);
+      setPdf(res.pdf);
+      setCompileLog(res.pdf ? null : res.log ?? 'LaTeX failed with no log.');
+      if (res.pdf) setView('preview');
+    } catch (e: unknown) {
+      setCompileLog(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCompiling(false);
+    }
   };
 
-  // PDF through the browser's own print engine: a clean A4 sheet in a hidden frame, then "Save as PDF".
-  // ponytail: no pdf library; fonts and layout come from the print stylesheet below.
-  const downloadPdf = () => {
-    const title = `${company || 'Draft'} – ${current.label}`;
-    const body = renderToStaticMarkup(<ReactMarkdown>{toPrintableMarkdown(output)}</ReactMarkdown>);
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title.replace(/</g, '&lt;')}</title><style>
-      @page { size: A4; margin: 18mm 16mm; }
-      body { margin: 0; color: #111; font: 10.5pt/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; }
-      h1 { font-size: 17pt; margin: 0 0 2pt; letter-spacing: -0.01em; }
-      h2 { font-size: 11pt; margin: 14pt 0 4pt; padding-bottom: 2pt; border-bottom: 1px solid #ccc; text-transform: uppercase; letter-spacing: 0.04em; }
-      h3 { font-size: 10.5pt; margin: 8pt 0 2pt; }
-      p { margin: 0 0 5pt; } ul, ol { margin: 0 0 5pt; padding-left: 14pt; } li { margin: 1.5pt 0; }
-      a { color: inherit; text-decoration: none; } strong { font-weight: 600; } hr { border: 0; border-top: 1px solid #ccc; margin: 8pt 0; }
-    </style></head><body>${body}</body></html>`;
-    const frame = document.createElement('iframe');
-    frame.setAttribute('aria-hidden', 'true');
-    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-    document.body.appendChild(frame);
-    const doc = frame.contentDocument!;
-    doc.open();
-    doc.write(html);
-    doc.close();
-    const win = frame.contentWindow!;
-    win.onafterprint = () => frame.remove();
-    setTimeout(() => { win.focus(); win.print(); }, 150);
+  const saveFile = (data: Blob | string, name: string) => {
+    const a = document.createElement('a');
+    a.href = typeof data === 'string' ? data : URL.createObjectURL(data);
+    a.download = name;
+    a.click();
+    if (typeof data !== 'string') setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  const fileStem = `${(company || 'draft').replace(/[^\w-]+/g, '-')}-${kind.replace('_', '-')}`;
+
+  const useForUploads = async () => {
+    if (!pdf) return;
+    try {
+      await sendExtensionMessage({ action: 'save_resume', payload: { name: `${fileStem}.pdf`, type: 'application/pdf', data: pdf } });
+      toast('The extension will upload this resume when a form asks for one', 'success');
+    } catch (e: unknown) {
+      toast(e instanceof Error ? e.message : String(e), 'error');
+    }
   };
 
   return (
@@ -229,14 +232,31 @@ export function Drafts() {
             </h2>
             {output && (
               <div className="flex items-center gap-1.5">
-                <Button size="sm" variant="primary" onClick={downloadPdf}>
-                  <Printer />
-                  PDF
-                </Button>
-                <Button size="sm" onClick={download} title="Markdown source">
-                  <Download />
-                  .md
-                </Button>
+                {isResume ? (
+                  <>
+                    {pdfUrl && (
+                      <Button size="sm" variant="primary" onClick={() => saveFile(pdfUrl, `${fileStem}.pdf`)}>
+                        <Download />
+                        PDF
+                      </Button>
+                    )}
+                    {pdf && extension && (
+                      <Button size="sm" onClick={useForUploads} title="Attach this PDF when the extension autofills an application">
+                        <Upload />
+                        Use for uploads
+                      </Button>
+                    )}
+                    <Button size="sm" onClick={() => saveFile(new Blob([output], { type: 'application/x-tex' }), `${fileStem}.tex`)} title="LaTeX source">
+                      <Download />
+                      .tex
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" onClick={download} title="Markdown source">
+                    <Download />
+                    .md
+                  </Button>
+                )}
                 <Button size="sm" onClick={copy}>
                   {copied ? <Check className="text-success" /> : <Copy />}
                   {copied ? 'Copied' : 'Copy'}
@@ -244,6 +264,26 @@ export function Drafts() {
               </div>
             )}
           </div>
+          {isResume && output && !busy && (
+            <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+              <SegmentedControl
+                size="sm"
+                ariaLabel="Resume view"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: 'preview', label: 'Preview' },
+                  { value: 'source', label: 'LaTeX' },
+                ]}
+              />
+              {view === 'source' && (
+                <Button size="sm" onClick={recompile} disabled={compiling || !extension}>
+                  <RefreshCw className={compiling ? 'animate-spin' : ''} />
+                  {compiling ? 'Compiling' : 'Recompile'}
+                </Button>
+              )}
+            </div>
+          )}
           {busy ? (
             <div className="space-y-3 p-5" aria-busy="true">
               <div className="h-4 w-1/2 animate-pulse rounded-sm bg-muted" />
@@ -252,11 +292,24 @@ export function Drafts() {
               <div className="h-3.5 w-3/4 animate-pulse rounded-sm bg-muted" />
               <div className="h-3.5 w-5/6 animate-pulse rounded-sm bg-muted" />
             </div>
+          ) : output && isResume && view === 'preview' ? (
+            pdfUrl ? (
+              <iframe title="Resume preview" src={`${pdfUrl}#toolbar=0&view=FitH`} className="min-h-[720px] flex-1 w-full bg-white" />
+            ) : (
+              <div className="p-5 text-sm">
+                <p className="font-medium text-destructive">LaTeX did not compile.</p>
+                <p className="mt-1 text-muted-foreground">Fix the source and recompile, or regenerate the draft.</p>
+                {compileLog && <pre className="mt-3 max-h-72 overflow-auto rounded-sm border border-border bg-muted p-3 font-mono text-xs leading-relaxed">{compileLog}</pre>}
+              </div>
+            )
           ) : output ? (
-            <Textarea aria-label="Draft text" value={output} onChange={(e) => setOutput(e.target.value)} className="min-h-[380px] flex-1 rounded-none border-0 font-sans text-[15px] leading-relaxed focus:ring-0" />
+            <>
+              <Textarea aria-label={isResume ? 'LaTeX source' : 'Draft text'} value={output} onChange={(e) => setOutput(e.target.value)} className={cn('min-h-[380px] flex-1 rounded-none border-0 leading-relaxed focus:ring-0', isResume ? 'font-mono text-xs' : 'font-sans text-[15px]')} />
+              {isResume && compileLog && <pre className="max-h-48 overflow-auto border-t border-border bg-muted p-3 font-mono text-xs leading-relaxed text-destructive">{compileLog}</pre>}
+            </>
           ) : (
             <p className="m-auto max-w-xs p-6 text-center text-sm text-muted-foreground">
-              {kind === 'resume' ? 'A resume reordered and reworded for this posting, built only from facts in your profile.' : kind === 'cover_letter' ? 'A short, specific letter that names what in the posting matches your experience.' : 'A four-line note to a recruiter or hiring manager.'}
+              {kind === 'resume' ? 'A one-page LaTeX resume reordered and reworded for this posting, typeset by the extension and built only from facts in your profile.' : kind === 'cover_letter' ? 'A short, specific letter that names what in the posting matches your experience.' : 'A four-line note to a recruiter or hiring manager.'}
             </p>
           )}
         </div>

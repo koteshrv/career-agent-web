@@ -21,6 +21,7 @@ export type BridgeRequest =
   | { action: 'compile_latex'; payload: { tex: string } }
   | { action: 'list_resumes' }
   | { action: 'add_resume'; payload: { name: string; kind: ResumeKind; data?: string; text?: string } }
+  | { action: 'get_resume'; payload: { id: string } }
   | { action: 'delete_resume'; payload: { id: string } }
   | { action: 'set_upload_resume'; payload: { id: string } };
 

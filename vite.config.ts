@@ -3,9 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
-// VITE_BASE is set by the GitHub Pages workflow when the site is served under /<repo>/ instead of a domain root.
 export default defineConfig({
-  base: process.env.VITE_BASE || '/',
   plugins: [
     react(),
     tailwindcss(),

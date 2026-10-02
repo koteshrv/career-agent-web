@@ -2,7 +2,7 @@
 
 A job search workspace that runs in your browser. Verified postings pulled straight from company ATS boards, a pipeline to track what you applied to, and AI drafts (LaTeX resume, cover letter, cold email) written with your own API key through the companion extension. No account, no server-side profile: your data lives in your browser and in the extension.
 
-Live at [jobs.careeragent.fyi](https://jobs.careeragent.fyi). Extension: [career-agent-extension](https://github.com/koteshrv/career-agent-extension). Job index API: [career-agent-api](https://github.com/koteshrv/career-agent-api).
+Live at [careeragent.fyi](https://careeragent.fyi). Extension: [career-agent-extension](https://github.com/koteshrv/career-agent-extension). Job index API: [career-agent-api](https://github.com/koteshrv/career-agent-api).
 
 ## What it does
 
@@ -34,15 +34,7 @@ npm run build   # tsc + vite
 
 ## Deploy
 
-Pushes to `main` build and publish the site to GitHub Pages through `.github/workflows/pages.yml`. Repository variables:
-
-| Variable | Purpose |
-|---|---|
-| `PAGES_CNAME` | Custom domain (e.g. `jobs.careeragent.fyi`). When unset the site is served under `/<repo>/`. |
-| `VITE_API_BASE_URL` | Job index API. Defaults to `https://api.careeragent.fyi`. |
-| `VITE_EXTENSION_ID` | Chrome Web Store id of the extension. |
-
-The extension only accepts messages from `careeragent.fyi` and its subdomains, so AI features need the custom domain.
+Production runs on Cloudflare Pages at [careeragent.fyi](https://careeragent.fyi), built with `npm run build` from `main`. `functions/` holds the Pages Functions that proxy `/v1` and `/api` to the job index API so the browser never calls it cross-origin, and `public/_headers` sets the content security policy. The extension only accepts messages from `careeragent.fyi` and its subdomains.
 
 ## Privacy
 

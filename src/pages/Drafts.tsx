@@ -11,7 +11,7 @@ import { useToast } from '../components/ui/toast';
 import { getStoredProfile } from '../lib/profileStorage';
 import { sendExtensionMessage, type MaterialKind } from '../lib/extensionBridge';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
-import { addLog } from '../lib/logger';
+import { addLog, type ApiLog } from '../lib/logger';
 
 const KINDS: Array<{ value: MaterialKind; label: string; title: string }> = [
   { value: 'resume', label: 'Tailored resume', title: 'Resume for this job' },
@@ -59,6 +59,7 @@ export function Drafts() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const profile = getStoredProfile();
+  const current = KINDS.find((k) => k.value === kind)!;
   const profileThin = !profile.firstName && profile.experiences.length === 0 && profile.skills.length === 0;
 
   useEffect(() => {
@@ -72,11 +73,20 @@ export function Drafts() {
     if (extension) {
       setBusy(true);
       try {
-        const res = await sendExtensionMessage<{ text: string }>({ action: 'generate_material', payload: { kind, job: { title: jobTitle, company, description } } }, 120_000);
+        const res = await sendExtensionMessage<{ text: string; meta?: ApiLog['meta'] }>({ action: 'generate_material', payload: { kind, job: { title: jobTitle, company, description } } }, 120_000);
         setOutput(res.text);
-        addLog({ endpoint: 'Extension background worker → your AI provider', action: `Draft: ${KINDS.find((k) => k.value === kind)?.label}`, timestamp: new Date().toISOString(), status: 200, requestBody: { company, title: jobTitle, descriptionChars: description.length }, responseBody: { chars: res.text.length } });
+        addLog({
+          endpoint: 'Extension background worker → your AI provider',
+          action: `Draft: ${current.label}`,
+          timestamp: new Date().toISOString(),
+          status: 200,
+          meta: res.meta,
+          requestBody: { kind, company, title: jobTitle, description, profile: { name: `${profile.firstName} ${profile.lastName}`.trim(), skills: profile.skills.length, experiences: profile.experiences.length } },
+          responseBody: { chars: res.text.length, text: res.text },
+        });
       } catch (e: unknown) {
         const m = e instanceof Error ? e.message : String(e);
+        addLog({ endpoint: 'Extension background worker', action: `Draft: ${current.label}`, timestamp: new Date().toISOString(), status: 500, requestBody: { kind, company, title: jobTitle, description }, responseBody: { error: m } });
         setError(m === 'EXTENSION_TIMEOUT' ? 'The extension did not answer in time. Check your AI key in its settings.' : m);
       } finally {
         setBusy(false);
@@ -106,8 +116,6 @@ export function Drafts() {
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
-
-  const current = KINDS.find((k) => k.value === kind)!;
 
   /** Markdown passes through; plain text gets headings for short bare lines and keeps its line breaks. */
   const toPrintableMarkdown = (text: string) => {

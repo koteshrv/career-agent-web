@@ -6,6 +6,8 @@ export type ApiLog = {
   requestBody: unknown;
   responseBody: unknown;
   status: number;
+  /** Which model answered and how long it took, when the extension reports it. */
+  meta?: { provider?: string; model?: string; durationMs?: number };
 };
 
 const LOG_STORAGE_KEY = 'careeragent_api_logs';

@@ -46,7 +46,6 @@ export function Home() {
         const globals = JSON.parse(globalStr);
         if (globals.roles && !queryParam) finalQuery += ` ${globals.roles}`;
         if (globals.keywords && !queryParam) finalQuery += ` ${globals.keywords}`;
-        if (globals.excludes) finalQuery += ` ${globals.excludes.split(',').map((t: string) => `-${t.trim()}`).join(' ')}`;
       }
     } catch {}
     finalQuery = finalQuery.trim();
@@ -74,16 +73,29 @@ export function Home() {
 
   const rawJobs = useMemo(() => (data ? data.flatMap((page) => (page && Array.isArray(page.jobs) ? page.jobs : [])) : []), [data]);
 
+  // Excluded terms from Search defaults are applied here: the feed's search has no negation, so sending "-Junior" matched "Junior".
+  const excludes = useMemo(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('careeragent_global_filters') || '{}').excludes as string | undefined;
+      return (raw || '').split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+    } catch {
+      return [];
+    }
+  }, []);
+
   const jobs = useMemo(() => {
-    if (!dateParam) return rawJobs;
     const now = Date.now();
     const maxAgeMs = dateParam === '24h' ? 86_400_000 : dateParam === 'week' ? 7 * 86_400_000 : dateParam === 'month' ? 30 * 86_400_000 : null;
-    if (!maxAgeMs) return rawJobs;
     return rawJobs.filter((job) => {
+      if (excludes.length > 0) {
+        const title = job.title.toLowerCase();
+        if (excludes.some((term) => title.includes(term))) return false;
+      }
+      if (!maxAgeMs) return true;
       const t = job.posted_at || job.created_at;
       return !t || now - new Date(t).getTime() <= maxAgeMs;
     });
-  }, [rawJobs, dateParam]);
+  }, [rawJobs, dateParam, excludes]);
 
   // Desktop keeps a posting open at all times; phones open one only on tap.
   const selectedJob = useMemo(() => (selectedJobId ? jobs.find((j) => j.id === selectedJobId) || null : jobs[0] ?? null), [jobs, selectedJobId]);

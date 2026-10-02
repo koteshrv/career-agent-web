@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { useToast } from './ui/toast';
 import { fileToBase64, sendExtensionMessage, type ResumeImport } from '../lib/extensionBridge';
 import { getStoredProfile, saveStoredProfile, SYNC_EVENT } from '../lib/profileStorage';
-import { addLog } from '../lib/logger';
+import { addLog, type ApiLog } from '../lib/logger';
 import type { CandidateProfile } from '../types/profile';
 import { cn } from '../lib/utils';
 
@@ -65,7 +65,8 @@ export function ResumeImportDialog() {
         action: 'Resume import',
         timestamp: new Date().toISOString(),
         status: 200,
-        requestBody: { fileName: file.name, operation: 'Extract profile and search defaults from PDF' },
+        meta: (res as { meta?: ApiLog['meta'] }).meta,
+        requestBody: { fileName: file.name, fileSizeKb: Math.round(file.size / 1024), operation: 'Extract profile and search defaults from the PDF' },
         responseBody: res,
       });
     } catch (err: unknown) {

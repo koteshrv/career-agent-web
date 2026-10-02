@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Trash2, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
+import { ExternalLink, Trash2, RefreshCw, Moon, Sun, Monitor, Download, Upload } from 'lucide-react';
+import { buildBackup, downloadBackup, parseBackup, restoreBackup, type Backup } from '../lib/backup';
 import { Button } from '../components/ui/button';
 import { Field, Input } from '../components/ui/field';
 import { Dialog } from '../components/ui/dialog';
@@ -21,6 +22,41 @@ export function Settings() {
   const [extensionId, setExtensionId] = useState(getExtensionId);
   const [checking, setChecking] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [pendingImport, setPendingImport] = useState<Backup | null>(null);
+  const [busy, setBusy] = useState<'export' | 'import' | null>(null);
+  const exportData = async () => {
+    setBusy('export');
+    try {
+      const b = await buildBackup();
+      downloadBackup(b);
+      toast(b.extension ? 'Backup downloaded' : 'Backup downloaded without extension data (extension not reachable)', b.extension ? 'success' : 'error');
+    } finally {
+      setBusy(null);
+    }
+  };
+  const pickImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      setPendingImport(parseBackup(await file.text()));
+    } catch (err) {
+      toast(err instanceof Error ? err.message : String(err), 'error');
+    }
+  };
+  const runImport = async (mode: 'replace' | 'merge') => {
+    if (!pendingImport) return;
+    setBusy('import');
+    try {
+      const what = await restoreBackup(pendingImport, mode);
+      toast(`Restored ${what}`, 'success');
+      setPendingImport(null);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setBusy(null);
+    }
+  };
   const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('careeragent_api_url') || '');
   const [telemetry, setTelemetry] = useState(() => localStorage.getItem('careeragent_telemetry') !== 'false');
   const profile = getStoredProfile();
@@ -171,6 +207,17 @@ export function Settings() {
           </span>
         </label>
         <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button onClick={exportData} disabled={busy !== null} title="One JSON file: profile, pipeline, resumes, saved answers, drafts, evaluations and settings. Your API key is never included.">
+            <Download />
+            {busy === 'export' ? 'Preparing' : 'Export everything'}
+          </Button>
+          <Button asChild disabled={busy !== null}>
+            <label className="cursor-pointer">
+              <Upload />
+              Import backup
+              <input type="file" accept="application/json,.json" onChange={pickImport} className="sr-only" />
+            </label>
+          </Button>
           <Button asChild>
             <Link to="/settings/activity">View AI activity log</Link>
           </Button>
@@ -210,6 +257,22 @@ export function Settings() {
           </li>
         </ul>
       </Section>
+
+      <Dialog
+        open={pendingImport !== null}
+        onClose={() => setPendingImport(null)}
+        title="Import this backup?"
+        description={pendingImport ? `Exported ${new Date(pendingImport.exportedAt).toLocaleString()}${pendingImport.extension ? ', includes extension data' : ', dashboard settings only'}.` : ''}
+        footer={
+          <>
+            <Button onClick={() => setPendingImport(null)} disabled={busy === 'import'}>Cancel</Button>
+            <Button onClick={() => runImport('merge')} disabled={busy === 'import'}>Merge with current</Button>
+            <Button variant="primary" onClick={() => runImport('replace')} disabled={busy === 'import'}>{busy === 'import' ? 'Importing' : 'Replace current'}</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">Merge keeps what is here and adds what the file has. Replace overwrites the profile, pipeline, resumes, answers and drafts with the file's. Your API key is untouched either way.</p>
+      </Dialog>
 
       <Dialog
         open={confirmClear}

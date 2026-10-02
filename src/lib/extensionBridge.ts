@@ -24,6 +24,8 @@ export type BridgeRequest =
   | { action: 'get_resume'; payload: { id: string } }
   | { action: 'delete_resume'; payload: { id: string } }
   | { action: 'set_upload_resume'; payload: { id: string } }
+  | { action: 'export_data' }
+  | { action: 'import_data'; payload: { bundle: unknown; mode: 'replace' | 'merge' } }
   | { action: 'evaluate_jobs'; payload: { jobs: Array<{ id: string; title: string; company: string; location?: string; description: string }> } };
 
 export type ResumeKind = 'pdf' | 'tex' | 'md' | 'txt';

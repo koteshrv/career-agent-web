@@ -1,4 +1,4 @@
-@import "@fontsource-variable/google-sans";
+@import "@fontsource-variable/inter";
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
@@ -9,7 +9,7 @@
  * a 14px type base, and one accent that only ever means "selected" or "you can act here".
  */
 @theme {
-  --font-sans: 'Google Sans Variable', 'Google Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --text-xs: 11px;
@@ -119,6 +119,7 @@
 
   html {
     font-family: var(--font-sans);
+    font-optical-sizing: auto;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;

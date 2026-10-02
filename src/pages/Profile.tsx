@@ -367,7 +367,7 @@ export function Profile() {
       </Section>
 
       {/* Save bar */}
-      <div className={cn('fixed inset-x-0 bottom-14 z-20 border-t border-border bg-card/95 backdrop-blur md:bottom-0 md:left-[232px]')}>
+      <div className={cn('fixed inset-x-0 bottom-14 z-20 border-t border-border bg-card/95 backdrop-blur md:bottom-0')}>
         <div className="mx-auto flex w-full max-w-[760px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {dirty ? 'Unsaved changes' : !fullName && !profile.email ? 'Nothing saved yet' : extensionOk === null ? fullName : extensionOk ? 'Saved · synced to extension' : 'Saved in this browser · extension not connected'}

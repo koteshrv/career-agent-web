@@ -1,4 +1,4 @@
-@import "@fontsource-variable/inter";
+@import "@fontsource-variable/dm-sans";
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
@@ -9,7 +9,7 @@
  * a 14px type base, and one accent that only ever means "selected" or "you can act here".
  */
 @theme {
-  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --text-xs: 11px;
@@ -140,14 +140,14 @@
 
   html {
     font-family: var(--font-sans);
-    /* Inter's text optical size thickens strokes below ~18px; tsenta ships static Inter, which looks like the display cut. Match that. */
+    font-optical-sizing: auto;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3 {
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
   body {

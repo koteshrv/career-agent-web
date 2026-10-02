@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Trash2, RefreshCw, Moon, Sun, Monitor, Download, Upload } from 'lucide-react';
-import { buildBackup, downloadBackup, parseBackup, restoreBackup, type Backup } from '../lib/backup';
+import { buildBackup, downloadBackup, parseBackup, restoreBackup, describeBackup, type Backup } from '../lib/backup';
 import { Button } from '../components/ui/button';
 import { Field, Input } from '../components/ui/field';
 import { Dialog } from '../components/ui/dialog';
@@ -29,7 +29,7 @@ export function Settings() {
     try {
       const b = await buildBackup();
       downloadBackup(b);
-      toast(b.extension ? 'Backup downloaded' : 'Backup downloaded without extension data (extension not reachable)', b.extension ? 'success' : 'error');
+      toast(b.extension ? `Backup saved: ${describeBackup(b)}` : 'Backup saved without extension data: the extension did not answer. Reload it and try again.', b.extension ? 'success' : 'error');
     } finally {
       setBusy(null);
     }
@@ -262,7 +262,7 @@ export function Settings() {
         open={pendingImport !== null}
         onClose={() => setPendingImport(null)}
         title="Import this backup?"
-        description={pendingImport ? `Exported ${new Date(pendingImport.exportedAt).toLocaleString()}${pendingImport.extension ? ', includes extension data' : ', dashboard settings only'}.` : ''}
+        description={pendingImport ? `Exported ${new Date(pendingImport.exportedAt).toLocaleString()}: ${describeBackup(pendingImport)}.` : ''}
         footer={
           <>
             <Button onClick={() => setPendingImport(null)} disabled={busy === 'import'}>Cancel</Button>

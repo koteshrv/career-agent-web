@@ -46,6 +46,21 @@ export interface CountryFacet {
   count: number;
 }
 
+export interface CompanySummary {
+  name: string;
+  job_count: number;
+}
+
+export interface CompaniesResponse {
+  success: boolean;
+  totals: { companies: number; active_jobs: number };
+  companies: CompanySummary[];
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+}
+
 export interface CountriesResponse {
   success: boolean;
   countries: CountryFacet[];

@@ -30,6 +30,34 @@ export async function buildBackup(): Promise<Backup> {
   return { format: 'careeragent-backup', version: 1, exportedAt: new Date().toISOString(), extension, web };
 }
 
+/** What a backup holds, for the confirmation toast. */
+export function describeBackup(b: Backup): string {
+  const parts: string[] = [];
+  const ext = b.extension as { applications?: unknown[]; resumes?: Array<{ kind?: string }>; answers?: Record<string, unknown>; profile?: { firstName?: string } } | null;
+  if (ext) {
+    if (ext.profile?.firstName) parts.push('profile');
+    if (Array.isArray(ext.applications)) parts.push(`${ext.applications.length} pipeline`);
+    if (Array.isArray(ext.resumes)) {
+      const pdf = ext.resumes.filter((r) => (r.kind ?? 'pdf') === 'pdf').length;
+      parts.push(`${ext.resumes.length} resumes (${pdf} PDF, ${ext.resumes.length - pdf} text/LaTeX)`);
+    }
+    if (ext.answers) parts.push(`${Object.keys(ext.answers).length} saved answers`);
+  } else {
+    parts.push('no extension data');
+  }
+  try {
+    const drafts = JSON.parse(b.web.careeragent_drafts || '{}');
+    const n = Object.keys(drafts).length;
+    if (n) parts.push(`${n} drafts`);
+  } catch {}
+  try {
+    const ev = JSON.parse(b.web.careeragent_evaluations || '{}');
+    const n = Object.keys(ev).length;
+    if (n) parts.push(`${n} evaluations`);
+  } catch {}
+  return parts.join(', ');
+}
+
 export function downloadBackup(b: Backup) {
   const blob = new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');

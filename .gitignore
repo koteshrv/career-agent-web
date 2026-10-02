@@ -26,7 +26,8 @@ dist-ssr
 # Playwright MCP output (screenshots, snapshots)
 .playwright-mcp
 
-# Local env overrides (the tracked .env holds only empty defaults)
+# Environment: copy .env.example to .env; only the example is tracked
+.env
 .env.local
 .env.*.local
 

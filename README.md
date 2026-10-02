@@ -52,7 +52,7 @@ npm install
 npm run dev -- --port 5174
 ```
 
-The dev server proxies `/v1` and `/api` to the job index API. To pair an unpacked development build of the extension, paste its id into **Settings → Extension ID**, or set `VITE_EXTENSION_ID` in `.env.local`.
+The dev server proxies `/v1` and `/api` to the job index API. To pair an unpacked development build of the extension, paste its id into **Settings → Extension ID**, or set `VITE_EXTENSION_ID` in `.env`.
 
 ### Scripts
 
@@ -70,7 +70,7 @@ The dev server proxies `/v1` and `/api` to the job index API. To pair an unpacke
 | `VITE_API_BASE_URL` | empty | Job index base URL. Empty uses the proxy in development and the production API in builds. |
 | `VITE_EXTENSION_ID` | empty | Chrome Web Store id of the extension. Overridable at runtime in Settings. |
 
-Put overrides in `.env.local`, which is ignored by git.
+Copy `.env.example` to `.env` and fill in what you need; `.env` and `.env.local` are ignored by git.
 
 ## Tech stack
 

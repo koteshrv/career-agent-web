@@ -76,11 +76,14 @@ export interface ExtensionState {
 const EXTENSION_ID_KEY = 'careeragent_extension_id';
 
 /** Web Store id from the build env; a localStorage override lets developers point at an unpacked build. */
+/** The released extension's id, pinned by the public key in its manifest; the same for unpacked and Web Store installs. */
+export const RELEASED_EXTENSION_ID = 'plkniphjimejobodnkckdjndalimcicp';
+
 export function getExtensionId(): string {
   try {
-    return localStorage.getItem(EXTENSION_ID_KEY) || import.meta.env.VITE_EXTENSION_ID || '';
+    return localStorage.getItem(EXTENSION_ID_KEY) || import.meta.env.VITE_EXTENSION_ID || RELEASED_EXTENSION_ID;
   } catch {
-    return import.meta.env.VITE_EXTENSION_ID || '';
+    return import.meta.env.VITE_EXTENSION_ID || RELEASED_EXTENSION_ID;
   }
 }
 

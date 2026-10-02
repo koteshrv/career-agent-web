@@ -67,7 +67,7 @@ export function Settings() {
         }
       >
         <div className="space-y-4">
-          <Field label="Extension ID" hint="Pre-filled for the Web Store build. Change it only for an unpacked development build; the id is on chrome://extensions.">
+          <Field label="Extension ID" hint="Released builds always use plkniphjimejobodnkckdjndalimcicp, whether installed from the Web Store or unpacked. Change this only for a build signed with a different key.">
             <Input
               value={extensionId}
               spellCheck={false}
@@ -92,7 +92,7 @@ export function Settings() {
             </Button>
             {!detected && (
               <Button asChild variant="link">
-                <a href="https://github.com/koteshrv/career-agent-extension" target="_blank" rel="noreferrer">
+                <a href="https://github.com/koteshrv/career-agent-extension/releases/latest" target="_blank" rel="noreferrer">
                   Get the extension
                   <ExternalLink />
                 </a>

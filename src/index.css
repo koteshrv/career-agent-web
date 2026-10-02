@@ -119,7 +119,9 @@
 
   html {
     font-family: var(--font-sans);
-    font-optical-sizing: auto;
+    /* Inter's text optical size thickens strokes below ~18px; tsenta ships static Inter, which looks like the display cut. Match that. */
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 32;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;

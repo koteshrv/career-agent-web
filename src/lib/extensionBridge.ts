@@ -49,6 +49,8 @@ export interface MaterialResult {
   text: string;
   pdf?: string | null;
   log?: string;
+  /** What the playbook says it changed (latex.md's changes_made). */
+  changes?: string[];
   meta?: { provider?: string; model?: string; durationMs?: number };
 }
 

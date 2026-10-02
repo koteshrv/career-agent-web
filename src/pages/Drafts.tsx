@@ -65,6 +65,7 @@ export function Drafts() {
   const [baseText, setBaseText] = useState<string | null>(null);
   const [basePdf, setBasePdf] = useState<string | null>(null);
   const [sideBySide, setSideBySide] = useState(false);
+  const [changes, setChanges] = useState<string[]>([]);
   const [baseCompiling, setBaseCompiling] = useState(false);
   // Text resumes stored in the extension can be the base: a .tex one becomes the template, .md/.txt add facts.
   const [bases, setBases] = useState<ResumeMeta[]>([]);
@@ -128,6 +129,7 @@ export function Drafts() {
         const res = await sendExtensionMessage<MaterialResult>({ action: 'generate_material', payload: { kind, baseResumeId: baseId || undefined, job: { title: jobTitle, company, description } } }, 300_000);
         setOutput(res.text);
         setPdf(res.pdf ?? null);
+        setChanges(res.changes ?? []);
         setCompileLog(res.pdf ? null : res.log ?? null);
         setView(res.pdf ? 'preview' : 'source');
         addLog({
@@ -374,6 +376,16 @@ export function Drafts() {
               </div>
             ) : (
               <div className="flex-1 overflow-auto">
+                {changes.length > 0 && (
+                  <div className="border-b border-border px-4 py-3">
+                    <p className="text-xs text-muted-foreground">What the AI says it changed</p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-foreground">
+                      {changes.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <p className="sticky top-0 border-b border-border bg-card px-4 py-2 text-xs text-muted-foreground">
                   {baseText ? `Against ${bases.find((b) => b.id === baseId)?.name}` : 'Against the facts in your profile'} ·{' '}
                   <span className="text-success">{diff.filter((d) => d.kind === 'added').length} added</span> ·{' '}

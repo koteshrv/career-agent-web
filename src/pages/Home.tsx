@@ -187,7 +187,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
   const selectedJob = useMemo(() => (selectedJobId ? jobs.find((j) => j.id === selectedJobId) || null : jobs[0] ?? null), [jobs, selectedJobId]);
   const detailOpen = Boolean(selectedJobId);
 
-  const isLoadingInitialData = !data && !error;
+  const isLoadingInitialData = !nothingToMatch && !data && !error;
   const isLoadingMore = isLoadingInitialData || (size > 0 && data && typeof data[size - 1] === 'undefined');
   const isEmpty = !isLoadingInitialData && !error && jobs.length === 0;
   const currentOffset = (size - 1) * PAGE_SIZE;

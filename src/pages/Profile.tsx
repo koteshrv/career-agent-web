@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, X, Upload, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { IconButton } from '../components/ui/icon-button';
+import { Chip } from '../components/ui/chip';
 import { Field, Input, Textarea, Select } from '../components/ui/field';
 import { Page, PageHeader, Section } from '../components/ui/page';
 import { useToast } from '../components/ui/toast';
 import { getStoredProfile, saveStoredProfile, SYNC_EVENT } from '../lib/profileStorage';
-import { pingExtension, sendExtensionMessage, fileToBase64 } from '../lib/extensionBridge';
+import { pingExtension, sendExtensionMessage, fileToBase64, resumeKindOf, type ResumeMeta, type ResumeKind } from '../lib/extensionBridge';
 import type { CandidateProfile, WorkExperience, Education } from '../types/profile';
 import { cn } from '../lib/utils';
 
@@ -79,32 +80,42 @@ export function Profile() {
   const addEducation = () => change('education', [{ id: `edu_${Date.now()}`, institution: '', degree: '', fieldOfStudy: '', graduationYear: '' }, ...profile.education]);
   const updateEducation = (id: string, updates: Partial<Education>) => change('education', profile.education.map((e) => (e.id === id ? { ...e, ...updates } : e)));
 
+  // Resumes live in the extension: one PDF for uploads, any number of .tex/.md/.txt as drafting bases.
+  const [resumes, setResumes] = useState<ResumeMeta[] | null>(null);
   const [resumeNote, setResumeNote] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    sendExtensionMessage<ResumeMeta[]>({ action: 'list_resumes' }, 4000)
+      .then((list) => alive && setResumes(list))
+      .catch(() => alive && setResumes(null));
+    return () => { alive = false; };
+  }, []);
   const handleResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    change('resumeFileName', file.name);
-    if (file.type === 'text/plain') {
-      const reader = new FileReader();
-      reader.onload = (ev) => change('resumeText', String(ev.target?.result ?? ''));
-      reader.readAsText(file);
-      return;
-    }
-    if (file.type === 'application/pdf' && file.size <= 5 * 1024 * 1024) {
-      try {
-        const data = await fileToBase64(file);
-        await sendExtensionMessage({ action: 'save_resume', payload: { name: file.name, type: file.type, data } }, 10_000);
-        setResumeNote('Sent to the extension. It will be attached when a form asks for a resume.');
-        toast('Resume sent to the extension', 'success');
-      } catch {
-        setResumeNote('The extension is not connected, so only the file name was kept. Attach the PDF in the extension to use it for uploads.');
-      }
-    } else if (file.type === 'application/pdf') {
-      setResumeNote('Keep the PDF under 5 MB to let the extension attach it to applications.');
+    const kind = resumeKindOf(file);
+    if (!kind) return setResumeNote('Use a .pdf, .tex, .md or .txt file.');
+    if (file.size > 5 * 1024 * 1024) return setResumeNote('Keep the file under 5 MB.');
+    try {
+      const payload = kind === 'pdf' ? { name: file.name, kind, data: await fileToBase64(file) } : { name: file.name, kind, text: await file.text() };
+      const list = await sendExtensionMessage<ResumeMeta[]>({ action: 'add_resume', payload }, 15_000);
+      setResumes(list);
+      if (kind === 'pdf') change('resumeFileName', file.name);
+      if (kind === 'txt' || kind === 'md') change('resumeText', payload.text ?? '');
+      setResumeNote(null);
+      toast(kind === 'pdf' ? 'Resume added' : 'Added as a drafting base', 'success');
+    } catch {
+      setResumeNote('The extension is not connected. Connect it in Settings to store resumes.');
     }
   };
-
+  const removeResume = async (id: string) => {
+    try { setResumes(await sendExtensionMessage<ResumeMeta[]>({ action: 'delete_resume', payload: { id } })); } catch (err) { toast(err instanceof Error ? err.message : String(err), 'error'); }
+  };
+  const markForUploads = async (id: string) => {
+    try { setResumes(await sendExtensionMessage<ResumeMeta[]>({ action: 'set_upload_resume', payload: { id } })); } catch (err) { toast(err instanceof Error ? err.message : String(err), 'error'); }
+  };
+  const kindLabel: Record<ResumeKind, string> = { pdf: 'PDF', tex: 'LaTeX', md: 'Markdown', txt: 'Text' };
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
 
   return (
@@ -331,17 +342,41 @@ export function Profile() {
         </div>
       </Section>
 
-      <Section id="resume" title="Resume">
-        <div className="flex flex-col gap-3 rounded-md border border-dashed border-border-strong bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-base font-medium text-foreground">{profile.resumeFileName || 'No resume attached'}</p>
-            <p className="text-sm text-muted-foreground">{resumeNote || 'A PDF is handed to the extension, which attaches it when a form asks for a resume. Nothing leaves your browser.'}</p>
+      <Section id="resume" title="Resumes" description="The PDF marked for uploads is attached when a form asks for a resume. A .tex resume becomes the template the AI rewrites for each job; .md and .txt add facts. Everything stays in the extension.">
+        <div className="rounded-md border border-border bg-card">
+          {resumes === null ? (
+            <p className="p-4 text-sm text-muted-foreground">{resumeNote || 'Connect the extension to store resumes.'}</p>
+          ) : resumes.length === 0 ? (
+            <p className="p-4 text-sm text-muted-foreground">{resumeNote || 'No resumes yet.'}</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {resumes.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+                  <Chip size="sm">{kindLabel[r.kind]}</Chip>
+                  <span className="min-w-0 flex-1 truncate text-sm text-foreground">{r.name}</span>
+                  <span className="text-xs text-muted-foreground">{(r.size / 1024).toFixed(0)} KB</span>
+                  {r.kind === 'pdf' && (
+                    r.forUploads ? (
+                      <Chip size="sm" tone="good">Used for uploads</Chip>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => markForUploads(r.id)}>Use for uploads</Button>
+                    )
+                  )}
+                  <IconButton label={`Remove ${r.name}`} size="sm" tone="danger" onClick={() => removeResume(r.id)}>
+                    <Trash2 />
+                  </IconButton>
+                </li>
+              ))}
+            </ul>
+          )}
+          {resumes !== null && resumeNote && resumes.length > 0 && <p className="px-4 pb-3 text-sm text-destructive">{resumeNote}</p>}
+          <div className="border-t border-border px-4 py-3">
+            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xs border border-border-strong bg-card px-3.5 text-sm font-medium text-foreground hover:bg-muted">
+              <Upload className="size-4" />
+              Add resume
+              <input type="file" accept=".pdf,.tex,.md,.txt" onChange={handleResume} className="sr-only" />
+            </label>
           </div>
-          <label className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-sm border border-border-strong bg-card px-3.5 text-base font-medium text-foreground hover:bg-muted">
-            <Upload className="size-4" />
-            {profile.resumeFileName ? 'Replace' : 'Attach'}
-            <input type="file" accept=".pdf,.txt" onChange={handleResume} className="sr-only" />
-          </label>
         </div>
       </Section>
 

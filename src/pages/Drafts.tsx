@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Copy, Check, Sparkles, FileText, Mail, Download, RefreshCw, Upload } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Field, Input, Textarea } from '../components/ui/field';
+import { Field, Input, Textarea, Select } from '../components/ui/field';
 import { SegmentedControl } from '../components/ui/segmented';
 import { Page, PageHeader } from '../components/ui/page';
 import { useToast } from '../components/ui/toast';
 import { getStoredProfile } from '../lib/profileStorage';
-import { sendExtensionMessage, type MaterialKind, type MaterialResult } from '../lib/extensionBridge';
+import { sendExtensionMessage, type MaterialKind, type MaterialResult, type ResumeMeta } from '../lib/extensionBridge';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
 import { addLog } from '../lib/logger';
 import { cn } from '../lib/utils';
@@ -61,6 +61,15 @@ export function Drafts() {
   const [compileLog, setCompileLog] = useState<string | null>(null);
   const [compiling, setCompiling] = useState(false);
   const [view, setView] = useState<'preview' | 'source'>('preview');
+  // Text resumes stored in the extension can be the base: a .tex one becomes the template, .md/.txt add facts.
+  const [bases, setBases] = useState<ResumeMeta[]>([]);
+  const [baseId, setBaseId] = useState('');
+  useEffect(() => {
+    if (!extension) return;
+    let alive = true;
+    sendExtensionMessage<ResumeMeta[]>({ action: 'list_resumes' }, 4000).then((list) => alive && setBases(list.filter((r) => r.kind !== 'pdf'))).catch(() => undefined);
+    return () => { alive = false; };
+  }, [extension]);
   const profile = getStoredProfile();
   const current = KINDS.find((k) => k.value === kind)!;
   const isResume = kind === 'resume';
@@ -83,7 +92,7 @@ export function Drafts() {
     if (extension) {
       setBusy(true);
       try {
-        const res = await sendExtensionMessage<MaterialResult>({ action: 'generate_material', payload: { kind, job: { title: jobTitle, company, description } } }, 300_000);
+        const res = await sendExtensionMessage<MaterialResult>({ action: 'generate_material', payload: { kind, baseResumeId: baseId || undefined, job: { title: jobTitle, company, description } } }, 300_000);
         setOutput(res.text);
         setPdf(res.pdf ?? null);
         setCompileLog(res.pdf ? null : res.log ?? null);
@@ -210,6 +219,16 @@ export function Drafts() {
               <Input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Senior Software Engineer" />
             </Field>
           </div>
+          {extension && bases.length > 0 && (
+            <Field label="Base" hint="Your own LaTeX resume keeps its layout; Markdown or text adds facts the profile may lack.">
+              <Select value={baseId} onChange={(e) => setBaseId(e.target.value)}>
+                <option value="">CareerAgent template</option>
+                {bases.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <Field label="Job description" hint={ctx?.description ? 'Filled from the posting you opened. Edit freely.' : 'Paste the posting. The more of it, the better the draft.'}>
             <Textarea rows={12} required value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
@@ -299,13 +318,30 @@ export function Drafts() {
               <div className="p-5 text-sm">
                 <p className="font-medium text-destructive">LaTeX did not compile.</p>
                 <p className="mt-1 text-muted-foreground">Fix the source and recompile, or regenerate the draft.</p>
+                {compileLog && (
+                  <Button size="sm" className="mt-3" onClick={() => navigator.clipboard.writeText(compileLog).then(() => toast('Log copied', 'success'))}>
+                    <Copy />
+                    Copy log
+                  </Button>
+                )}
                 {compileLog && <pre className="mt-3 max-h-72 overflow-auto rounded-sm border border-border bg-muted p-3 font-mono text-xs leading-relaxed">{compileLog}</pre>}
               </div>
             )
           ) : output ? (
             <>
               <Textarea aria-label={isResume ? 'LaTeX source' : 'Draft text'} value={output} onChange={(e) => setOutput(e.target.value)} className={cn('min-h-[380px] flex-1 rounded-none border-0 leading-relaxed focus:ring-0', isResume ? 'font-mono text-xs' : 'font-sans text-[15px]')} />
-              {isResume && compileLog && <pre className="max-h-48 overflow-auto border-t border-border bg-muted p-3 font-mono text-xs leading-relaxed text-destructive">{compileLog}</pre>}
+              {isResume && compileLog && (
+                <div className="border-t border-border bg-muted">
+                  <div className="flex items-center justify-between px-3 pt-2">
+                    <span className="text-xs font-medium text-destructive">pdfTeX log</span>
+                    <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText(compileLog).then(() => toast('Log copied', 'success'))}>
+                      <Copy />
+                      Copy log
+                    </Button>
+                  </div>
+                  <pre className="max-h-48 overflow-auto p-3 font-mono text-xs leading-relaxed text-destructive select-text">{compileLog}</pre>
+                </div>
+              )}
             </>
           ) : (
             <p className="m-auto max-w-xs p-6 text-center text-sm text-muted-foreground">

@@ -17,8 +17,30 @@ export type BridgeRequest =
   | { action: 'parse_resume'; payload: { fileName: string; fileData: string } }
   | { action: 'save_resume'; payload: { name: string; type: string; data: string } }
   | { action: 'get_resume_meta' }
-  | { action: 'generate_material'; payload: { kind: MaterialKind; job: { title: string; company: string; description: string } } }
-  | { action: 'compile_latex'; payload: { tex: string } };
+  | { action: 'generate_material'; payload: { kind: MaterialKind; baseResumeId?: string; job: { title: string; company: string; description: string } } }
+  | { action: 'compile_latex'; payload: { tex: string } }
+  | { action: 'list_resumes' }
+  | { action: 'add_resume'; payload: { name: string; kind: ResumeKind; data?: string; text?: string } }
+  | { action: 'delete_resume'; payload: { id: string } }
+  | { action: 'set_upload_resume'; payload: { id: string } };
+
+export type ResumeKind = 'pdf' | 'tex' | 'md' | 'txt';
+export interface ResumeMeta {
+  id: string;
+  name: string;
+  kind: ResumeKind;
+  size: number;
+  updatedAt: string;
+  forUploads: boolean;
+}
+export function resumeKindOf(file: File): ResumeKind | null {
+  const ext = file.name.toLowerCase().split('.').pop();
+  if (file.type === 'application/pdf' || ext === 'pdf') return 'pdf';
+  if (ext === 'tex') return 'tex';
+  if (ext === 'md' || ext === 'markdown') return 'md';
+  if (ext === 'txt' || file.type === 'text/plain') return 'txt';
+  return null;
+}
 
 /** A draft from the extension. For a resume, `text` is the full LaTeX source and `pdf` the compiled file (base64), or null with `log` when pdfTeX failed. */
 export interface MaterialResult {

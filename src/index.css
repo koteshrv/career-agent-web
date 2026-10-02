@@ -1,4 +1,4 @@
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/google-sans";
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
@@ -9,7 +9,7 @@
  * a 14px type base, and one accent that only ever means "selected" or "you can act here".
  */
 @theme {
-  --font-sans: 'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Google Sans Variable', 'Google Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --text-xs: 11px;
@@ -27,7 +27,7 @@
   --text-3xl: 32px;
   --text-3xl--line-height: 36px;
 
-  /* Geist is variable: every weight sits a step lighter than the static cuts so UI text stays thin. */
+  /* Google Sans is variable: every weight sits a step lighter than the static cuts so UI text stays thin. */
   --font-weight-normal: 400;
   --font-weight-medium: 450;
   --font-weight-semibold: 500;
@@ -42,7 +42,7 @@
 
   --shadow-2xs: 0 1px 2px rgb(21 23 27 / 0.06);
   --shadow-xs: 0 1px 2px rgb(21 23 27 / 0.06);
-  --shadow-sm: 0 1px 2px rgb(31 30 27 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
   --shadow-md: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
   --shadow-lg: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
   --shadow-xl: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
@@ -75,11 +75,11 @@
   --color-tint-lavender: var(--tint-lavender);
   --color-tint-pink: var(--tint-pink);
   --color-tint-blue: var(--tint-blue);
-  --color-dot-yellow: #c9962b;
-  --color-dot-green: #4f9d63;
-  --color-dot-lavender: #8c7bd1;
-  --color-dot-pink: #d9736a;
-  --color-dot-blue: #5b8fd6;
+  --color-dot-yellow: #d4a017;
+  --color-dot-green: #2fa866;
+  --color-dot-lavender: #8b6ee6;
+  --color-dot-pink: #e0605a;
+  --color-dot-blue: #4d8bff;
   --color-border: var(--line);
   --color-border-strong: var(--line-strong);
   --color-input: var(--line);
@@ -89,52 +89,52 @@
 @layer base {
   :root {
     color-scheme: light;
-    --canvas: #faf9f5;
+    --canvas: #f6f7f9;
     --surface: #ffffff;
-    --surface-2: #f1efe8;
-    --line: #e6e3d9;
-    --line-strong: #cfcbbf;
-    --ink: #1f1e1b;
-    --ink-muted: #6f6c63;
-    --accent: #c96442;
+    --surface-2: #eef0f3;
+    --line: #e4e7ec;
+    --line-strong: #cfd4dc;
+    --ink: #1a1d23;
+    --ink-muted: #697180;
+    --accent: #2f6fed;
     --accent-ink: #ffffff;
-    --accent-text: #a9502f;
-    --accent-soft: #f6e8e1;
-    --danger: #ab2e23;
-    --good: #2f7a47;
-    --good-soft: #e3f1e5;
+    --accent-text: #2459c4;
+    --accent-soft: #e8effd;
+    --danger: #c0392b;
+    --good: #1f8a4c;
+    --good-soft: #dff5e8;
     --warn: #8a5a00;
-    --warn-soft: #f8ecc8;
-    --tint-yellow: #f8ecc8;
-    --tint-green: #e3f1e5;
-    --tint-lavender: #e9e4f6;
-    --tint-pink: #f9e1dc;
-    --tint-blue: #e1ebf8;
+    --warn-soft: #fbf0c8;
+    --tint-yellow: #fbf0c8;
+    --tint-green: #dff5e8;
+    --tint-lavender: #e9e5fb;
+    --tint-pink: #fde3e2;
+    --tint-blue: #e1ecfd;
   }
 
   .dark {
     color-scheme: dark;
-    --canvas: #262624;
-    --surface: #2b2b29;
-    --surface-2: #363634;
-    --line: #3b3b38;
-    --line-strong: #4f4f4b;
-    --ink: #ecebe4;
-    --ink-muted: #a3a197;
-    --accent: #d97757;
-    --accent-ink: #1f1e1b;
-    --accent-text: #e5906f;
-    --accent-soft: #3d2f28;
-    --danger: #f08b7c;
-    --good: #7cc48f;
-    --good-soft: #2a3a2d;
+    --canvas: #121417;
+    --surface: #191c20;
+    --surface-2: #22262c;
+    --line: #272b32;
+    --line-strong: #3a3f48;
+    --ink: #e8eaee;
+    --ink-muted: #9199a6;
+    --accent: #4d8bff;
+    --accent-ink: #0f1115;
+    --accent-text: #7eaaff;
+    --accent-soft: #1d2a44;
+    --danger: #f0867a;
+    --good: #6fcf97;
+    --good-soft: #163526;
     --warn: #e2b250;
-    --warn-soft: #3b3523;
-    --tint-yellow: #3b3523;
-    --tint-green: #2a3a2d;
-    --tint-lavender: #34303f;
-    --tint-pink: #3f2d2b;
-    --tint-blue: #2b3442;
+    --warn-soft: #332b14;
+    --tint-yellow: #332b14;
+    --tint-green: #163526;
+    --tint-lavender: #2a2544;
+    --tint-pink: #3d2426;
+    --tint-blue: #1d2a44;
   }
 
   *,

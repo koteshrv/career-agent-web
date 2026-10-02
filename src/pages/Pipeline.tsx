@@ -417,7 +417,7 @@ function Stats({ apps }: { apps: TrackedApplication[] }) {
             <li key={label} className="grid grid-cols-[110px_1fr_32px] items-center gap-3 text-sm">
               <span className="text-foreground">{label}</span>
               <div className="h-5 rounded-full bg-muted" role="presentation">
-                <div className="h-full rounded-full bg-foreground transition-[width]" style={{ width: `${(n / max) * 100}%` }} />
+                <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${(n / max) * 100}%` }} />
               </div>
               <span className="text-right tabular-nums font-medium text-foreground">{n}</span>
             </li>

@@ -26,7 +26,7 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
 
   return (
     <li className={cn('relative border-b border-border last:border-b-0', selected ? 'bg-muted' : 'hover:bg-muted/60')}>
-      {selected && <span aria-hidden="true" className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-foreground" />}
+      {selected && <span aria-hidden="true" className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-primary" />}
       <button
         type="button"
         onClick={() => onSelect(job)}
@@ -42,7 +42,7 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="pointer-events-auto hidden sm:inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line-strong bg-card px-4 text-sm font-medium text-foreground hover:bg-muted"
+            className="pointer-events-auto hidden sm:inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xs border border-border-strong bg-card px-3 text-sm font-medium text-foreground hover:bg-muted"
           >
             Apply
             <ExternalLink className="size-3.5" />

@@ -30,7 +30,7 @@ export function BottomTabs() {
               <t.icon className="size-5" />
               {t.label}
               {t.to === '/pipeline' && dueCount > 0 && (
-                <span className="absolute top-2 right-[calc(50%-20px)] flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-primary-foreground" aria-hidden="true">
+                <span className="absolute top-2 right-[calc(50%-20px)] flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-medium text-primary-foreground" aria-hidden="true">
                   {dueCount}
                 </span>
               )}

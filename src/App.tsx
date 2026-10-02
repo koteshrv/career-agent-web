@@ -27,7 +27,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="careeragent-theme">
+    <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
       <ToastProvider>
         <Router>
           <div className="h-[100dvh] flex flex-col bg-background text-foreground">

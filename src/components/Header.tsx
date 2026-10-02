@@ -19,7 +19,7 @@ export function Header() {
   const extension = useExtensionStatus();
 
   return (
-    <header className="shrink-0 z-30 w-full border-b border-border bg-card">
+    <header className="shrink-0 z-30 w-full border-b border-border bg-background">
       <div className="mx-auto flex h-16 w-full max-w-[1360px] items-center justify-between gap-6 px-4 sm:px-8">
         <div className="flex items-center gap-10">
           <Link to="/" className="flex items-center" aria-label="CareerAgent home">
@@ -33,14 +33,14 @@ export function Header() {
                 end={item.end}
                 className={({ isActive }) =>
                   cn(
-                    'inline-flex h-9 items-center gap-2 rounded-full px-4 text-base font-medium transition-colors',
+                    'inline-flex h-8 items-center gap-2 rounded-xs px-3 text-sm font-medium transition-colors',
                     isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
                   )
                 }
               >
                 {item.label}
                 {item.to === '/pipeline' && dueCount > 0 && (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-xs font-semibold text-background tabular-nums" aria-label={`${dueCount} follow-ups due`}>
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground tabular-nums" aria-label={`${dueCount} follow-ups due`}>
                     {dueCount}
                   </span>
                 )}
@@ -52,12 +52,12 @@ export function Header() {
         <Link
           to="/settings"
           className={cn(
-            'inline-flex h-9 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors',
-            extension ? 'border-transparent bg-tint-green text-foreground' : 'border-line-strong bg-card text-foreground hover:bg-muted'
+            'inline-flex h-8 items-center gap-2 rounded-xs border px-3 text-sm font-medium transition-colors',
+            extension ? 'border-border bg-card text-foreground hover:bg-muted' : 'border-border-strong bg-card text-foreground hover:bg-muted'
           )}
           aria-label={extension === null ? 'Checking extension' : extension ? 'Extension connected. Open settings' : 'Extension not connected. Open settings'}
         >
-          <span aria-hidden="true" className={cn('size-2 rounded-full', extension ? 'bg-dot-green' : extension === null ? 'bg-line-strong' : 'bg-muted-foreground/60')} />
+          <span aria-hidden="true" className={cn('size-2 rounded-full', extension ? 'bg-dot-green' : extension === null ? 'bg-border-strong' : 'bg-muted-foreground/60')} />
           <span className="hidden sm:inline">{extension === null ? 'Extension' : extension ? 'Extension connected' : 'Install extension'}</span>
         </Link>
       </div>

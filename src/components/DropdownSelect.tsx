@@ -67,13 +67,13 @@ export function DropdownSelect({ icon, value, onChange, options, placeholder = '
         aria-controls={listId}
         aria-label={ariaLabel}
         className={cn(
-          'h-10 rounded-full border px-4 text-sm font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer select-none',
-          isSet ? 'border-foreground bg-foreground text-background' : 'border-line-strong bg-card text-foreground hover:bg-muted',
+          'h-9 rounded-xs border px-3 text-sm font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer select-none',
+          isSet ? 'border-border-strong bg-muted text-foreground' : 'border-border-strong bg-card text-foreground hover:bg-muted',
           fullWidth && 'w-full justify-between'
         )}
       >
         <span className="flex items-center gap-1.5 min-w-0">
-          {icon && <span className={cn('shrink-0 [&_svg]:size-3.5', isSet ? 'text-background' : 'text-muted-foreground')}>{icon}</span>}
+          {icon && <span className={cn('shrink-0 [&_svg]:size-3.5', 'text-muted-foreground')}>{icon}</span>}
           {prefix && !isSet && <span className="text-muted-foreground">{prefix}</span>}
           <span className="truncate">{displayLabel}</span>
         </span>

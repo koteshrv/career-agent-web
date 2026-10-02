@@ -1,4 +1,4 @@
-@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
@@ -9,7 +9,7 @@
  * a 14px type base, and one accent that only ever means "selected" or "you can act here".
  */
 @theme {
-  --font-sans: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --text-xs: 11px;
@@ -27,17 +27,22 @@
   --text-3xl: 32px;
   --text-3xl--line-height: 36px;
 
-  /* Inter is a variable font: medium and semibold sit a step lighter than the static cuts. */
+  /* Geist is variable: every weight sits a step lighter than the static cuts so UI text stays thin. */
+  --font-weight-normal: 400;
+  --font-weight-medium: 450;
+  --font-weight-semibold: 500;
+  --font-weight-bold: 540;
+
   --radius-xs: 8px;
   --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
-  --radius-2xl: 28px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
 
   --shadow-2xs: 0 1px 2px rgb(21 23 27 / 0.06);
   --shadow-xs: 0 1px 2px rgb(21 23 27 / 0.06);
-  --shadow-sm: 0 1px 2px rgb(23 23 23 / 0.04), 0 0 0 1px rgb(23 23 23 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(31 30 27 / 0.05);
   --shadow-md: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
   --shadow-lg: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
   --shadow-xl: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
@@ -70,11 +75,11 @@
   --color-tint-lavender: var(--tint-lavender);
   --color-tint-pink: var(--tint-pink);
   --color-tint-blue: var(--tint-blue);
-  --color-dot-yellow: #ca8a04;
-  --color-dot-green: #16a34a;
-  --color-dot-lavender: #7c3aed;
-  --color-dot-pink: #e11d48;
-  --color-dot-blue: #2563eb;
+  --color-dot-yellow: #c9962b;
+  --color-dot-green: #4f9d63;
+  --color-dot-lavender: #8c7bd1;
+  --color-dot-pink: #d9736a;
+  --color-dot-blue: #5b8fd6;
   --color-border: var(--line);
   --color-border-strong: var(--line-strong);
   --color-input: var(--line);
@@ -84,52 +89,52 @@
 @layer base {
   :root {
     color-scheme: light;
-    --canvas: #ffffff;
+    --canvas: #faf9f5;
     --surface: #ffffff;
-    --surface-2: #f5f5f5;
-    --line: #ececec;
-    --line-strong: #d4d4d4;
-    --ink: #171717;
-    --ink-muted: #737373;
-    --accent: #171717;
+    --surface-2: #f1efe8;
+    --line: #e6e3d9;
+    --line-strong: #cfcbbf;
+    --ink: #1f1e1b;
+    --ink-muted: #6f6c63;
+    --accent: #c96442;
     --accent-ink: #ffffff;
-    --accent-text: #171717;
-    --accent-soft: #f5f5f5;
-    --danger: #b42318;
-    --good: #15803d;
-    --good-soft: #d9f7e6;
+    --accent-text: #a9502f;
+    --accent-soft: #f6e8e1;
+    --danger: #ab2e23;
+    --good: #2f7a47;
+    --good-soft: #e3f1e5;
     --warn: #8a5a00;
-    --warn-soft: #fdf3c4;
-    --tint-yellow: #fdf3c4;
-    --tint-green: #d9f7e6;
-    --tint-lavender: #e4e1fb;
-    --tint-pink: #fde2e1;
-    --tint-blue: #dbeafe;
+    --warn-soft: #f8ecc8;
+    --tint-yellow: #f8ecc8;
+    --tint-green: #e3f1e5;
+    --tint-lavender: #e9e4f6;
+    --tint-pink: #f9e1dc;
+    --tint-blue: #e1ebf8;
   }
 
   .dark {
     color-scheme: dark;
-    --canvas: #0a0a0a;
-    --surface: #111111;
-    --surface-2: #1a1a1a;
-    --line: #262626;
-    --line-strong: #3a3a3a;
-    --ink: #ededed;
-    --ink-muted: #8f8f8f;
-    --accent: #ededed;
-    --accent-ink: #0a0a0a;
-    --accent-text: #ededed;
-    --accent-soft: #1a1a1a;
-    --danger: #f97066;
-    --good: #4cc38a;
-    --good-soft: #0f2a1c;
+    --canvas: #262624;
+    --surface: #2b2b29;
+    --surface-2: #363634;
+    --line: #3b3b38;
+    --line-strong: #4f4f4b;
+    --ink: #ecebe4;
+    --ink-muted: #a3a197;
+    --accent: #d97757;
+    --accent-ink: #1f1e1b;
+    --accent-text: #e5906f;
+    --accent-soft: #3d2f28;
+    --danger: #f08b7c;
+    --good: #7cc48f;
+    --good-soft: #2a3a2d;
     --warn: #e2b250;
-    --warn-soft: #2a2410;
-    --tint-yellow: #2a2410;
-    --tint-green: #0f2a1c;
-    --tint-lavender: #1e1a33;
-    --tint-pink: #2e1618;
-    --tint-blue: #14213a;
+    --warn-soft: #3b3523;
+    --tint-yellow: #3b3523;
+    --tint-green: #2a3a2d;
+    --tint-lavender: #34303f;
+    --tint-pink: #3f2d2b;
+    --tint-blue: #2b3442;
   }
 
   *,
@@ -140,14 +145,11 @@
 
   html {
     font-family: var(--font-sans);
-    font-optical-sizing: auto;
+    font-weight: 400;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-  }
-
-  h1, h2, h3 {
-    letter-spacing: -0.01em;
   }
 
   body {
@@ -173,7 +175,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--line-strong);
     outline-offset: 2px;
   }
 
@@ -204,7 +206,7 @@
   .reading h1,
   .reading h2,
   .reading h3 {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--ink);
     margin-top: 1.6em;
     margin-bottom: 0.5em;
@@ -220,7 +222,7 @@
   .reading ol { list-style: decimal; }
   .reading li { margin: 0.3em 0; }
   .reading a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
-  .reading strong { font-weight: 600; }
+  .reading strong { font-weight: 500; }
   .reading > :first-child { margin-top: 0; }
   /* Most postings open with their own title; the pane already shows it. */
   .reading > h1:first-child { display: none; }

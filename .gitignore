@@ -35,3 +35,10 @@ coverage
 .cache
 .claude
 *.tsbuildinfo
+
+# Agent tooling and other machine-local files
+.agents/
+.claude/
+.cursor/
+.mcp.json
+CLAUDE.local.md

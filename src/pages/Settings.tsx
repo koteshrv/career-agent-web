@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Field, Input } from '../components/ui/field';
 import { Dialog } from '../components/ui/dialog';
 import { SegmentedControl } from '../components/ui/segmented';
+import { PALETTES, getPalette, setPalette, type PaletteId } from '../lib/palette';
 import { Page, PageHeader, Section } from '../components/ui/page';
 import { useToast } from '../components/ui/toast';
 import { getStoredProfile, getStoredApplications, hydrateFromExtension } from '../lib/profileStorage';
@@ -14,6 +15,7 @@ import { cn } from '../lib/utils';
 
 export function Settings() {
   const { theme, setTheme } = useTheme();
+  const [palette, setPaletteState] = useState<PaletteId>(getPalette);
   const toast = useToast();
   const [detected, setDetected] = useState<boolean | null>(null);
   const [extensionId, setExtensionId] = useState(getExtensionId);
@@ -101,6 +103,7 @@ export function Settings() {
       </Section>
 
       <Section id="appearance" title="Appearance">
+        <div className="flex flex-col gap-4">
         <SegmentedControl
           ariaLabel="Theme"
           value={theme}
@@ -111,6 +114,32 @@ export function Settings() {
             { value: 'dark', label: <span className="inline-flex items-center gap-1.5"><Moon className="size-4" />Dark</span> },
           ]}
         />
+        <div role="radiogroup" aria-label="Palette" className="flex flex-wrap gap-2">
+          {PALETTES.map((p) => {
+            const selected = p.id === palette;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => { setPalette(p.id); setPaletteState(p.id); }}
+                className={cn(
+                  'inline-flex h-9 items-center gap-2 rounded-xs border px-3 text-sm font-medium transition-colors cursor-pointer',
+                  selected ? 'border-foreground bg-muted text-foreground' : 'border-border-strong bg-card text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <span aria-hidden="true" className="flex -space-x-1">
+                  {p.swatch.map((c) => (
+                    <span key={c} className="size-3.5 rounded-full border border-border-strong" style={{ backgroundColor: c }} />
+                  ))}
+                </span>
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+        </div>
       </Section>
 
       <Section id="data" title="Your data" description="Everything lives in this browser and in the extension. Nothing identifying is sent to our servers.">

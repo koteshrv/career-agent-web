@@ -27,7 +27,15 @@ export function addLog(log: Omit<ApiLog, 'id'>) {
   const logs = getLogs();
   const newLog = { ...log, id: crypto.randomUUID() };
   const nextLogs = [newLog, ...logs].slice(0, 200); // keep last 200 for performance
-  sessionStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(nextLogs));
+  // A long evaluation run can outgrow sessionStorage; keep fewer entries rather than lose the newest.
+  for (const keep of [200, 50, 10]) {
+    try {
+      sessionStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(nextLogs.slice(0, keep)));
+      break;
+    } catch {
+      /* quota: retry smaller */
+    }
+  }
   window.dispatchEvent(new Event('careeragent_logs_updated'));
 }
 

@@ -33,6 +33,8 @@ export interface Job {
   description?: string | null;
   cleaned_description?: string | null;
   raw_description?: string | null;
+  /** First 2,000 characters of the description, when requested with include=excerpt. */
+  excerpt?: string | null;
   structured_metadata?: StructuredMetadata;
   verification_count?: number;
   created_at: string;
@@ -77,12 +79,26 @@ export interface JobsResponse {
   limit: number;
   offset: number;
   has_more: boolean;
+  /** Filtered searches only, on the first page: how many postings match in all. */
+  total?: number;
+  max_depth?: number;
+}
+
+export class ApiError extends Error {
+  status: number;
+  retryAfterSecs: number | null;
+  constructor(status: number, retryAfterSecs: number | null) {
+    super(status === 429 ? 'Too many requests to the job index. Wait a minute and try again.' : 'An error occurred while fetching the data.');
+    this.status = status;
+    this.retryAfterSecs = retryAfterSecs;
+  }
 }
 
 export const fetcher = async (url: string) => {
   const res = await fetch(API_BASE_URL + url);
   if (!res.ok) {
-    throw new Error('An error occurred while fetching the data.');
+    const ra = Number(res.headers.get('retry-after'));
+    throw new ApiError(res.status, Number.isFinite(ra) && ra > 0 ? ra : null);
   }
   return res.json();
 };

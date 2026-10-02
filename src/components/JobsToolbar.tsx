@@ -36,6 +36,7 @@ export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolba
   const countryParam = searchParams.get('country') || '';
   const workplaceParam = searchParams.get('workplace_type') || '';
   const dateParam = searchParams.get('date') || '';
+  const companyParam = searchParams.get('company') || '';
   const keywords = useMemo(() => queryParam.split(',').map((k) => k.trim()).filter(Boolean), [queryParam]);
 
   const [input, setInput] = useState('');
@@ -61,7 +62,7 @@ export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolba
   const { data: countriesData } = useSWR<CountriesResponse>('/v1/countries', fetcher, { revalidateOnFocus: false, shouldRetryOnError: false });
   const countryOptions = useMemo(() => [{ value: '', label: 'Any country' }, ...(countriesData?.countries || []).map((c) => ({ value: c.code, label: c.name }))], [countriesData]);
 
-  const activeCount = [countryParam, workplaceParam, dateParam].filter(Boolean).length + keywords.length;
+  const activeCount = [countryParam, workplaceParam, dateParam, companyParam].filter(Boolean).length + keywords.length;
 
   return (
     <div className="shrink-0 space-y-3">
@@ -79,6 +80,23 @@ export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolba
       >
         <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="flex flex-1 flex-wrap items-center gap-1.5 py-1.5 min-w-0">
+          {companyParam && (
+            <span className="inline-flex h-7 items-center gap-1 rounded-full bg-tint-blue pl-3 pr-1.5 text-sm font-medium text-foreground" title="Only postings from this employer">
+              <Building2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
+              <span className="max-w-[180px] truncate">{companyParam}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  update({ company: null });
+                }}
+                aria-label={`Stop filtering by ${companyParam}`}
+                className="rounded-full p-0.5 hover:bg-foreground/10 cursor-pointer"
+              >
+                <X className="size-3.5" />
+              </button>
+            </span>
+          )}
           {keywords.map((kw, idx) => (
             <span key={`${kw}-${idx}`} className="inline-flex h-7 items-center gap-1 rounded-full bg-muted pl-3 pr-1.5 text-sm font-medium text-foreground">
               <span className="max-w-[160px] truncate">{kw}</span>

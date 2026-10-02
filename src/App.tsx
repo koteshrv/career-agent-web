@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
 import { BottomTabs } from './components/BottomTabs';
 import { Home } from './pages/Home';
 import { Pipeline } from './pages/Pipeline';
@@ -27,10 +28,12 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
+    <ThemeProvider defaultTheme="light" storageKey="careeragent-theme">
       <ToastProvider>
         <Router>
-          <div className="h-[100dvh] flex flex-col bg-background text-foreground">
+          <div className="h-[100dvh] flex bg-background text-foreground">
+            <Sidebar />
+            <div className="flex min-w-0 flex-1 flex-col">
             <Header />
             <ResumeImportDialog />
             <ErrorBoundary>
@@ -63,6 +66,7 @@ function App() {
               </div>
             </ErrorBoundary>
             <BottomTabs />
+            </div>
           </div>
         </Router>
       </ToastProvider>

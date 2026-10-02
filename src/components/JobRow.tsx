@@ -25,8 +25,8 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
   const posted = job.posted_at || job.created_at;
 
   return (
-    <li className={cn('relative border-b border-border last:border-b-0', selected ? 'bg-primary-soft/60 dark:bg-primary-soft/70' : 'hover:bg-muted/60')}>
-      {selected && <span aria-hidden="true" className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />}
+    <li className={cn('relative border-b border-border last:border-b-0', selected ? 'bg-muted' : 'hover:bg-muted/60')}>
+      {selected && <span aria-hidden="true" className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-foreground" />}
       <button
         type="button"
         onClick={() => onSelect(job)}
@@ -34,7 +34,7 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
         aria-label={`${job.title} at ${job.company}${location ? `, ${location}` : ''}`}
         className="absolute inset-0 w-full cursor-pointer focus-visible:outline-offset-[-2px]"
       />
-      <div className="pointer-events-none relative px-4 py-3.5 sm:px-5">
+      <div className="pointer-events-none relative px-4 py-4 sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <h3 className={cn('text-lg font-semibold leading-snug line-clamp-2', selected ? 'text-foreground' : 'text-foreground')}>{job.title}</h3>
           <a
@@ -42,7 +42,7 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="pointer-events-auto hidden sm:inline-flex h-8 shrink-0 items-center gap-1 rounded-sm border border-border-strong bg-card px-2.5 text-sm font-medium text-foreground hover:bg-muted"
+            className="pointer-events-auto hidden sm:inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line-strong bg-card px-4 text-sm font-medium text-foreground hover:bg-muted"
           >
             Apply
             <ExternalLink className="size-3.5" />

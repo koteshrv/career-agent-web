@@ -41,7 +41,7 @@ export function Popover({ open, onClose, anchorRef, align = 'end', className, ch
     <div
       ref={ref}
       className={cn(
-        'absolute top-full mt-1.5 z-40 bg-popover text-popover-foreground border border-border rounded-md shadow-lg',
+        'absolute top-full mt-2 z-40 bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1',
         align === 'end' ? 'right-0' : 'left-0',
         className
       )}

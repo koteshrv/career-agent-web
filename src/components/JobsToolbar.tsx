@@ -66,14 +66,14 @@ export function JobsToolbar({ resultSummary }: JobsToolbarProps) {
         }}
         onClick={() => inputRef.current?.focus()}
         className={cn(
-          'flex min-h-10 items-center gap-1.5 rounded-md border border-border-strong bg-card px-3 cursor-text transition-colors',
-          'focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30'
+          'flex min-h-12 items-center gap-2 rounded-full border border-line-strong bg-card px-4 cursor-text transition-colors',
+          'focus-within:border-foreground focus-within:ring-2 focus-within:ring-foreground/10'
         )}
       >
         <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="flex flex-1 flex-wrap items-center gap-1.5 py-1.5 min-w-0">
           {keywords.map((kw, idx) => (
-            <span key={`${kw}-${idx}`} className="inline-flex h-7 items-center gap-1 rounded-sm bg-primary-soft pl-2 pr-1 text-sm font-medium text-primary-text">
+            <span key={`${kw}-${idx}`} className="inline-flex h-7 items-center gap-1 rounded-full bg-foreground pl-3 pr-1.5 text-sm font-medium text-background">
               <span className="max-w-[160px] truncate">{kw}</span>
               <button
                 type="button"
@@ -83,7 +83,7 @@ export function JobsToolbar({ resultSummary }: JobsToolbarProps) {
                   inputRef.current?.focus();
                 }}
                 aria-label={`Remove ${kw}`}
-                className="rounded-xs p-0.5 hover:bg-primary/20 cursor-pointer"
+                className="rounded-full p-0.5 hover:bg-background/20 cursor-pointer"
               >
                 <X className="size-3.5" />
               </button>
@@ -134,7 +134,7 @@ export function JobsToolbar({ resultSummary }: JobsToolbarProps) {
           <DropdownSelect icon={<Building2 />} value={workplaceParam} onChange={(v) => update({ workplace_type: v || null })} options={WORKPLACE} placeholder="Any workplace" ariaLabel="Workplace" />
           <DropdownSelect icon={<Calendar />} value={dateParam} onChange={(v) => update({ date: v || null })} options={DATES} placeholder="Any time" ariaLabel="Date posted" />
           {activeCount > 0 && (
-            <button type="button" onClick={() => setSearchParams(new URLSearchParams())} className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-sm px-2.5 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer">
+            <button type="button" onClick={() => setSearchParams(new URLSearchParams())} className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer">
               <RotateCcw className="size-3.5" />
               Reset
             </button>
@@ -142,7 +142,7 @@ export function JobsToolbar({ resultSummary }: JobsToolbarProps) {
         </div>
         <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground">
           <span aria-live="polite">{resultSummary}</span>
-          <Link to="/portals" className="font-medium text-primary-text hover:underline underline-offset-2">
+          <Link to="/portals" className="font-medium text-foreground underline decoration-line-strong underline-offset-4 hover:decoration-foreground">
             <span className="sm:hidden">Companies</span>
             <span className="hidden sm:inline">Companies we index</span>
           </Link>

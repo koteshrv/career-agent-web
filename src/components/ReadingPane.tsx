@@ -188,7 +188,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
                 <ExternalLink />
               </a>
             </Button>
-            <Button variant="secondary" size="lg" onClick={handleSave} aria-pressed={isSaved} className={isSaved ? 'border-success/40 text-success' : ''}>
+            <Button variant="secondary" size="lg" onClick={handleSave} aria-pressed={isSaved} className={isSaved ? 'border-transparent bg-tint-green' : ''}>
               {isSaved ? <BookmarkCheck /> : <Bookmark />}
               {isSaved ? 'In pipeline' : 'Save to pipeline'}
             </Button>

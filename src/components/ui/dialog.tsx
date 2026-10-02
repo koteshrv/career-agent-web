@@ -72,7 +72,7 @@ export function Dialog({ open, onClose, title, description, size = 'md', dismiss
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
         className={cn(
-          'relative w-full bg-card border border-border rounded-t-lg sm:rounded-lg shadow-lg max-h-[92dvh] flex flex-col focus:outline-none',
+          'relative w-full bg-card border border-border rounded-t-lg sm:rounded-lg shadow-lg max-h-[92dvh] flex flex-col focus:outline-none p-1',
           size === 'sm' && 'sm:max-w-sm',
           size === 'md' && 'sm:max-w-lg',
           size === 'lg' && 'sm:max-w-2xl'

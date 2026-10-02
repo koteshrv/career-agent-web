@@ -28,8 +28,9 @@ export function StatusMenu({ value, onChange, label, size = 'sm', className }: S
         aria-label={label}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-sm border border-transparent font-medium text-foreground hover:border-border-strong hover:bg-muted cursor-pointer',
-          size === 'sm' ? 'h-7 px-1.5 text-sm' : 'h-9 px-2.5 text-base'
+          'inline-flex items-center gap-1.5 rounded-full font-medium text-foreground hover:opacity-80 cursor-pointer',
+          STATUS_CONFIG[value].pill,
+          size === 'sm' ? 'h-7 pl-2.5 pr-2 text-sm' : 'h-9 px-3 text-base'
         )}
       >
         <StatusDot status={value} />
@@ -49,7 +50,7 @@ export function StatusMenu({ value, onChange, label, size = 'sm', className }: S
                   if (s !== value) onChange(s);
                   anchor.current?.focus();
                 }}
-                className={cn('flex w-full items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-sm cursor-pointer', s === value ? 'bg-muted font-medium text-foreground' : 'text-foreground hover:bg-muted')}
+                className={cn('flex w-full items-center gap-2 rounded-xs px-3 py-2 text-left text-sm cursor-pointer', s === value ? 'bg-muted font-medium text-foreground' : 'text-foreground hover:bg-muted')}
               >
                 <StatusDot status={s} />
                 <span className="flex-1">{STATUS_CONFIG[s].label}</span>

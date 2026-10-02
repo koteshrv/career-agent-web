@@ -99,7 +99,7 @@ export function Home() {
 
   return (
     <main className="flex-1 min-h-0 flex flex-col">
-      <div className="mx-auto flex w-full max-w-[1280px] flex-1 min-h-0 flex-col gap-4 px-4 pt-4 pb-16 sm:px-6 md:pb-4">
+      <div className="mx-auto flex w-full max-w-[1360px] flex-1 min-h-0 flex-col gap-4 px-4 pt-5 pb-16 sm:px-8 md:pb-6">
         <div className={cn(detailOpen && 'hidden lg:block')}>
           <JobsToolbar resultSummary={summary} />
         </div>

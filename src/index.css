@@ -28,19 +28,16 @@
   --text-3xl--line-height: 36px;
 
   /* Inter is a variable font: medium and semibold sit a step lighter than the static cuts. */
-  --font-weight-medium: 480;
-  --font-weight-semibold: 560;
-
-  --radius-xs: 6px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 14px;
-  --radius-2xl: 14px;
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
 
   --shadow-2xs: 0 1px 2px rgb(21 23 27 / 0.06);
   --shadow-xs: 0 1px 2px rgb(21 23 27 / 0.06);
-  --shadow-sm: 0 1px 2px rgb(15 20 25 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(23 23 23 / 0.04), 0 0 0 1px rgb(23 23 23 / 0.04);
   --shadow-md: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
   --shadow-lg: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
   --shadow-xl: 0 12px 32px -8px rgb(21 23 27 / 0.24), 0 2px 6px rgb(21 23 27 / 0.08);
@@ -68,6 +65,16 @@
   --color-success-soft: var(--good-soft);
   --color-warning: var(--warn);
   --color-warning-soft: var(--warn-soft);
+  --color-tint-yellow: var(--tint-yellow);
+  --color-tint-green: var(--tint-green);
+  --color-tint-lavender: var(--tint-lavender);
+  --color-tint-pink: var(--tint-pink);
+  --color-tint-blue: var(--tint-blue);
+  --color-dot-yellow: #ca8a04;
+  --color-dot-green: #16a34a;
+  --color-dot-lavender: #7c3aed;
+  --color-dot-pink: #e11d48;
+  --color-dot-blue: #2563eb;
   --color-border: var(--line);
   --color-border-strong: var(--line-strong);
   --color-input: var(--line);
@@ -77,42 +84,52 @@
 @layer base {
   :root {
     color-scheme: light;
-    --canvas: #f5f6f8;
+    --canvas: #ffffff;
     --surface: #ffffff;
-    --surface-2: #f0f2f5;
-    --line: #e3e6eb;
-    --line-strong: #c7ccd5;
-    --ink: #0f1419;
-    --ink-muted: #5b6472;
-    --accent: #0c6e8c;
+    --surface-2: #f5f5f5;
+    --line: #ececec;
+    --line-strong: #d4d4d4;
+    --ink: #171717;
+    --ink-muted: #737373;
+    --accent: #171717;
     --accent-ink: #ffffff;
-    --accent-text: #0c6e8c;
-    --accent-soft: #e3f1f6;
+    --accent-text: #171717;
+    --accent-soft: #f5f5f5;
     --danger: #b42318;
     --good: #15803d;
-    --good-soft: #e4f3ea;
+    --good-soft: #d9f7e6;
     --warn: #8a5a00;
-    --warn-soft: #fbf1d8;
+    --warn-soft: #fdf3c4;
+    --tint-yellow: #fdf3c4;
+    --tint-green: #d9f7e6;
+    --tint-lavender: #e4e1fb;
+    --tint-pink: #fde2e1;
+    --tint-blue: #dbeafe;
   }
 
   .dark {
     color-scheme: dark;
-    --canvas: #0f1115;
-    --surface: #161a20;
-    --surface-2: #1c2128;
-    --line: #262b33;
-    --line-strong: #363d47;
-    --ink: #dce0e5;
-    --ink-muted: #8c94a1;
-    --accent: #39a7cb;
-    --accent-ink: #0b1116;
-    --accent-text: #5bbbd9;
-    --accent-soft: #122a33;
+    --canvas: #0a0a0a;
+    --surface: #111111;
+    --surface-2: #1a1a1a;
+    --line: #262626;
+    --line-strong: #3a3a3a;
+    --ink: #ededed;
+    --ink-muted: #8f8f8f;
+    --accent: #ededed;
+    --accent-ink: #0a0a0a;
+    --accent-text: #ededed;
+    --accent-soft: #1a1a1a;
     --danger: #f97066;
     --good: #4cc38a;
-    --good-soft: #15291f;
+    --good-soft: #0f2a1c;
     --warn: #e2b250;
-    --warn-soft: #2d2512;
+    --warn-soft: #2a2410;
+    --tint-yellow: #2a2410;
+    --tint-green: #0f2a1c;
+    --tint-lavender: #1e1a33;
+    --tint-pink: #2e1618;
+    --tint-blue: #14213a;
   }
 
   *,
@@ -124,15 +141,13 @@
   html {
     font-family: var(--font-sans);
     /* Inter's text optical size thickens strokes below ~18px; tsenta ships static Inter, which looks like the display cut. Match that. */
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 32;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3 {
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
   }
 
   body {

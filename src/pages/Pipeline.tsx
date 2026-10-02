@@ -71,7 +71,7 @@ export function Pipeline({ tab }: { tab: Tab }) {
           className={({ isActive }) =>
             cn(
               'inline-flex h-10 items-center gap-1.5 border-b-2 px-3 text-base font-medium transition-colors',
-              isActive ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+              isActive ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
             )
           }
         >
@@ -247,7 +247,7 @@ function PipelineCard({ app, onStatus, onNudge, onDelete }: {
 }) {
   const needsNudge = (app.status === 'APPLIED' || app.status === 'INTERVIEWING') && !app.followedUp && daysUntilFollowUp(app) <= 2;
   return (
-    <li className="rounded-md border border-border bg-card p-3 shadow-sm">
+    <li className="rounded-md border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-base font-semibold leading-snug text-foreground">{app.title}</h3>
@@ -264,7 +264,7 @@ function PipelineCard({ app, onStatus, onNudge, onDelete }: {
       </div>
       {app.salary && <p className="mt-1 text-sm font-medium text-foreground">{app.salary}</p>}
       {needsNudge && (
-        <button type="button" onClick={() => onNudge(app)} className="mt-2 inline-flex items-center gap-1.5 rounded-sm bg-primary-soft px-2 py-1 text-sm font-medium text-primary-text hover:underline underline-offset-2 cursor-pointer">
+        <button type="button" onClick={() => onNudge(app)} className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-tint-yellow px-3 py-1 text-sm font-medium text-foreground hover:underline underline-offset-2 cursor-pointer">
           <Mail className="size-3.5" />
           Follow-up due
         </button>
@@ -416,8 +416,8 @@ function Stats({ apps }: { apps: TrackedApplication[] }) {
           {stages.map(([label, n]) => (
             <li key={label} className="grid grid-cols-[110px_1fr_32px] items-center gap-3 text-sm">
               <span className="text-foreground">{label}</span>
-              <div className="h-5 rounded-r-sm bg-primary-soft" role="presentation">
-                <div className="h-full rounded-r-sm bg-primary transition-[width]" style={{ width: `${(n / max) * 100}%` }} />
+              <div className="h-5 rounded-full bg-muted" role="presentation">
+                <div className="h-full rounded-full bg-foreground transition-[width]" style={{ width: `${(n / max) * 100}%` }} />
               </div>
               <span className="text-right tabular-nums font-medium text-foreground">{n}</span>
             </li>

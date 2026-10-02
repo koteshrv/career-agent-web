@@ -12,7 +12,7 @@ interface PageProps {
 export function Page({ width = 'narrow', className, children }: PageProps) {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto">
-      <div className={cn('mx-auto w-full px-4 sm:px-6 py-6 pb-24 md:pb-10', width === 'narrow' ? 'max-w-[760px]' : 'max-w-[1280px]', className)}>
+      <div className={cn('mx-auto w-full px-4 sm:px-8 py-8 pb-24 md:pb-12', width === 'narrow' ? 'max-w-[800px]' : 'max-w-[1360px]', className)}>
         {children}
       </div>
     </div>
@@ -33,7 +33,7 @@ export function PageHeader({ title, description, actions, tabs, className }: Pag
     <header className={cn('mb-6', className)}>
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
           {description && <p className="mt-1 text-base text-muted-foreground max-w-prose">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
@@ -46,7 +46,7 @@ export function PageHeader({ title, description, actions, tabs, className }: Pag
 /** A titled group of fields or content. Space and a title, not a box, unless `panel`. */
 export function Section({ title, description, children, panel, actions, id }: { title: string; description?: React.ReactNode; children: React.ReactNode; panel?: boolean; actions?: React.ReactNode; id?: string }) {
   return (
-    <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className={cn('mb-8', panel && 'rounded-md border border-border bg-card p-5')}>
+    <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className={cn('mb-10', panel && 'rounded-md border border-border bg-card p-6')}>
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="min-w-0">
           <h2 id={id ? `${id}-title` : undefined} className="text-lg font-semibold text-foreground">

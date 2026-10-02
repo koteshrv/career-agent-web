@@ -27,6 +27,10 @@
   --text-3xl: 32px;
   --text-3xl--line-height: 36px;
 
+  /* Inter is a variable font: medium and semibold sit a step lighter than the static cuts. */
+  --font-weight-medium: 480;
+  --font-weight-semibold: 560;
+
   --radius-xs: 6px;
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -98,7 +102,7 @@
     --surface-2: #1c2128;
     --line: #262b33;
     --line-strong: #363d47;
-    --ink: #e6e9ee;
+    --ink: #dce0e5;
     --ink-muted: #8c94a1;
     --accent: #39a7cb;
     --accent-ink: #0b1116;

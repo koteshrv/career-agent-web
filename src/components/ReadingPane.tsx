@@ -192,11 +192,14 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
               {isSaved ? <BookmarkCheck /> : <Bookmark />}
               {isSaved ? 'In pipeline' : 'Save to pipeline'}
             </Button>
-            <Button variant="ghost" size="lg" onClick={() => openDrafts('resume')}>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+            <span className="mr-1">Draft with AI:</span>
+            <Button variant="ghost" size="sm" onClick={() => openDrafts('resume')}>
               <Sparkles />
-              Tailor resume
+              Tailored resume
             </Button>
-            <Button variant="ghost" size="lg" onClick={() => openDrafts('cover_letter')}>
+            <Button variant="ghost" size="sm" onClick={() => openDrafts('cover_letter')}>
               <FileText />
               Cover letter
             </Button>

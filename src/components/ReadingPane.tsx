@@ -172,8 +172,8 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
           <header className="flex items-start gap-3.5">
             <CompanyLogo name={current.company} className="size-12 shrink-0 rounded-md border border-border" />
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight text-foreground">{current.title}</h2>
-              <p className="mt-1 text-base text-muted-foreground">
+              <h2 className="text-lg font-medium leading-snug tracking-tight text-foreground">{current.title}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{current.company}</span>
                 {location && <> · {location}</>}
                 {current.country_code && <> · {current.country_code}</>}
@@ -209,8 +209,8 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-border py-4 sm:grid-cols-3">
               {facts.map(([k, v]) => (
                 <div key={k} className="min-w-0">
-                  <dt className="text-sm text-muted-foreground">{k}</dt>
-                  <dd className="text-base font-medium text-foreground">{v}</dd>
+                  <dt className="text-xs text-muted-foreground">{k}</dt>
+                  <dd className="text-sm font-medium text-foreground">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -223,7 +223,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
                   <h3 className="mb-1.5 text-sm font-medium text-muted-foreground">Stack</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {meta.tech_stack.map((item) => (
-                      <Chip key={item}>{item}</Chip>
+                      <Chip key={item} size="sm">{item}</Chip>
                     ))}
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export function ReadingPane({ job, onBack }: ReadingPaneProps) {
                   <h3 className="mb-1.5 text-sm font-medium text-muted-foreground">Skills they ask for</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {meta.required_skills.map((s) => (
-                      <Chip key={s}>{s}</Chip>
+                      <Chip key={s} size="sm">{s}</Chip>
                     ))}
                   </div>
                 </div>

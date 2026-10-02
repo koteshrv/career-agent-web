@@ -36,19 +36,19 @@ export function JobRow({ job, selected, onSelect }: JobRowProps) {
       />
       <div className="pointer-events-none relative px-4 py-4 sm:px-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className={cn('text-lg font-semibold leading-snug line-clamp-2', selected ? 'text-foreground' : 'text-foreground')}>{job.title}</h3>
+          <h3 className={cn('text-base font-medium leading-snug line-clamp-2', selected ? 'text-foreground' : 'text-foreground')}>{job.title}</h3>
           <a
             href={job.apply_url || job.url}
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="pointer-events-auto hidden sm:inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xs border border-border-strong bg-card px-3 text-sm font-medium text-foreground hover:bg-muted"
+            className="pointer-events-auto hidden sm:inline-flex h-7 shrink-0 items-center gap-1.5 rounded-xs border border-border-strong bg-card px-2.5 text-xs font-medium text-foreground hover:bg-muted"
           >
             Apply
             <ExternalLink className="size-3.5" />
           </a>
         </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
             <CompanyLogo name={job.company} size={16} className="rounded-xs" />
             {job.company}

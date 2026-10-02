@@ -65,6 +65,7 @@ export function Drafts() {
   const [baseText, setBaseText] = useState<string | null>(null);
   const [basePdf, setBasePdf] = useState<string | null>(null);
   const [sideBySide, setSideBySide] = useState(false);
+  const [baseCompiling, setBaseCompiling] = useState(false);
   // Text resumes stored in the extension can be the base: a .tex one becomes the template, .md/.txt add facts.
   const [bases, setBases] = useState<ResumeMeta[]>([]);
   const [baseId, setBaseId] = useState('');
@@ -74,58 +75,11 @@ export function Drafts() {
     sendExtensionMessage<ResumeMeta[]>({ action: 'list_resumes' }, 4000).then((list) => alive && setBases(list.filter((r) => r.kind !== 'pdf'))).catch(() => undefined);
     return () => { alive = false; };
   }, [extension]);
-  useEffect(() => {
-    setBasePdf(null);
-    setSideBySide(false);
-    if (!baseId || !extension) { setBaseText(null); return; }
-    let alive = true;
-    sendExtensionMessage<{ text?: string }>({ action: 'get_resume', payload: { id: baseId } }, 8000).then((r) => alive && setBaseText(r.text ?? null)).catch(() => alive && setBaseText(null));
-    return () => { alive = false; };
-  }, [baseId, extension]);
   const profile = getStoredProfile();
-  const name = profile.firstName ? `${profile.firstName} ${profile.lastName}`.trim() : 'Candidate';
-  const skills = profile.skills.length > 0 ? profile.skills.join(', ') : 'software engineering';
-  const top3 = skills.split(', ').slice(0, 3).join(', ');
-  if (kind === 'cover_letter') {
-    return `Dear Hiring Team at ${company || 'your organization'},\n\nI am writing to express my interest in the ${jobTitle || 'open position'}. With my background in ${skills}, I have built reliable, high-throughput systems and delivered measurable product impact.\n\nReading the requirements, I was drawn to the team's focus on scalable architecture and engineering craft. In previous roles I have led system improvements, automated complex workflows and shipped on time with product and design partners.\n\nI would welcome the chance to discuss how my experience fits your goals. Thank you for your time.\n\nSincerely,\n${name}`;
-  }
-  if (kind === 'resume') {
-    const exp = profile.experiences.map((e) => `### ${e.role} · ${e.company}\n${e.startDate || ''}${e.current ? ' – present' : e.endDate ? ` – ${e.endDate}` : ''}\n\n${e.description || ''}`).join('\n\n');
-    const edu = profile.education.map((e) => `- ${e.degree} ${e.fieldOfStudy}, ${e.institution} ${e.graduationYear}`).join('\n');
-    return `# ${name}\n${profile.headline || ''}\n${[profile.email, profile.phone, profile.location].filter(Boolean).join(' · ')}\n\n## Summary\n${profile.summary || ''}\n\n## Skills\n${skills}\n\n## Experience\n${exp}\n\n## Education\n${edu}`;
-  }
-  return `Hi [Name],\n\nI noticed you are hiring for a ${jobTitle || 'role'} at ${company || 'your team'} and wanted to reach out directly.\n\nI have deep experience with ${top3} and have followed ${company || 'your company'}'s recent engineering work with interest.\n\nWould you be open to a short call this week to see whether my background is a fit? Happy to share my resume and portfolio.\n\nBest regards,\n${name}`;
-}
+  const current = KINDS.find((k) => k.value === kind)!;
+  const isResume = kind === 'resume';
 
-export function Drafts() {
-  const [params] = useSearchParams();
-  const ctx = readContext();
-  const extension = useExtensionStatus();
-  const toast = useToast();
-  const [kind, setKind] = useState<MaterialKind>((params.get('kind') as MaterialKind) || 'resume');
-  const [company, setCompany] = useState(params.get('company') || ctx?.company || '');
-  const [jobTitle, setJobTitle] = useState(params.get('title') || ctx?.title || '');
-  const [description, setDescription] = useState(ctx?.description || '');
-  const [output, setOutput] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [pdf, setPdf] = useState<string | null>(null);
-  const [compileLog, setCompileLog] = useState<string | null>(null);
-  const [compiling, setCompiling] = useState(false);
-  const [view, setView] = useState<'preview' | 'source' | 'compare'>('preview');
-  const [baseText, setBaseText] = useState<string | null>(null);
-  const [basePdf, setBasePdf] = useState<string | null>(null);
-  const [sideBySide, setSideBySide] = useState(false);
-  // Text resumes stored in the extension can be the base: a .tex one becomes the template, .md/.txt add facts.
-  const [bases, setBases] = useState<ResumeMeta[]>([]);
-  const [baseId, setBaseId] = useState('');
-  useEffect(() => {
-    if (!extension) return;
-    let alive = true;
-    sendExtensionMessage<ResumeMeta[]>({ action: 'list_resumes' }, 4000).then((list) => alive && setBases(list.filter((r) => r.kind !== 'pdf'))).catch(() => undefined);
-    return () => { alive = false; };
-  }, [extension]);
+  // Compare: the chosen base resume's source, or the plain profile facts when drafting from our template.
   useEffect(() => {
     setBasePdf(null);
     setSideBySide(false);
@@ -135,12 +89,10 @@ export function Drafts() {
     return () => { alive = false; };
   }, [baseId, extension]);
   const baseKind = bases.find((b) => b.id === baseId)?.kind;
-  // Without a chosen base, the comparison is against the plain facts in the profile (the offline template).
   const compareAgainst = baseText ?? templateDraft('resume', company, jobTitle);
   const diff = useMemo(() => (isResume && output ? diffResumes(compareAgainst, output) : []), [isResume, output, compareAgainst]);
   const basePdfUrl = useMemo(() => (basePdf ? URL.createObjectURL(new Blob([Uint8Array.from(atob(basePdf), (c) => c.charCodeAt(0))], { type: 'application/pdf' })) : null), [basePdf]);
   useEffect(() => () => { if (basePdfUrl) URL.revokeObjectURL(basePdfUrl); }, [basePdfUrl]);
-  const [baseCompiling, setBaseCompiling] = useState(false);
   const showSideBySide = async () => {
     setSideBySide(true);
     if (basePdf || !baseText || baseKind !== 'tex') return;
@@ -154,10 +106,6 @@ export function Drafts() {
       setBaseCompiling(false);
     }
   };
-  const profile = getStoredProfile();
-  const current = KINDS.find((k) => k.value === kind)!;
-  const isResume = kind === 'resume';
-
 
   // One object URL per compiled PDF; revoked when it changes or the page unmounts.
   const pdfUrl = useMemo(() => (pdf ? URL.createObjectURL(new Blob([Uint8Array.from(atob(pdf), (c) => c.charCodeAt(0))], { type: 'application/pdf' })) : null), [pdf]);

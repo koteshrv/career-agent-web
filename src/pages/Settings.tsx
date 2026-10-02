@@ -199,11 +199,6 @@ export function Settings() {
       <Section id="about" title="About">
         <ul className="space-y-1.5 text-sm">
           <li>
-            <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent" target="_blank" rel="noreferrer">
-              CareerAgent on GitHub
-            </a>
-          </li>
-          <li>
             <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent-extension" target="_blank" rel="noreferrer">
               Extension source
             </a>

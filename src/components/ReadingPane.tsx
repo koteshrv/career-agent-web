@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
-import { ExternalLink, X, Copy, Check, Flag, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
+import { ExternalLink, Copy, Check, Flag, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
@@ -30,7 +30,6 @@ interface ReadingPaneProps {
 export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPaneProps & { evaluation?: JobEvaluation; forYou?: boolean }) {
   const [showReportModal, setShowReportModal] = useState(false);
   const extension = useExtensionStatus();
-  const [showPromo, setShowPromo] = useState(() => localStorage.getItem('careeragent_rp_promo_dismissed') !== 'true');
   const [copied, setCopied] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
@@ -207,11 +206,18 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
             )}
           </div>
           <section aria-labelledby="draft-title" className="mt-5 rounded-md border border-border bg-muted/50 p-3.5">
-            <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-foreground" />
-              <h3 id="draft-title" className="text-sm font-medium text-foreground">Draft with AI</h3>
-              <span className="text-xs text-muted-foreground">Uses your profile and this posting</span>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-foreground" />
+                <h3 id="draft-title" className="text-sm font-medium text-foreground">Draft with AI</h3>
+                {extension && <span className="hidden sm:inline text-xs text-muted-foreground">Uses your profile and this posting</span>}
+              </div>
             </div>
+            {!extension && (
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Connect the extension to instantly evaluate if you are a match for this role, and write tailored resumes and cover letters using your profile.
+              </p>
+            )}
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <button
                 type="button"
@@ -253,24 +259,7 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
             </dl>
           )}
 
-          {!evaluation && !forYou && extension === false && showPromo && (
-            <section className="mt-5 rounded-md border border-border bg-gradient-to-br from-card to-muted p-4 relative overflow-hidden">
-              <button onClick={() => { setShowPromo(false); localStorage.setItem('careeragent_rp_promo_dismissed', 'true'); }} className="absolute right-2 top-2 p-1 text-muted-foreground hover:text-foreground rounded-xs" aria-label="Dismiss">
-                <X className="size-4" />
-              </button>
-              <div className="flex items-start gap-3 relative z-10">
-                <div className="rounded-md bg-primary/10 p-2 text-primary shrink-0 mt-0.5">
-                  <Sparkles className="size-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-foreground">Score this role</h3>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed pr-6">
-                    Will they interview you for this <strong>{current.title}</strong> position? Connect the extension to have AI instantly read your resume, evaluate your match, and find your skill gaps before you apply.
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
+
 
           {evaluation && (
             <section aria-label="AI evaluation" className={cn('mt-5 rounded-md border border-border p-3.5', evaluation.verdict === 'PASS' ? 'bg-tint-green/60' : evaluation.verdict === 'MARGINAL' ? 'bg-tint-yellow/60' : 'bg-muted')}>

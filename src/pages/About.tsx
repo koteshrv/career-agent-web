@@ -37,7 +37,7 @@ export function About() {
           <li>
             <span className="text-foreground">What our server sees (The Transparent Data Engine).</span> We collect absolutely zero personally identifiable information (PII). The extension only shares three types of anonymous data to power the open-source community:
             <ul className="mt-2 list-inside list-disc space-y-1 pl-2 text-muted-foreground">
-              <li><strong>Job Discovery:</strong> When you browse job boards, we extract the raw job description (stripping all tracking links and profiles) to add to the global search index.</li>
+              <li><strong>Job Discovery:</strong> When you browse supported job boards (currently LinkedIn, Naukri, and Indeed), we extract the raw job description (stripping all tracking links and profiles) to add to the global search index. You can verify this sanitization in our <a className={a} href="https://github.com/koteshrv/career-agent-extension" target="_blank" rel="noreferrer">open-source extension code</a>.</li>
               <li><strong>Company Outcomes:</strong> When you update a job's status to Interviewing or Rejected, we use that to calculate public "Ghost Scores" and company response times.</li>
               <li><strong>AI Accuracy:</strong> Simple success counts (e.g., "12/15 fields autofilled") to help us improve the AI models.</li>
             </ul>

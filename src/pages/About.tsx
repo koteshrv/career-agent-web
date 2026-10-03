@@ -19,7 +19,7 @@ export function About() {
     <Page>
       <PageHeader
         title="About CareerAgent"
-        description="Find open roles straight from employers’ own career sites, see how well each one fits you, and apply with a resume written for that job. Free, open source, and no account: your data and AI key stay on your device."
+        description="Discover verified tech jobs straight from company career sites. Batch evaluate hundreds of roles against your profile with AI, instantly compile tailored LaTeX resumes, and track your application pipeline. Free, open-source, and private: your data and AI keys never leave your device."
       />
 
             <section aria-labelledby="index-title" className="scroll-mt-6">

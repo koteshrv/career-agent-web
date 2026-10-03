@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
-import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
+import { ExternalLink, Copy, Check, Flag, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
@@ -15,7 +15,6 @@ import { ReportModal } from './ReportModal';
 import { useToast } from './ui/toast';
 import { formatFullDate, formatRelativeTime, cn } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
-import { addTrackedApplication, getStoredApplications, SYNC_EVENT } from '../lib/profileStorage';
 import { VERDICT_LABEL, type JobEvaluation } from '../lib/evaluations';
 import { usePins, togglePin } from '../lib/foryou';
 import { useDrafts, draftKey } from '../lib/drafts';
@@ -30,7 +29,6 @@ interface ReadingPaneProps {
 export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPaneProps & { evaluation?: JobEvaluation; forYou?: boolean }) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
   const { isReported, markReported } = useReportedJobs();
@@ -63,15 +61,6 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
   const description = decodeHtml(rawDesc);
   
 
-  useEffect(() => {
-    const check = () => {
-      const tracked = getStoredApplications();
-      setIsSaved(tracked.some((a) => a.url === destinationUrl || (a.company.toLowerCase() === current.company.toLowerCase() && a.title.toLowerCase() === current.title.toLowerCase())));
-    };
-    check();
-    window.addEventListener(SYNC_EVENT, check);
-    return () => window.removeEventListener(SYNC_EVENT, check);
-  }, [current.company, current.title, destinationUrl]);
 
   const salary = useMemo(() => {
     if (!meta || (!meta.salary_min && !meta.salary_max)) return null;
@@ -108,19 +97,7 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
     }
   };
 
-  const handleSave = () => {
-    if (isSaved) return;
-    addTrackedApplication({
-      company: current.company,
-      title: current.title,
-      url: destinationUrl,
-      location: location || undefined,
-      salary: salary || undefined,
-      status: 'SAVED',
-    });
-    setIsSaved(true);
-    toast('Saved to your pipeline', 'success');
-  };
+
 
   // Google for Jobs structured data
   const jobSchema = useMemo(() => {
@@ -208,10 +185,7 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
                 <ExternalLink />
               </a>
             </Button>
-            <Button variant="secondary" size="lg" onClick={handleSave} aria-pressed={isSaved} className={isSaved ? 'border-transparent bg-tint-green' : ''}>
-              {isSaved ? <BookmarkCheck /> : <Bookmark />}
-              {isSaved ? 'In pipeline' : 'Save to pipeline'}
-            </Button>
+
             {(!forYou || pinned) && (
             <Button
               variant="secondary"

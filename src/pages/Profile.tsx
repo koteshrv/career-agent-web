@@ -131,6 +131,41 @@ export function Profile() {
         }
       />
 
+            <Section
+        id="search-defaults"
+        title="Search defaults"
+        description={<>Used by the <strong>For you</strong> feed to automatically find and AI-evaluate roles that match your criteria. Filling from your resume sets these too.</>}
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Target roles" hint="Comma-separated.">
+            <Input value={filters.roles} onChange={(e) => changeFilter('roles', e.target.value)} placeholder="Backend Engineer, Platform Engineer" />
+          </Field>
+          <Field label="Keywords to prioritise" hint="Comma-separated.">
+            <Input value={filters.keywords} onChange={(e) => changeFilter('keywords', e.target.value)} placeholder="Go, Postgres" />
+          </Field>
+          <Field label="Exclude" hint="Postings containing these are hidden.">
+            <Input value={filters.excludes} onChange={(e) => changeFilter('excludes', e.target.value)} placeholder="Junior, Intern" />
+          </Field>
+          <Field label="Location">
+            <Input value={filters.location} onChange={(e) => changeFilter('location', e.target.value)} placeholder="Remote" />
+          </Field>
+        </div>
+        
+        <div className="mt-6 rounded-md bg-muted/50 p-4 border border-border">
+          <div className="flex items-start gap-3">
+            <div className="rounded-full bg-primary/10 p-2 text-primary mt-0.5">
+              <Sparkles className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">How it works</p>
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                Once these defaults are set, head over to the <strong>For you</strong> tab. The app will constantly search for these target roles, and you can use the <strong>Evaluate with AI</strong> button to have your AI instantly score every new posting against your resume and skills.
+              </p>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       <Section id="contact" title="Contact">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="First name">
@@ -380,26 +415,7 @@ export function Profile() {
         </div>
       </Section>
 
-      <Section
-        id="search-defaults"
-        title="Search defaults"
-        description="Used by For you to find roles that match you. Filling from your resume sets these too."
-      >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Target roles" hint="Comma-separated.">
-            <Input value={filters.roles} onChange={(e) => changeFilter('roles', e.target.value)} placeholder="Backend Engineer, Platform Engineer" />
-          </Field>
-          <Field label="Keywords to prioritise" hint="Comma-separated.">
-            <Input value={filters.keywords} onChange={(e) => changeFilter('keywords', e.target.value)} placeholder="Go, Postgres" />
-          </Field>
-          <Field label="Exclude" hint="Postings containing these are hidden.">
-            <Input value={filters.excludes} onChange={(e) => changeFilter('excludes', e.target.value)} placeholder="Junior, Intern" />
-          </Field>
-          <Field label="Location">
-            <Input value={filters.location} onChange={(e) => changeFilter('location', e.target.value)} placeholder="Remote" />
-          </Field>
-        </div>
-      </Section>
+      
 
       {/* Save bar */}
       <div className={cn('fixed inset-x-0 bottom-14 z-20 border-t border-border bg-card/95 backdrop-blur md:bottom-0')}>

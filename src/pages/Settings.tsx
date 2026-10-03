@@ -203,8 +203,8 @@ export function Settings() {
             className="mt-0.5 size-4 accent-primary"
           />
           <span>
-            <span className="block text-base font-medium text-foreground">Share anonymous application outcomes</span>
-            <span className="block text-sm text-muted-foreground">Allow the extension to anonymously share basic funnel metrics (like when a job moves to "Interviewing") to calculate public Ghost Scores. No personal info, resumes, or keys are ever shared.</span>
+            <span className="block text-base font-medium text-foreground">Contribute anonymous crowdsourced data</span>
+            <span className="block text-sm text-muted-foreground">Allow the extension to silently share three things to power the community index: 1) Clean, tracker-free job descriptions when you browse job boards, 2) Basic hiring timeline metrics (e.g. Applied to Interviewing) for Ghost Scores, and 3) AI autofill success rates. Absolutely zero personal info, resumes, or AI keys are ever shared.</span>
           </span>
         </label>
         <div className="mt-4 flex flex-wrap items-center gap-2">

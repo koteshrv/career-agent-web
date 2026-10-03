@@ -73,7 +73,7 @@ export function SecurityCheck() {
             </span>
           ) : (
             <Turnstile
-              siteKey="3x00000000000000000000FF"
+              siteKey="0x4AAAAAAFMlzAzHo74-FsaR"
               onSuccess={setToken}
               onError={() => setStatus('error')}
               options={{ theme: 'auto', size: 'normal' }}

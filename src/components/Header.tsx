@@ -51,6 +51,12 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1">
+          <Link
+            to="/about"
+            className="hidden sm:inline-flex h-8 items-center justify-center rounded-xs px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            About
+          </Link>
           <a
             href="https://github.com/koteshrv/career-agent-web/issues/new"
             target="_blank"

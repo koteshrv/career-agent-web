@@ -12,6 +12,7 @@ import { Logs } from './pages/Logs';
 import { About } from './pages/About';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ResumeImportDialog } from './components/ResumeImportDialog';
+import { OnboardingModal } from './components/OnboardingModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/ui/toast';
 import { hydrateFromExtension } from './lib/profileStorage';
@@ -34,6 +35,7 @@ function App() {
           <div className="h-[100dvh] flex flex-col bg-background text-foreground">
             <Header />
             <ResumeImportDialog />
+            <OnboardingModal />
             <ErrorBoundary>
               <div className="flex-1 min-h-0 flex flex-col">
                 <Routes>

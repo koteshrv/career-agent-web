@@ -63,7 +63,7 @@ export function Dialog({ open, onClose, title, description, size = 'md', dismiss
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={dismissible ? onClose : undefined} aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={dismissible ? onClose : undefined} aria-hidden="true" />
       <div
         ref={panelRef}
         role="dialog"
@@ -72,29 +72,29 @@ export function Dialog({ open, onClose, title, description, size = 'md', dismiss
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
         className={cn(
-          'relative w-full bg-card border border-border rounded-t-lg sm:rounded-lg shadow-lg max-h-[92dvh] flex flex-col focus:outline-none p-1',
+          'relative w-full bg-card border border-border-strong rounded-t-sm sm:rounded-sm shadow-md max-h-[92dvh] flex flex-col focus:outline-none',
           size === 'sm' && 'sm:max-w-sm',
           size === 'md' && 'sm:max-w-lg',
           size === 'lg' && 'sm:max-w-2xl'
         )}
       >
-        <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-3">
+        <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-4">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold leading-snug text-foreground">
+            <h2 id={titleId} className="text-base font-semibold leading-snug text-foreground">
               {title}
             </h2>
             {description && (
-              <p id={descId} className="mt-1 text-sm text-muted-foreground">
+              <p id={descId} className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
                 {description}
               </p>
             )}
           </div>
-          {dismissible && <IconButton label="Close" size="sm" onClick={onClose} className="-mr-2 -mt-1" >
+          {dismissible && <IconButton label="Close" size="sm" onClick={onClose} className="-mr-2 -mt-1 shrink-0">
             <X />
           </IconButton>}
         </div>
-        <div className="px-5 pb-5 overflow-y-auto">{children}</div>
-        {footer && <div className="px-5 py-4 border-t border-border flex flex-wrap items-center justify-end gap-2">{footer}</div>}
+        <div className="px-5 pb-4 overflow-y-auto empty:hidden">{children}</div>
+        {footer && <div className="px-5 py-3.5 border-t border-border flex flex-wrap items-center justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );

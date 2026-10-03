@@ -62,7 +62,7 @@ export function SecurityCheck() {
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {status === 'success'
             ? 'Taking you to the jobs.'
-            : 'This keeps the job index free and open by stopping bots from scraping it.'}
+            : 'Verifying a secure connection to the Career Agent platform.'}
         </p>
 
         <div className="mt-7 flex min-h-[65px] w-full items-center justify-center">
@@ -82,12 +82,12 @@ export function SecurityCheck() {
         </div>
 
         {status === 'error' && (
-          <div className="mt-3 text-sm">
-            <p className="text-destructive">That didn’t go through.</p>
+          <div className="mt-5 flex flex-col items-center gap-2">
+            <span className="text-sm font-medium text-red-500">Connection verification failed</span>
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="mt-1 cursor-pointer font-medium text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground"
+              className="text-sm text-muted-foreground underline decoration-border-strong underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
             >
               Try again
             </button>

@@ -60,7 +60,6 @@ export function Settings() {
       setBusy(null);
     }
   };
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('careeragent_api_url') || '');
   const [telemetry, setTelemetry] = useState(() => localStorage.getItem('careeragent_telemetry') !== 'false');
   const profile = getStoredProfile();
   const applications = getStoredApplications();
@@ -91,7 +90,7 @@ export function Settings() {
       <Section
         id="extension"
         title="Browser extension"
-        description="The extension parses your resume, fills applications and tracks them. This dashboard talks to it over a private channel."
+        description="The official Chrome Extension connects this dashboard directly to the job boards. It securely reads job listings, uses AI to autofill your applications, and synchronizes your pipeline data back here entirely on-device."
         panel
         actions={
           <span
@@ -206,7 +205,7 @@ export function Settings() {
           />
           <span>
             <span className="block text-base font-medium text-foreground">Share anonymous application outcomes</span>
-            <span className="block text-sm text-muted-foreground">Response times and ghosting rates by company, with no names, resumes or notes. Helps everyone spot dead postings.</span>
+            <span className="block text-sm text-muted-foreground">Allow the extension to anonymously share basic funnel metrics (like when a job moves to "Interviewing") to calculate public Ghost Scores. No personal info, resumes, or keys are ever shared.</span>
           </span>
         </label>
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -229,21 +228,6 @@ export function Settings() {
             Clear local data
           </Button>
         </div>
-      </Section>
-
-      <Section id="advanced" title="Advanced" description="Self-hosting the backend? Point the dashboard at it.">
-        <Field label="API base URL" hint="Leave empty to use api.careeragent.fyi. Takes effect after reload.">
-          <Input
-            value={apiUrl}
-            onChange={(e) => {
-              setApiUrl(e.target.value);
-              if (e.target.value.trim()) localStorage.setItem('careeragent_api_url', e.target.value.trim());
-              else localStorage.removeItem('careeragent_api_url');
-            }}
-            placeholder="http://localhost:8000"
-            className="font-mono"
-          />
-        </Field>
       </Section>
 
       <Section id="about" title="About">

@@ -11,7 +11,6 @@ const routeConfig: Record<string, { title: string }> = {
   '/profile': { title: 'Profile | CareerAgent' },
   '/settings': { title: 'Settings | CareerAgent' },
   '/security': { title: 'Security | CareerAgent' },
-  '/privacy': { title: 'Privacy | CareerAgent' },
 };
 
 export function SEOUpdater() {

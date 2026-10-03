@@ -22,7 +22,7 @@ export function About() {
         description="Find open roles straight from employers’ own career sites, see how well each one fits you, and apply with a resume written for that job. Free, open source, and no account: your data and AI key stay on your device."
       />
 
-      <section id="privacy" aria-labelledby="privacy-title" className="scroll-mt-6">
+            <section id="privacy" aria-labelledby="privacy-title" className="scroll-mt-6">
         <h2 id="privacy-title" className="text-lg font-medium text-foreground">How your data is handled</h2>
         <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
           <li>
@@ -35,8 +35,13 @@ export function About() {
             <Link to="/settings/activity" className={a}>AI activity log</Link>.
           </li>
           <li>
-            <span className="text-foreground">What our server sees.</span> The job searches you run, with no account or identity attached. If you leave anonymous
-            outcome sharing on, it also receives response times by company, never names, resumes or notes.
+            <span className="text-foreground">What our server sees (The Transparent Data Engine).</span> We collect zero PII. The only data pushed from the extension to the server is: 
+            <strong>Targeted Scraping</strong> (clean, tracker-free job descriptions when you browse job boards), 
+            <strong>Funnel Telemetry</strong> (anonymous timestamps of when a job moves from Saved to Applied to Interviewing to calculate ghost scores), and 
+            <strong>Autofill Success Rates</strong> (e.g. 5/15 fields filled successfully, to measure AI accuracy).
+          </li>
+          <li>
+            <span className="text-foreground">Dead Link Detection.</span> The extension silently pings the server if you visit an ATS link that 404s or says "Position Closed", helping us keep the community index fresh.
           </li>
           <li>
             <span className="text-foreground">No tracking.</span> No analytics or advertising scripts, and company logos are served from this site rather than a third party.

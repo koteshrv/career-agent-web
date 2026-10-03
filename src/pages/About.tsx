@@ -35,13 +35,15 @@ export function About() {
             <Link to="/settings/activity" className={a}>AI activity log</Link>.
           </li>
           <li>
-            <span className="text-foreground">What our server sees (The Transparent Data Engine).</span> We collect zero PII. The only data pushed from the extension to the server is: 
-            <strong>Targeted Scraping</strong> (clean, tracker-free job descriptions when you browse job boards), 
-            <strong>Funnel Telemetry</strong> (anonymous timestamps of when a job moves from Saved to Applied to Interviewing to calculate ghost scores), and 
-            <strong>Autofill Success Rates</strong> (e.g. 5/15 fields filled successfully, to measure AI accuracy).
+            <span className="text-foreground">What our server sees (The Transparent Data Engine).</span> We collect absolutely zero personally identifiable information (PII). The extension only shares three types of anonymous data to power the open-source community:
+            <ul className="mt-2 list-inside list-disc space-y-1 pl-2 text-muted-foreground">
+              <li><strong>Job Discovery:</strong> When you browse job boards, we extract the raw job description (stripping all tracking links and profiles) to add to the global search index.</li>
+              <li><strong>Company Outcomes:</strong> When you update a job's status to Interviewing or Rejected, we use that to calculate public "Ghost Scores" and company response times.</li>
+              <li><strong>AI Accuracy:</strong> Simple success counts (e.g., "12/15 fields autofilled") to help us improve the AI models.</li>
+            </ul>
           </li>
           <li>
-            <span className="text-foreground">Dead Link Detection.</span> The extension silently pings the server if you visit an ATS link that 404s or says "Position Closed", helping us keep the community index fresh.
+            <span className="text-foreground">Dead Link Detection.</span> If you click a job and the page returns a 404 or "Position Closed", the extension pings the server to hide it from the search index for everyone else.
           </li>
           <li>
             <span className="text-foreground">No tracking.</span> No analytics or advertising scripts, and company logos are served from this site rather than a third party.

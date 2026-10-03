@@ -62,7 +62,7 @@ export function SecurityCheck() {
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {status === 'success'
             ? 'Taking you to the jobs.'
-            : 'Verifying a secure connection to the Career Agent platform.'}
+            : 'Verifying a secure connection to Career Agent.'}
         </p>
 
         <div className="mt-7 flex min-h-[65px] w-full items-center justify-center">

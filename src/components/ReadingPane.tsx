@@ -50,7 +50,18 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
   const location = primaryLocation(current);
   const workplace = (current.workplace_type || meta?.remote_policy || '').toLowerCase();
   const posted = current.posted_at || current.created_at;
-  const description = current.description || current.cleaned_description || current.raw_description || '';
+  
+  const decodeHtml = (html: string) => {
+    if (typeof document === 'undefined') return html;
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  };
+
+  const rawDesc = current.description || current.cleaned_description || current.raw_description || '';
+  const description = decodeHtml(rawDesc);
+  const isHtml = /<[a-z][\s\S]*>/i.test(description);
+
 
   useEffect(() => {
     const check = () => {
@@ -327,7 +338,7 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
               </div>
             ) : description ? (
               <div className="reading">
-                {/^\s*<[a-z][\s\S]*>/i.test(description) ? (
+                {isHtml ? (
                   <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description, { ADD_ATTR: ['target'] }) }} />
                 ) : (
                   <ReactMarkdown>{description}</ReactMarkdown>

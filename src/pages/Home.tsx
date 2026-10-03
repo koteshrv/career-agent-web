@@ -298,35 +298,14 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
             title="Batch evaluate matches with AI"
             body="Set up your search defaults to automatically find matching jobs. Connect the extension to batch evaluate and score all of them at once with AI."
             action={
-              <div className="flex flex-col items-center gap-6 w-full max-w-sm mt-2">
-                <div className="flex gap-2">
-                  <Button asChild variant="primary">
-                    <Link to="/profile#search-defaults">Set search defaults</Link>
-                  </Button>
-                  <Button asChild variant="secondary">
-                    <Link to="/jobs">Browse jobs</Link>
-                  </Button>
-                </div>
-                {!extension && (
-                  <div className="w-full relative overflow-hidden rounded-md border border-border bg-card">
-                     <div aria-hidden="true" className="opacity-40 blur-[3px] select-none pointer-events-none grayscale-[0.8] flex flex-col items-center text-center gap-2 py-4 bg-tint-green/20">
-                       <Button variant="secondary" size="sm" className="pointer-events-none">
-                         <Sparkles className="size-4" /> Evaluate with AI
-                       </Button>
-                     </div>
-                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/20 backdrop-blur-[1px]">
-                       <Button asChild variant="primary" size="sm" className="shadow-lg mb-1">
-                         <Link to="/settings">
-                           <Sparkles className="size-4" /> Evaluate with AI
-                         </Link>
-                       </Button>
-                       <span className="text-[10px] font-medium text-foreground bg-background/90 px-1.5 py-0.5 rounded-sm border border-border shadow-sm">
-                         Extension required
-                       </span>
-                     </div>
-                  </div>
-                )}
-              </div>
+              <>
+                <Button asChild variant="primary">
+                  <Link to="/profile#search-defaults">Set search defaults</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/jobs">Browse jobs</Link>
+                </Button>
+              </>
             }
           />
         ) : (

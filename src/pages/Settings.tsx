@@ -204,7 +204,7 @@ export function Settings() {
           />
           <span>
             <span className="block text-base font-medium text-foreground">Contribute anonymous crowdsourced data</span>
-            <span className="block text-sm text-muted-foreground">Allow the extension to silently share three things to power the community index: 1) Clean, tracker-free job descriptions when you browse job boards, 2) Basic hiring timeline metrics (e.g. Applied to Interviewing) for Ghost Scores, and 3) AI autofill success rates. Absolutely zero personal info, resumes, or AI keys are ever shared.</span>
+            <span className="block text-sm text-muted-foreground mt-1">Allow the extension to silently share clean job descriptions when you browse job boards, basic hiring timelines for Ghost Scores, and AI autofill success rates to power the community index. Absolutely zero personal info, resumes, or AI keys are ever shared.</span>
           </span>
         </label>
         <div className="mt-4 flex flex-wrap items-center gap-2">

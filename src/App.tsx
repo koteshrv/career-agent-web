@@ -47,7 +47,9 @@ function App() {
                       <Routes>
                         <Route path="/" element={<Navigate to="/jobs" replace />} />
                         <Route path="/jobs" element={<Home mode="all" />} />
+                        <Route path="/jobs/:id" element={<Home mode="all" />} />
                         <Route path="/matches" element={<Home mode="matches" />} />
+                        <Route path="/matches/:id" element={<Home mode="matches" />} />
                         <Route path="/explore" element={<Navigate to="/jobs" replace />} />
                         <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />
                         <Route path="/home" element={<Navigate to="/jobs" replace />} />

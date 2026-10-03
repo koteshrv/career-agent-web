@@ -85,7 +85,7 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
   if (current.ats_provider && current.ats_provider.toLowerCase() !== 'custom') facts.push(['Source', current.ats_provider.charAt(0).toUpperCase() + current.ats_provider.slice(1)]);
 
   const handleCopyLink = async () => {
-    const cleanUrl = `${window.location.origin}/?job=${encodeURIComponent(current.id)}`;
+    const cleanUrl = `${window.location.origin}/jobs/${encodeURIComponent(current.id)}`;
     try {
       await navigator.clipboard.writeText(cleanUrl);
       setCopied(true);

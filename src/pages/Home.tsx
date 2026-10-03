@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import useSWRInfinite from 'swr/infinite';
 import { Sparkles, UserRound, Search, AlertCircle, RefreshCw, Square } from 'lucide-react';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
@@ -22,6 +22,8 @@ const PAGE_SIZE = 50;
 
 /** Jobs (`all`) is the whole feed with the user's own filters. For you (`matches`) searches with the profile's defaults and can triage with AI. */
 export function Home({ mode }: { mode: 'all' | 'matches' }) {
+  const { id: pathId } = useParams();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const matches = mode === 'matches';
   const defaults = useMemo(() => readSearchDefaults(), []);
@@ -57,16 +59,23 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
     country: searchParams.get('country') || '',
     workplace: searchParams.get('workplace_type') || '',
   };
-  const selectedJobId = searchParams.get('job') || '';
+  const selectedJobId = pathId || searchParams.get('job') || '';
   const hasActiveFilters = Boolean(filters.q || filters.company || filters.date || filters.country || filters.workplace);
   const baseParams = jobsParams(mode, filters, defaults);
   const baseKey = baseParams.toString();
 
   const setJob = (id: string | null) => {
-    const next = new URLSearchParams(searchParams);
-    if (id) next.set('job', id);
-    else next.delete('job');
-    setSearchParams(next, { replace: true });
+    // If we're using path routing, we navigate preserving search params (but deleting the legacy ?job=)
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('job'); // ensure clean URL
+    const qs = nextParams.toString() ? '?' + nextParams.toString() : '';
+    const basePath = mode === 'matches' ? '/matches' : '/jobs';
+    
+    if (id) {
+      navigate(basePath + '/' + id + qs, { replace: true });
+    } else {
+      navigate(basePath + qs, { replace: true });
+    }
   };
 
   // Each page starts where the last one ended, so this works whether the API serves 20 or 50 per page.

@@ -24,6 +24,7 @@ export function Settings() {
   const [extensionId, setExtensionId] = useState(getExtensionId);
   const [checking, setChecking] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmTelemetryOff, setConfirmTelemetryOff] = useState(false);
   const [pendingImport, setPendingImport] = useState<Backup | null>(null);
   const [busy, setBusy] = useState<'export' | 'import' | null>(null);
   const exportData = async () => {
@@ -197,8 +198,12 @@ export function Settings() {
             type="checkbox"
             checked={telemetry}
             onChange={(e) => {
-              setTelemetry(e.target.checked);
-              localStorage.setItem('careeragent_telemetry', e.target.checked.toString());
+              if (!e.target.checked) {
+                setConfirmTelemetryOff(true);
+              } else {
+                setTelemetry(true);
+                localStorage.setItem('careeragent_telemetry', 'true');
+              }
             }}
             className="mt-0.5 size-4 accent-primary"
           />
@@ -268,6 +273,31 @@ export function Settings() {
               }}
             >
               Clear
+            </Button>
+          </>
+        }
+      >
+        <span className="sr-only">Confirm</span>
+      </Dialog>
+
+      <Dialog
+        open={confirmTelemetryOff}
+        onClose={() => setConfirmTelemetryOff(false)}
+        title="Stop contributing data?"
+        description="CareerAgent relies on community data to calculate Ghost Scores and keep the job index clean. Without this, the community features you rely on won't work."
+        size="sm"
+        footer={
+          <>
+            <Button onClick={() => setConfirmTelemetryOff(false)}>Keep contributing</Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                setTelemetry(false);
+                localStorage.setItem('careeragent_telemetry', 'false');
+                setConfirmTelemetryOff(false);
+              }}
+            >
+              Stop contributing
             </Button>
           </>
         }

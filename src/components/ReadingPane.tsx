@@ -13,6 +13,7 @@ import { IconButton } from './ui/icon-button';
 import { Chip } from './ui/chip';
 import { ReportModal } from './ReportModal';
 import { useToast } from './ui/toast';
+import { Link } from 'react-router-dom';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
 import { formatFullDate, formatRelativeTime, cn } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
@@ -214,9 +215,41 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
               </div>
             </div>
             {!extension && (
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Connect the extension to instantly evaluate if you are a match for this role, and write tailored resumes and cover letters using your profile.
-              </p>
+              <div className="mt-3 relative overflow-hidden rounded-md border border-border bg-card">
+                 {/* Blurred dummy evaluation */}
+                 <div aria-hidden="true" className="p-3.5 opacity-30 blur-[4px] select-none pointer-events-none grayscale-[0.8] bg-tint-green/30">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-lg font-medium tabular-nums text-foreground">4.5<span className="text-sm text-muted-foreground">/5</span></span>
+                      <span className="text-sm font-medium text-foreground">Apply</span>
+                      <span className="text-xs text-muted-foreground">AI triage against your profile</span>
+                    </div>
+                    <p className="mt-1.5 text-sm text-foreground">Strong match. You have the exact 3+ years of experience and distributed systems knowledge required.</p>
+                    <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+                      <div>
+                        <dt className="text-xs text-muted-foreground">You bring</dt>
+                        <dd className="text-foreground">Required skills · Domain experience</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">They also want</dt>
+                        <dd className="text-foreground">Specific tool knowledge</dd>
+                      </div>
+                    </dl>
+                 </div>
+                 
+                 {/* Overlay CTA */}
+                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/20 backdrop-blur-[1px] text-center p-4">
+                   <Button onClick={() => navigate('/settings')} variant="primary" className="shadow-lg mb-2">
+                     <Sparkles className="size-4" />
+                     Evaluate with AI
+                   </Button>
+                   <span className="text-[11px] font-medium text-foreground bg-background/90 px-2 py-0.5 rounded-sm border border-border shadow-sm mb-2">
+                     Extension required
+                   </span>
+                   <p className="text-[11px] text-muted-foreground max-w-[200px] leading-tight">
+                     For batch evaluation, go to <Link to="/matches" className="text-primary hover:underline font-medium">For you</Link>.
+                   </p>
+                 </div>
+              </div>
             )}
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <button

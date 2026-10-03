@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import { ExternalLink, Copy, Check, Flag, Bookmark, BookmarkCheck, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
@@ -337,7 +338,7 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
               </div>
             ) : description ? (
               <div className="reading">
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>{description}</ReactMarkdown>
+                <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>{description}</ReactMarkdown>
               </div>
             ) : (
               <p className="text-base text-muted-foreground">

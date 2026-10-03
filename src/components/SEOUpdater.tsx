@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const routeConfig: Record<string, { title: string }> = {
-  '/jobs': { title: 'Tech Jobs | CareerAgent' },
+  '/jobs': { title: 'Jobs | CareerAgent' },
   '/matches': { title: 'Matched Jobs | CareerAgent' },
   '/portals': { title: 'Company Portals | CareerAgent' },
   '/about': { title: 'About | CareerAgent' },
@@ -17,7 +17,7 @@ export function SEOUpdater() {
   const location = useLocation();
 
   useEffect(() => {
-    const config = routeConfig[location.pathname] || { title: 'CareerAgent — Real-Time Verified Tech Jobs' };
+    const config = routeConfig[location.pathname] || { title: 'CareerAgent — Real-Time Verified Jobs' };
     
     // Update title
     document.title = config.title;

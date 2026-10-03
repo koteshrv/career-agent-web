@@ -1,6 +1,6 @@
 # CareerAgent
 
-> Real-time job search platform aggregating verified engineering, product, and tech roles directly from ATS platforms (Greenhouse, Lever, Ashby, Workday).
+> Real-time job search platform aggregating verified roles directly from ATS platforms (Greenhouse, Lever, Ashby, Workday).
 
 ## Web Application
 - URL: https://careeragent.fyi

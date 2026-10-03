@@ -17,6 +17,8 @@ import { ResumeImportDialog } from './components/ResumeImportDialog';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/ui/toast';
 import { hydrateFromExtension } from './lib/profileStorage';
+import { SEOUpdater } from './components/SEOUpdater';
+import { Privacy } from './pages/Privacy';
 
 function App() {
   // Pull the extension's copy of profile + tracker on load and whenever the tab regains focus.
@@ -33,6 +35,7 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="careeragent-theme">
       <ToastProvider>
         <Router>
+          <SEOUpdater />
           <Routes>
             <Route path="/security" element={<SecurityCheck />} />
             <Route path="*" element={
@@ -51,6 +54,7 @@ function App() {
                         <Route path="/home" element={<Navigate to="/jobs" replace />} />
                         <Route path="/portals" element={<Portals />} />
                         <Route path="/about" element={<About />} />
+                        <Route path="/privacy" element={<Privacy />} />
                         <Route path="/drafts" element={<Drafts />} />
                         <Route path="/quick-generate" element={<Navigate to="/drafts" replace />} />
 

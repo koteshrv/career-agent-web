@@ -1,0 +1,15 @@
+{
+  "short_name": "CareerAgent",
+  "name": "CareerAgent — Real-Time Verified Tech Jobs",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0b0b0b",
+  "background_color": "#0b0b0b"
+}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import useSWRInfinite from 'swr/infinite';
-import { Sparkles, UserRound, Search, AlertCircle, RefreshCw, Square } from 'lucide-react';
+import { Sparkles, UserRound, Search, AlertCircle, RefreshCw, Square , X } from 'lucide-react';
 import { useExtensionStatus } from '../lib/useExtensionStatus';
 import { useEvaluations } from '../lib/evaluations';
 import { usePins } from '../lib/foryou';
@@ -20,6 +20,50 @@ import { cn } from '../lib/utils';
 
 const PAGE_SIZE = 50;
 
+
+function EvaluationPromo({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="relative overflow-hidden rounded-md border border-border bg-card mb-4">
+      <button onClick={onDismiss} className="absolute right-3 top-3 text-muted-foreground hover:text-foreground z-10 rounded-xs p-1" aria-label="Dismiss">
+        <X className="size-4" />
+      </button>
+      
+      <div className="grid grid-cols-1 md:grid-cols-5">
+        <div className="p-5 sm:p-6 flex flex-col justify-center md:col-span-2">
+          <div className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
+            <Sparkles className="size-5" />
+          </div>
+          <h2 className="text-base font-medium text-foreground">See how you match</h2>
+          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+            Connect the extension to have AI score every job against your resume. See exactly what you bring and what you might be missing before you apply.
+          </p>
+        </div>
+        
+        <div className="bg-muted/30 p-5 sm:p-6 border-t border-border md:border-t-0 md:border-l md:col-span-3 flex items-center justify-center overflow-hidden">
+          <div className="w-full max-w-[400px] rounded-md border border-border-strong bg-tint-green px-4 py-3.5 shadow-sm relative sm:rotate-1 hover:rotate-0 transition-transform cursor-default">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-lg font-medium tabular-nums text-foreground">4.5<span className="text-sm text-muted-foreground">/5</span></span>
+              <span className="text-sm font-medium text-foreground">Apply</span>
+              <span className="text-xs text-muted-foreground">AI triage against your profile</span>
+            </div>
+            <p className="mt-1.5 text-sm text-foreground">Strong match. You have the exact 3+ years of React experience and distributed systems knowledge required.</p>
+            <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-xs text-muted-foreground">You bring</dt>
+                <dd className="text-foreground">React · Node.js · CI/CD</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">They also want</dt>
+                <dd className="text-foreground">GraphQL · Team lead experience</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Jobs (`all`) is the whole feed with the user's own filters. For you (`matches`) searches with the profile's defaults and can triage with AI. */
 export function Home({ mode }: { mode: 'all' | 'matches' }) {
   const { id: pathId } = useParams();
@@ -33,6 +77,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
   const run = useEvaluationRun();
   const pins = usePins();
   const [isRetrying, setIsRetrying] = useState(false);
+  const [showPromo, setShowPromo] = useState(() => localStorage.getItem('careeragent_promo_dismissed') !== 'true');
 
   // Pinned postings that the search did not bring in are fetched by id.
   const [pinnedJobs, setPinnedJobs] = useState<Job[]>([]);
@@ -312,6 +357,11 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
             {/* List */}
             <section aria-label="Job postings" className={cn('min-h-0 w-full flex-col lg:flex lg:w-[420px] xl:w-[460px] lg:shrink-0', detailOpen ? 'hidden' : 'flex')}>
               <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-md border border-border bg-card">
+                {showPromo && !extension && !matches && (
+                  <div className="p-2 border-b border-border">
+                    <EvaluationPromo onDismiss={() => { setShowPromo(false); localStorage.setItem('careeragent_promo_dismissed', 'true'); }} />
+                  </div>
+                )}
                 {isLoadingInitialData && (
                   <ul aria-busy="true" aria-label="Loading postings">
                     {Array.from({ length: 8 }).map((_, i) => (

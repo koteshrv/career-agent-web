@@ -436,15 +436,24 @@ export function Drafts() {
               <iframe title="Resume preview" src={`${pdfUrl}#toolbar=0&view=FitH`} className="min-h-[720px] flex-1 w-full bg-white" />
             ) : (
               <div className="p-5 text-sm">
-                <p className="font-medium text-destructive">LaTeX did not compile.</p>
-                <p className="mt-1 text-muted-foreground">{explainLog(compileLog) ?? 'Fix the source and recompile, or regenerate the draft.'}</p>
-                {compileLog && (
-                  <Button size="sm" className="mt-3" onClick={() => navigator.clipboard.writeText(compileLog).then(() => toast('Log copied', 'success'))}>
-                    <Copy />
-                    Copy log
-                  </Button>
+                {!extension ? (
+                  <>
+                    <p className="font-medium text-foreground">Extension not connected</p>
+                    <p className="mt-1 text-muted-foreground">The extension compiles LaTeX to PDF entirely in your browser to keep your data private. Connect it to see previews.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium text-destructive">LaTeX did not compile.</p>
+                    <p className="mt-1 text-muted-foreground">{explainLog(compileLog) ?? 'Fix the source and recompile, or regenerate the draft.'}</p>
+                    {compileLog && (
+                      <Button size="sm" className="mt-3" onClick={() => navigator.clipboard.writeText(compileLog).then(() => toast('Log copied', 'success'))}>
+                        <Copy />
+                        Copy log
+                      </Button>
+                    )}
+                    {compileLog && <pre className="mt-3 max-h-72 overflow-auto rounded-sm border border-border bg-muted p-3 font-mono text-xs leading-relaxed">{compileLog}</pre>}
+                  </>
                 )}
-                {compileLog && <pre className="mt-3 max-h-72 overflow-auto rounded-sm border border-border bg-muted p-3 font-mono text-xs leading-relaxed">{compileLog}</pre>}
               </div>
             )
           ) : output ? (

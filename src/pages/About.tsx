@@ -22,7 +22,18 @@ export function About() {
         description="Find open roles straight from employers’ own career sites, see how well each one fits you, and apply with a resume written for that job. Free, open source, and no account: your data and AI key stay on your device."
       />
 
-            <section id="privacy" aria-labelledby="privacy-title" className="scroll-mt-6">
+            <section aria-labelledby="index-title" className="scroll-mt-6">
+        <IndexStory
+          headingId="index-title"
+          lead={
+            <>
+              Every hour, for every <Link to="/portals" className={a}>employer we index</Link>:
+            </>
+          }
+        />
+      </section>
+
+      <section id="privacy" aria-labelledby="privacy-title" className="mt-10 scroll-mt-6">
         <h2 id="privacy-title" className="text-lg font-medium text-foreground">How your data is handled</h2>
         <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
           <li>
@@ -49,17 +60,6 @@ export function About() {
             <span className="text-foreground">No tracking.</span> No analytics or advertising scripts, and company logos are served from this site rather than a third party.
           </li>
         </ul>
-      </section>
-
-      <section aria-labelledby="index-title" className="mt-10">
-        <IndexStory
-          headingId="index-title"
-          lead={
-            <>
-              Every hour, for every <Link to="/portals" className={a}>employer we index</Link>:
-            </>
-          }
-        />
       </section>
 
       <section aria-labelledby="people-title" className="mt-10">

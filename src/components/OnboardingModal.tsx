@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Upload, Sparkles, MapPin, X } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export function OnboardingModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,7 @@ export function OnboardingModal() {
   const [keywords, setKeywords] = useState('');
   const [excludes, setExcludes] = useState('');
   const [location, setLocation] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     const hasOnboarded = localStorage.getItem('careeragent_onboarded');
@@ -39,6 +41,10 @@ export function OnboardingModal() {
   };
 
   const handleSave = () => {
+    if (!turnstileToken) {
+      alert("Please complete the security check.");
+      return;
+    }
     const config = { roles, keywords, excludes, location };
     localStorage.setItem('careeragent_global_filters', JSON.stringify(config));
     localStorage.setItem('careeragent_onboarded', 'true');
@@ -158,6 +164,14 @@ export function OnboardingModal() {
               />
             </div>
           </div>
+        </div>
+
+        <div className="flex justify-center pt-4">
+          <Turnstile 
+            siteKey="0x4AAAAAAFMlzAzHo74-FsaR"
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ action: 'onboarding' }}
+          />
         </div>
 
         <div className="flex items-center justify-between pt-6">

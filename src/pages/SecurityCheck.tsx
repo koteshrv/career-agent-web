@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Check } from 'lucide-react';
 import { Logo } from '../components/Logo';
+import { API_BASE_URL } from '../lib/api';
 
 /**
  * The front door: a bot check before the app loads, not a copy of Cloudflare's own interstitial. Says what it's
@@ -16,13 +17,38 @@ export function SecurityCheck() {
 
   useEffect(() => {
     if (!token) return;
-    setStatus('success');
-    // Until career-agent-api verifies this token and issues a session, it only unlocks the SPA client-side.
-    sessionStorage.setItem('turnstile_passed', 'true');
-    sessionStorage.setItem('turnstile_token', token);
-    const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/jobs';
-    const timer = setTimeout(() => navigate(from, { replace: true }), 500);
-    return () => clearTimeout(timer);
+    
+    let isCancelled = false;
+    
+    const exchangeToken = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/v1/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        
+        if (isCancelled) return;
+        if (!res.ok) throw new Error('Verification failed');
+        
+        const data = await res.json();
+        if (data.session_token) {
+          setStatus('success');
+          sessionStorage.setItem('turnstile_passed', 'true');
+          sessionStorage.setItem('careeragent_session_jwt', data.session_token);
+          
+          const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/jobs';
+          setTimeout(() => navigate(from, { replace: true }), 500);
+        } else {
+          setStatus('error');
+        }
+      } catch (err) {
+        if (!isCancelled) setStatus('error');
+      }
+    };
+    
+    exchangeToken();
+    return () => { isCancelled = true; };
   }, [token, navigate, location]);
 
   return (

@@ -95,7 +95,13 @@ export class ApiError extends Error {
 }
 
 export const fetcher = async (url: string) => {
-  const res = await fetch(API_BASE_URL + url);
+  const token = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('careeragent_session_jwt') : null;
+  const headers: HeadersInit = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(API_BASE_URL + url, { headers });
   if (!res.ok) {
     const ra = Number(res.headers.get('retry-after'));
     throw new ApiError(res.status, Number.isFinite(ra) && ra > 0 ? ra : null);
@@ -106,11 +112,17 @@ export const fetcher = async (url: string) => {
 export type ReportReason = 'dead_link' | 'already_closed' | 'spam_or_scam' | 'incorrect_metadata';
 
 export async function reportJob(jobId: string, reason: ReportReason = 'dead_link', details?: string) {
+  const token = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('careeragent_session_jwt') : null;
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/v1/jobs/report`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ 
       job_id: jobId, 
       reason,

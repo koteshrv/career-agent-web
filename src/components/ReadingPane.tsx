@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
-import { ExternalLink, Copy, Check, Flag, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
+import { ExternalLink, X, Copy, Check, Flag, ArrowLeft, FileText, Sparkles, PenLine, Star } from 'lucide-react';
 import type { Job, JobDetailResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
 import { CompanyLogo } from './CompanyLogo';
@@ -13,6 +13,7 @@ import { IconButton } from './ui/icon-button';
 import { Chip } from './ui/chip';
 import { ReportModal } from './ReportModal';
 import { useToast } from './ui/toast';
+import { useExtensionStatus } from '../lib/useExtensionStatus';
 import { formatFullDate, formatRelativeTime, cn } from '../lib/utils';
 import { useReportedJobs } from '../lib/useReportedJobs';
 import { VERDICT_LABEL, type JobEvaluation } from '../lib/evaluations';
@@ -28,6 +29,8 @@ interface ReadingPaneProps {
 
 export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPaneProps & { evaluation?: JobEvaluation; forYou?: boolean }) {
   const [showReportModal, setShowReportModal] = useState(false);
+  const extension = useExtensionStatus();
+  const [showPromo, setShowPromo] = useState(() => localStorage.getItem('careeragent_rp_promo_dismissed') !== 'true');
   const [copied, setCopied] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
@@ -248,6 +251,41 @@ export function ReadingPane({ job, onBack , evaluation, forYou }: ReadingPanePro
                 </div>
               ))}
             </dl>
+          )}
+
+          {!evaluation && !forYou && extension === false && showPromo && (
+            <section className="mt-5 rounded-md border border-border bg-card overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2">
+                <div className="flex items-center gap-2 text-primary">
+                  <Sparkles className="size-4" />
+                  <span className="text-sm font-medium">See how you match</span>
+                </div>
+                <button onClick={() => { setShowPromo(false); localStorage.setItem('careeragent_rp_promo_dismissed', 'true'); }} className="p-1 text-muted-foreground hover:text-foreground rounded-xs" aria-label="Dismiss">
+                  <X className="size-4" />
+                </button>
+              </div>
+              <div className="p-3.5 text-sm text-muted-foreground border-b border-border bg-card">
+                Connect the extension to have AI score every job against your resume. See exactly what you bring and what you might be missing before you apply.
+              </div>
+              <div aria-label="Example AI evaluation" className="p-3.5 bg-tint-green/60 pointer-events-none relative opacity-90">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-lg font-medium tabular-nums text-foreground">4.5<span className="text-sm text-muted-foreground">/5</span></span>
+                  <span className="text-sm font-medium text-foreground">Apply</span>
+                  <span className="text-xs text-muted-foreground">Example AI evaluation</span>
+                </div>
+                <p className="mt-1.5 text-sm text-foreground">Strong match. You have the exact 3+ years of React experience and distributed systems knowledge required.</p>
+                <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">You bring</dt>
+                    <dd className="text-foreground">React · Node.js · CI/CD</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">They also want</dt>
+                    <dd className="text-foreground">GraphQL · Team lead experience</dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
           )}
 
           {evaluation && (

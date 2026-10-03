@@ -110,13 +110,13 @@ export function JobCard({
               )}
 
               {workplaceLabel && (
-                <Badge variant="outline" className="text-xs font-medium border-border/80 shrink-0">
+                <Badge className="text-xs font-medium border-border/80 shrink-0">
                   {workplaceLabel}
                 </Badge>
               )}
 
               {job.employment_type && (
-                <Badge variant="secondary" className="text-xs font-medium capitalize shrink-0">
+                <Badge className="text-xs font-medium capitalize shrink-0">
                   {job.employment_type.replace('_', '-')}
                 </Badge>
               )}
@@ -160,7 +160,7 @@ export function JobCard({
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowConfirm(true);

@@ -366,7 +366,7 @@ export function Tracker() {
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
                     snoozeApplicationFollowUp(nudgeApp.id, 3);
                     refreshApplications();
@@ -380,7 +380,7 @@ export function Tracker() {
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
                     snoozeApplicationFollowUp(nudgeApp.id, 7);
                     refreshApplications();
@@ -507,7 +507,7 @@ export function Tracker() {
               <div className="pt-2 flex justify-end gap-2 border-t border-border">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setIsAddOpen(false)}
                   className="h-8 px-3 text-xs cursor-pointer"

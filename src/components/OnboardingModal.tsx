@@ -116,7 +116,7 @@ export function OnboardingModal() {
               <Input 
                 placeholder="e.g. Software Engineer, Product Manager..." 
                 value={roles}
-                onChange={(e) => setRoles(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoles(e.target.value)}
                 className="h-9 bg-background/50 border-border/80 text-sm"
               />
               <p className="text-[10px] text-muted-foreground">Seeded from your profile — edit freely.</p>
@@ -130,7 +130,7 @@ export function OnboardingModal() {
               <Input 
                 placeholder="e.g. TypeScript, Next.js, Python..." 
                 value={keywords}
-                onChange={(e) => setKeywords(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeywords(e.target.value)}
                 className="h-9 bg-background/50 border-border/80 text-sm"
               />
             </div>
@@ -140,7 +140,7 @@ export function OnboardingModal() {
               <Input 
                 placeholder="e.g. Clearance, Senior, Lead, .NET..." 
                 value={excludes}
-                onChange={(e) => setExcludes(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExcludes(e.target.value)}
                 className="h-9 bg-background/50 border-border/80 text-sm"
               />
             </div>
@@ -153,7 +153,7 @@ export function OnboardingModal() {
               <Input 
                 placeholder="e.g. Remote, San Francisco, London..." 
                 value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
                 className="h-9 bg-background/50 border-border/80 text-sm"
               />
             </div>

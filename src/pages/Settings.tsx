@@ -231,9 +231,8 @@ export function Settings() {
       </Section>
 
       <Section id="about" title="About">
-        <p className="text-sm text-muted-foreground">
-          <span className="tabular-nums">Dashboard {APP_VERSION}</span> &middot;{' '}
-          <Link to="/about" className="text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground">About CareerAgent</Link>
+        <p className="text-sm text-muted-foreground tabular-nums">
+          Dashboard {APP_VERSION}
         </p>
       </Section>
 

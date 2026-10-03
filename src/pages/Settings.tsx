@@ -90,7 +90,7 @@ export function Settings() {
       <Section
         id="extension"
         title="Browser extension"
-        description="The official Chrome Extension connects this dashboard directly to the job boards. It securely reads job listings, uses AI to autofill your applications, and synchronizes your pipeline data back here entirely on-device."
+        description="The official Chrome Extension connects this dashboard directly to the job boards. It uses AI to draft tailored resumes and cover letters, securely reads job listings to autofill your applications, and synchronizes your pipeline data back here entirely on-device."
         panel
         actions={
           <span

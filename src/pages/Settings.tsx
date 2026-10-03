@@ -277,7 +277,6 @@ export function Settings() {
           </>
         }
       >
-        <span className="sr-only">Confirm</span>
       </Dialog>
 
       <Dialog
@@ -302,7 +301,6 @@ export function Settings() {
           </>
         }
       >
-        <span className="sr-only">Confirm</span>
       </Dialog>
     </Page>
   );

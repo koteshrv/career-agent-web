@@ -13,7 +13,7 @@ interface DialogProps {
   size?: 'sm' | 'md' | 'lg';
   /** Hide the close button, for flows that must finish (defaults to showing it). */
   dismissible?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   footer?: React.ReactNode;
 }
 

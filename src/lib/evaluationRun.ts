@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { fetcher, ApiError } from './api';
+import { cachedFetcher } from './pageCache';
 import type { Job, JobDetailResponse, JobsResponse } from './api';
 import { sendExtensionMessage } from './extensionBridge';
 import { getEvaluations, saveEvaluations, type JobEvaluation } from './evaluations';
@@ -55,11 +56,11 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * The job index allows about 100 requests a minute per client. A long run can cross that, so a 429 (or a network
  * blip) waits and retries instead of dropping postings; anything else fails fast.
  */
-async function fetchPatiently<T>(url: string): Promise<T> {
+async function fetchPatiently<T>(url: string, cache = false): Promise<T> {
   const waits = [2_000, 8_000, 20_000, 45_000];
   for (let attempt = 0; ; attempt++) {
     try {
-      return (await fetcher(url)) as T;
+      return (await (cache ? cachedFetcher(url) : fetcher(url))) as T;
     } catch (e) {
       const retryable = !(e instanceof ApiError) || e.status === 429 || e.status >= 500;
       if (!retryable || attempt >= waits.length || state.stopping) throw e;
@@ -112,7 +113,7 @@ export async function startRun(params: URLSearchParams, target: number, extra: J
       p.set('limit', String(PAGE));
       p.set('offset', String(offset));
       p.set('include', 'excerpt');
-      const page = await fetchPatiently<JobsResponse>(`/v1/jobs?${p.toString()}`);
+      const page = await fetchPatiently<JobsResponse>(`/v1/jobs?${p.toString()}`, true);
       (page.jobs as Array<Job & { excerpt?: string | null }>).forEach(take);
       more = Boolean(page.has_more);
       offset = (page.offset ?? offset) + (page.limit ?? PAGE);

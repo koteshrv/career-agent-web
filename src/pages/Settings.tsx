@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Trash2, RefreshCw, Moon, Sun, Monitor, Download, Upload } from 'lucide-react';
+import { clearPageCache } from '../lib/pageCache';
+import { version as APP_VERSION } from '../../package.json';
+
 import { buildBackup, downloadBackup, parseBackup, restoreBackup, describeBackup, type Backup } from '../lib/backup';
 import { Button } from '../components/ui/button';
 import { Field, Input } from '../components/ui/field';
@@ -244,18 +247,10 @@ export function Settings() {
       </Section>
 
       <Section id="about" title="About">
-        <ul className="space-y-1.5 text-sm">
-          <li>
-            <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent-extension" target="_blank" rel="noreferrer">
-              Extension source
-            </a>
-          </li>
-          <li>
-            <a className="text-primary-text underline-offset-2 hover:underline" href="https://github.com/koteshrv/career-agent-web" target="_blank" rel="noreferrer">
-              Dashboard source
-            </a>
-          </li>
-        </ul>
+        <p className="text-sm text-muted-foreground">
+          <span className="tabular-nums">Dashboard {APP_VERSION}</span> &middot;{' '}
+          <Link to="/about" className="text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground">About CareerAgent</Link>
+        </p>
       </Section>
 
       <Dialog
@@ -278,18 +273,19 @@ export function Settings() {
         open={confirmClear}
         onClose={() => setConfirmClear(false)}
         title="Clear local data?"
-        description="Your profile and pipeline will be removed from this browser. The extension keeps its own copy until you clear it there."
+        description="Your profile, pipeline, search defaults, drafts, evaluations and cached job pages will be removed from this browser. The extension keeps its own copy until you clear it there."
         size="sm"
         footer={
           <>
             <Button onClick={() => setConfirmClear(false)}>Keep</Button>
             <Button
               variant="danger"
-              onClick={() => {
-                localStorage.removeItem('careeragent_candidate_profile');
-                localStorage.removeItem('careeragent_tracked_applications');
-                localStorage.removeItem('careeragent_global_filters');
-                localStorage.removeItem('careeragent_onboarded');
+              onClick={async () => {
+                // Everything about the user in this browser; display preferences and the extension id stay.
+                for (const k of ['careeragent_candidate_profile', 'careeragent_tracked_applications', 'careeragent_deleted_application_ids', 'careeragent_global_filters', 'careeragent_onboarded', 'careeragent_evaluations', 'careeragent_foryou_pins', 'careeragent_drafts']) localStorage.removeItem(k);
+                sessionStorage.removeItem('careeragent_api_logs');
+                sessionStorage.removeItem('careeragent_draft_context');
+                await clearPageCache();
                 window.location.reload();
               }}
             >

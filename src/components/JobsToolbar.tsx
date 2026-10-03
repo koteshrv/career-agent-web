@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 import { Search, X, Globe, Building2, Calendar, RotateCcw } from 'lucide-react';
 import { DropdownSelect } from './DropdownSelect';
-import { fetcher, type CountriesResponse } from '../lib/api';
+import { fetcher, type CountriesResponse, type CompaniesResponse } from '../lib/api';
 import { cn } from '../lib/utils';
 
 const WORKPLACE = [
@@ -60,6 +60,8 @@ export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolba
   };
 
   const { data: countriesData } = useSWR<CountriesResponse>('/v1/countries', fetcher, { revalidateOnFocus: false, shouldRetryOnError: false });
+  // Index size for the "Companies we index" link; the API caches it for 30 minutes.
+  const { data: index } = useSWR<CompaniesResponse>(compact ? null : '/v1/companies?limit=1', fetcher, { revalidateOnFocus: false, shouldRetryOnError: false });
   const countryOptions = useMemo(() => [{ value: '', label: 'Any country' }, ...(countriesData?.countries || []).map((c) => ({ value: c.code, label: c.name }))], [countriesData]);
 
   const activeCount = [countryParam, workplaceParam, dateParam, companyParam].filter(Boolean).length + keywords.length;
@@ -119,7 +121,7 @@ export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolba
             type="search"
             enterKeyHint="search"
             aria-label="Search jobs by title, company or skill. Press Enter to add a keyword."
-            placeholder={keywords.length ? 'Add another keyword' : 'Search title, company or skill'}
+            placeholder={keywords.length ? 'Add another keyword' : index ? `Search ${index.totals.active_jobs.toLocaleString()} jobs by title, company or skill` : 'Search jobs by title, company or skill'}
             value={input}
             onChange={(e) => {
               const v = e.target.value;
@@ -170,7 +172,7 @@ export function JobsToolbar({ resultSummary, action, note, compact }: JobsToolba
           <span aria-live="polite">{resultSummary}</span>
           {action}
           {!compact && (
-            <Link to="/portals" className="font-medium text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground">
+            <Link to="/portals" className="font-medium text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-foreground whitespace-nowrap">
               <span className="sm:hidden">Companies</span>
               <span className="hidden sm:inline">Companies we index</span>
             </Link>

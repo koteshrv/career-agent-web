@@ -119,7 +119,7 @@ export function Profile() {
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
 
   return (
-    <Page className="pb-32 md:pb-28">
+    <Page bottomBar>
       <PageHeader
         title="Profile"
         description="The extension fills applications from this. Fill it by hand, or let the extension's AI read your resume. It stays in your browser."
@@ -383,7 +383,7 @@ export function Profile() {
       <Section
         id="search-defaults"
         title="Search defaults"
-        description="Applied to the Jobs feed whenever you have no keywords of your own. Filling from your resume sets these too."
+        description="Used by For you to find roles that match you. Filling from your resume sets these too."
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Target roles" hint="Comma-separated.">

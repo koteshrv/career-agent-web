@@ -1,19 +1,41 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
+import { SiteFooter } from '../SiteFooter';
 
 interface PageProps {
   /** narrow: forms and settings (760px). wide: the two workspaces (1280px). */
   width?: 'narrow' | 'wide';
   className?: string;
+  /** Slim site footer (About, privacy, source) at the bottom of the page. Off for full-height workspaces. */
+  footer?: boolean;
+  /** The page has its own fixed bar at the bottom (Profile's save bar): keep the footer clear of it. */
+  bottomBar?: boolean;
   children: React.ReactNode;
 }
 
-/** Scrollable page body with one of two content measures. */
-export function Page({ width = 'narrow', className, children }: PageProps) {
+const measure = (width: 'narrow' | 'wide') => (width === 'narrow' ? 'max-w-[800px]' : 'max-w-[1360px]');
+
+/**
+ * Scrollable page body with one of two content measures. The footer sits
+ * outside the content measure, at the header's width, and is pushed to the
+ * bottom of the viewport on short pages, so it looks the same on every page.
+ */
+export function Page({ width = 'narrow', className, footer = true, bottomBar = false, children }: PageProps) {
+  if (!footer) {
+    return (
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className={cn('mx-auto w-full px-4 sm:px-8 py-8 pb-24 md:pb-12', measure(width), className)}>{children}</div>
+      </div>
+    );
+  }
   return (
     <div className="flex-1 min-h-0 overflow-y-auto">
-      <div className={cn('mx-auto w-full px-4 sm:px-8 py-8 pb-24 md:pb-12', width === 'narrow' ? 'max-w-[800px]' : 'max-w-[1360px]', className)}>
-        {children}
+      <div className="flex min-h-full flex-col">
+        <div className={cn('mx-auto w-full flex-1 px-4 sm:px-8 pt-8 pb-12', measure(width), className)}>{children}</div>
+        {/* Clearance below the footer: the mobile tab bar (3.5rem), plus the page's own fixed bar if it has one. */}
+        <div className={cn(bottomBar ? 'pb-28 md:pb-14' : 'pb-14 md:pb-0')}>
+          <SiteFooter />
+        </div>
       </div>
     </div>
   );

@@ -84,7 +84,7 @@ export function Pipeline({ tab }: { tab: Tab }) {
   );
 
   return (
-    <Page width="wide" className="flex min-h-full flex-col">
+    <Page width="wide" className="flex min-h-full flex-col" footer={false}>
       <PageHeader
         title="Pipeline"
         description="Every job you saved or applied to, with follow-ups timed three days after you apply."
@@ -305,7 +305,8 @@ function FollowUps({ apps, refresh, onNudge }: { apps: TrackedApplication[]; ref
   };
 
   return (
-    <div className="max-w-[760px]">
+    // The queue keeps a reading width; the empty state below centres on the whole page like the other tabs.
+    <div>
       <SegmentedControl
         ariaLabel="Follow-up queue"
         value={bucket}
@@ -325,7 +326,7 @@ function FollowUps({ apps, refresh, onNudge }: { apps: TrackedApplication[]; ref
           compact
         />
       ) : (
-        <ul className="divide-y divide-border rounded-md border border-border bg-card">
+        <ul className="max-w-[760px] divide-y divide-border rounded-md border border-border bg-card">
           {list.map((app) => {
             const d = daysUntilFollowUp(app);
             return (

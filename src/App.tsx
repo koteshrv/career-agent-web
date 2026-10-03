@@ -9,6 +9,7 @@ import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { Portals } from './pages/Portals';
 import { Logs } from './pages/Logs';
+import { About } from './pages/About';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ResumeImportDialog } from './components/ResumeImportDialog';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -43,6 +44,7 @@ function App() {
                   <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />
                   <Route path="/home" element={<Navigate to="/jobs" replace />} />
                   <Route path="/portals" element={<Portals />} />
+                  <Route path="/about" element={<About />} />
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/quick-generate" element={<Navigate to="/drafts" replace />} />
 

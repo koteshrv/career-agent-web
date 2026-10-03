@@ -9,6 +9,7 @@ import { jobsParams, readSearchDefaults, excludeTerms } from '../lib/jobQuery';
 import { useEvaluationRun, startRun, stopRun, clearRun, isRunning, BATCH } from '../lib/evaluationRun';
 import type { Job, JobDetailResponse, JobsResponse } from '../lib/api';
 import { fetcher } from '../lib/api';
+import { cachedFetcher } from '../lib/pageCache';
 import { JobRow, JobRowSkeleton } from '../components/JobRow';
 import { JobsToolbar } from '../components/JobsToolbar';
 import { ReadingPane } from '../components/ReadingPane';
@@ -78,7 +79,7 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
     return `/v1/jobs?${p.toString()}`;
   };
 
-  const { data, size, setSize, error, mutate, isValidating } = useSWRInfinite<JobsResponse>(getKey, fetcher, {
+  const { data, size, setSize, error, mutate, isValidating } = useSWRInfinite<JobsResponse>(getKey, cachedFetcher as (url: string) => Promise<JobsResponse>, {
     revalidateFirstPage: false,
     revalidateOnFocus: false,
     shouldRetryOnError: false,
@@ -162,6 +163,8 @@ export function Home({ mode }: { mode: 'all' | 'matches' }) {
     ? 'Feed unavailable'
     : total !== undefined
     ? `${total.toLocaleString()} ${total === 1 ? 'match' : 'matches'}`
+    : !matches && !hasActiveFilters
+    ? `Latest from ${jobs.length.toLocaleString()}${isReachingEnd ? "" : "+"} employers`
     : `${jobs.length.toLocaleString()}${isReachingEnd ? '' : '+'} ${jobs.length === 1 ? 'posting' : 'postings'}`;
 
   const runStatus =

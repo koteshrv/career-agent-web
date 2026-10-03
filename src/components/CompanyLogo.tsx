@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { companyInitials, monogramHue, guessCompanyDomains } from "../utils/company";
+import LOGOS from "../data/logos.json";
+
+/** Self-hosted logos (scripts/fetch-logos.mjs), keyed by lowercase company name. */
+const LOCAL = LOGOS as Record<string, string>;
 
 interface CompanyLogoProps {
   name: string;
@@ -17,11 +21,12 @@ export function CompanyLogo({ name, size = 28, className = "", fallbackIcon }: C
     setDomainIndex(0);
   }, [name]);
 
-  const domains = guessCompanyDomains(name);
-  const currentDomain = domains[domainIndex];
-  
-  // Use Google Favicons since Clearbit is heavily blocked by adblockers (which causes immediate onError triggers)
-  const src = currentDomain ? `https://www.google.com/s2/favicons?domain=${currentDomain}&sz=256` : "";
+  // A bundled logo first: crisp, and no third party learns which companies are being viewed. Unknown companies
+  // fall back to a guessed domain on Google's favicon service, then to initials.
+  const local = LOCAL[name.trim().toLowerCase()];
+  const domains = local ? [] : guessCompanyDomains(name);
+  const currentDomain = local ? 'local' : domains[domainIndex];
+  const src = local ? `/logos/${local}` : currentDomain ? `https://www.google.com/s2/favicons?domain=${currentDomain}&sz=256` : "";
 
   const initials = companyInitials(name);
   const hue = monogramHue(name);

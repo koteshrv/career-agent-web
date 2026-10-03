@@ -1,2 +1,3 @@
-Contact: mailto:security@careeragent.fyi
+Contact: https://github.com/koteshrv/career-agent-web/security/advisories/new
+Contact: mailto:koteshrv@users.noreply.github.com
 Expires: 2028-01-01T00:00:00.000Z

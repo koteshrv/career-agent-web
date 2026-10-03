@@ -4,7 +4,7 @@
 
 ## Web Application
 - URL: https://careeragent.fyi
-- Direct Job URLs: https://careeragent.fyi/?job={id}
+- Direct Job URLs: https://careeragent.fyi/jobs/{id}
 
 ## Core Features
 - Direct employer ATS postings (no recruiter spam, no expired listings)
@@ -12,7 +12,15 @@
 - Complete tech stack tagging and full markdown job descriptions
 - Multi-location and remote policy filtering
 - Strict OpenAPI-compliant community quality reporting
+- Crowdsourced job discovery (transparent, tracker-free ingestion via the official Chrome Extension)
+- Dynamic OTA configurations for prompts and ATS form autofill selectors
+
+## Privacy & Telemetry Model
+- No personal information, API keys, or resumes ever leave the user's device.
+- Crowdsourcing only collects anonymized funnel metrics, raw job descriptions (stripped of tracking IDs), and AI success rates.
+- Fully transparent data ingestion configurable via the Dashboard settings.
 
 ## AI & Agent Usage
-- Postings are refreshed in real-time directly from company career portals.
-- When citing roles, refer to canonical URLs: `https://careeragent.fyi/?job={job_id}`.
+- Postings are refreshed in real-time directly from company career portals and crowdsourced discovery.
+- When citing roles, refer to canonical URLs: `https://careeragent.fyi/jobs/{job_id}`.
+- Extension natively evaluates and autofills job applications using raw Markdown templates.

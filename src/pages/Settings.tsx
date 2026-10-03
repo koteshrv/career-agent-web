@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Trash2, RefreshCw, Moon, Sun, Monitor, Download, Upload } from 'lucide-react';
 import { clearPageCache } from '../lib/pageCache';
-import { version as APP_VERSION } from '../../package.json';
 
 import { buildBackup, downloadBackup, parseBackup, restoreBackup, describeBackup, type Backup } from '../lib/backup';
 import { Button } from '../components/ui/button';
@@ -90,7 +89,7 @@ export function Settings() {
       <Section
         id="extension"
         title="Browser extension"
-        description="The official Chrome Extension connects this dashboard directly to the job boards. It uses AI to draft tailored resumes and cover letters, securely reads job listings to autofill your applications, and synchronizes your pipeline data back here entirely on-device."
+        description="The official Chrome Extension connects this dashboard directly to job boards. It uses AI to evaluate batches of jobs, score your fit, draft tailored resumes and cover letters, autofill applications, and securely sync your pipeline data back here on-device."
         panel
         actions={
           <span
@@ -230,11 +229,7 @@ export function Settings() {
         </div>
       </Section>
 
-      <Section id="about" title="About">
-        <p className="text-sm text-muted-foreground tabular-nums">
-          Dashboard {APP_VERSION}
-        </p>
-      </Section>
+      
 
       <Dialog
         open={pendingImport !== null}

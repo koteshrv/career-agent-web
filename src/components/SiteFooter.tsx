@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { version as APP_VERSION } from '../../package.json';
 
 const DISCORD_URL = import.meta.env.VITE_DISCORD_URL || '';
 const item = 'hover:text-foreground transition-colors';
@@ -18,7 +19,7 @@ export function SiteFooter() {
         <Link to="/portals" className={item}>Companies we index</Link>
         <a href="https://github.com/koteshrv/career-agent-web" target="_blank" rel="noreferrer" className={item}>GitHub</a>
         {DISCORD_URL && <a href={DISCORD_URL} target="_blank" rel="noreferrer" className={item}>Discord</a>}
-        <span className="sm:ml-auto">Open source, MIT license</span>
+        <span className="sm:ml-auto">Dashboard {APP_VERSION} &middot; Open source, MIT license</span>
       </div>
     </footer>
   );

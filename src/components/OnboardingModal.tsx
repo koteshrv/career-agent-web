@@ -168,7 +168,7 @@ export function OnboardingModal() {
 
         <div className="flex justify-center pt-4">
           <Turnstile 
-            siteKey="0x4AAAAAAFMlzAzHo74-FsaR"
+            siteKey="3x00000000000000000000FF"
             onSuccess={(token) => setTurnstileToken(token)}
             options={{ action: 'onboarding' }}
           />
